@@ -176,6 +176,7 @@ class Enemy(Animated):
     Used for enemies that move in 1 direction
     """
     def hurt(self, damage, setHit = True):
+
         if self.row < self.hurtRow:
             self.row = self.hurtRow
             self.flashTimer = 0
@@ -967,6 +968,27 @@ class LavaKnight(Enemy):
 """
 Regular Enemies
 """        
+class Shiver(Enemy):
+    def __init__(self, position = vec(0,0), direction = 0):
+        if direction == 2:
+            super().__init__(position, "shiver.png", 2)
+        else:
+            super().__init__(position, "shiver.png", 0)
+        
+        self.maxHp = 30
+        self.hp = self.maxHp
+        self.hurtRow = 0
+        self.blowing = False
+        self.nFrames = 4
+        self.totalFrames = 4
+        self.framesPerSecond = 4
+        self.damage = 2
+        self.type = Element(2)
+        self.hurtRow = 1
+    
+    def setSpeed(self, row):
+        return
+    
 
 """
 Change name to Skeller or Boner.

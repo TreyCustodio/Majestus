@@ -118,6 +118,8 @@ class AE(object):
 
         #Size of the room
         self.size = vec(*RESOLUTION)
+        self.shadow = None
+        self.light = None
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -1211,7 +1213,7 @@ class AE(object):
 
         if self.torches:
             for n in self.torches:
-                if not n.lit and self.player.interactable(n):
+                if not n.lit and self.player.interactableObjects(n):
                     n.setInteractable()
                 elif n.interactable:
                     n.interactable = False
@@ -1367,7 +1369,7 @@ class AE(object):
         #Background/Tiles
         
         self.background.draw(drawSurface)
-
+        
         self.drawTiles(drawSurface)
         
         #Blocks
@@ -1391,6 +1393,11 @@ class AE(object):
 
         #Objects above player
         self.drawTopLayer(drawSurface)
+
+        if self.shadow:
+            self.shadow.draw(drawSurface)
+        
+        
 
         #HUD
         self.drawHud(drawSurface)

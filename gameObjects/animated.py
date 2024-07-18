@@ -573,10 +573,6 @@ class Tile(Animated):
         super().__init__(position, "thunderTiles.png", (0,0))
         self.nFrames = 5
 
-
-
-
-
 class Portal(Animated):
     def __init__(self, position, color):
         super().__init__(position, "portal.png", (0,color))

@@ -27,6 +27,7 @@ class SoundManager(object):
         
         _SFX_FOLDER = "sounds"
         _MUSIC_FOLDER = "music"
+        _VOICE_FOLDER = "sounds/voices"
         
         def __init__(self):
             self.BGMs = {}
@@ -45,9 +46,18 @@ class SoundManager(object):
             pygame.mixer.music.fadeout(fadeoutAmount)
             self.currentlyPlaying = None
         
+    
         def playSFX(self, name, loops=0):
             if name not in self.dict:
                 self._loadSFX(name)
+            return self.dict[name].play(loops)
+        
+        """
+        Play and load a voice file from the voice directory
+        """
+        def playVoice(self, name, loops=0):
+            if name not in self.dict:
+                self._loadVoice(name)
             return self.dict[name].play(loops)
         
         def playLowSFX(self, name, volume = 0.5, loops=0):
@@ -66,6 +76,14 @@ class SoundManager(object):
                 
             self.dict[name] = sound
         
+        """
+        Load a voice file from the voice directory
+        """
+        def _loadVoice(self, name):
+            fullname = os.path.join(SoundManager._SM._VOICE_FOLDER, name)
+            sound = pygame.mixer.Sound(fullname)
+            self.dict[name] = sound
+
         def stopSFX(self, name):
             if name in self.dict:
                 self.dict[name].stop()

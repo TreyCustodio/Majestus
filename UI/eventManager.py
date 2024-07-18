@@ -1,4 +1,5 @@
 import pygame
+from UI import InputManager, ACTIONS
 """
 A module for managing events
 in the pygame event queue
@@ -34,8 +35,12 @@ class EventManager(object):
         def handleEvents(self, engine):
             
             for event in pygame.event.get():
-                #print(event)
-                
+                ACTIONS["interact"] = InputManager.getPressed(event, "interact")
+                ACTIONS["shoot"] = InputManager.getPressed(event, "shoot")
+                ACTIONS["element"] = InputManager.getPressed(event, "element")
+                ACTIONS["pause"] = InputManager.getPressed(event, "pause")
+                ACTIONS["motion"] = InputManager.getPressed(event, "motion")
+
                 # only do something if the event is of type QUIT
                 if event.type == pygame.QUIT:
                     # change the value to False, to exit the main loop

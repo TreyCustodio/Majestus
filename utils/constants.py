@@ -91,7 +91,7 @@ EQUIPPED = {
     "area":0,
 }
 
-bombos = 10
+bombos = 20
 """
 The Player's inventory
 """
@@ -100,7 +100,7 @@ INV = {
     ##Health, elements, arrows, currency
     "max_hp": 3,
     "shoot": True,
-    "hasBombo": False,
+    "hasBombo": True,
     "fire": True,
     "clap": True,
     "slash": True,
@@ -130,7 +130,7 @@ INV = {
     "speed":0,
     "wallet": 99,
     "money": 0,
-    "keys": 0,
+    "keys": 1,
 
     ##Upgrades
     "flameCost": 20,

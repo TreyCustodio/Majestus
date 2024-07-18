@@ -50,6 +50,7 @@ class SpriteManager(object):
                        "numbers.png":(16,16), "cursor.png":(16,16),
                        "mapRooms.png":(8,8), "light.png":(64,64),
                        "knight.png":(32,32), "bullshot.png":(32,32),
+                       "shiver.png":(20,26),
                        "boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32)
          
       }
@@ -58,7 +59,7 @@ class SpriteManager(object):
       _DEFAULT_SPRITE = (18,26)
       
       # A list of images that require to be loaded with transparency
-      _TRANSPARENCY = ["npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "Pause.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
+      _TRANSPARENCY = ["light_2.png","shadow_1.png","shadow_2.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "Pause.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
                        "icon.png", "TextBox.png", "TextBox2.png", "geemer.png", "item.png", "fire.png", "black.png", "blessing.png",
                        "thunder.png", "energy.png", "gale.png", "indicator.png",
                        "gremlin_blue.png", "mofos.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies
@@ -66,7 +67,7 @@ class SpriteManager(object):
                        "baller.png", "stunner.png", "mage.png", "barrier.png", "pixels.png",
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
-                       "bullshot.png", "light.png"
+                       "bullshot.png", "light.png", "shiver.png"
                        ]
       
       # A list of images that require to be loaded with a color key

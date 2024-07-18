@@ -1,5 +1,6 @@
 from FSMs import ScreenManagerFSM
 from gameObjects import PauseEngine, TextEngine, HudImageManager
+from UI import InputManager
 from rooms import *
 
 from utils import SoundManager
@@ -75,6 +76,7 @@ class ScreenManager(object):
             #image = Drawable(self.boxPos, "TextBox2.png", (0,7))
             #image.draw(drawSurf)
             #self.intro.background.draw(drawSurf)
+
             if self.intro.textInt == 3:
                 self.intro.light.draw(drawSurf)
                 self.intro.dark.draw(drawSurf)
@@ -312,15 +314,20 @@ class ScreenManager(object):
 
                 ##  Handle events once the healthbar is initialized   ##
                 if self.game.getHealthbarInitialized():
-                    if self.controller == "Controller (Xbox One For Windows)":
-                        if event.type == JOYBUTTONDOWN and event.button == 7:
+                    if self.controller != "key":
+                        if InputManager.getPressed(event, "pause"):
+                            self.pause()
+                        else:
+                            self.game.handleEvent_C(event)
+
+                        """ if event.type == JOYBUTTONDOWN and event.button == 7:
                             self.pause()
                         
                         elif event.type == JOYBUTTONDOWN and event.button == 6:
                             self.openMap()
                             
                         else:
-                            self.game.handleEvent_C(event)
+                            self.game.handleEvent_C(event) """
 
                     else:
                         if not self.game.fading:
@@ -341,13 +348,12 @@ class ScreenManager(object):
         elif self.state == "paused":
             if self.returningToMain:
                 return
-            if self.controller == "Controller (Xbox One For Windows)":
-                if event.type == JOYBUTTONDOWN and (event.button == 7):
-                    self.pauseEngine.paused = False
-                    SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
+            if self.controller != "key":
+                if InputManager.getPressed(event, "pause"):
                     self.pauseEngine.mapOpen = False
-                    self.state.pause()
-
+                    self.pauseEngine.paused = False
+                    self.pauseEngine.closing = True
+                    SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
                 else:
                     self.pauseEngine.handleEvent_C(event)
                     
@@ -373,9 +379,9 @@ class ScreenManager(object):
         elif self.state == "mainMenu":
             if self.mainMenu.readyToDisplay:
                 if not self.fadingIn and not self.continuingGame and not self.startingGame:
-                    if self.controller == "Controller (Xbox One For Windows)":
+                    if self.controller != "key":
                         self.mainMenu.handleEvent_C(event)
-                        if event.type == JOYBUTTONDOWN and (event.button == 0):
+                        if event.type == JOYBUTTONDOWN and (event.button == 2):
                             choice = self.mainMenu.getChoice()
                             self.handleChoice(choice)
                     else:
@@ -390,7 +396,7 @@ class ScreenManager(object):
 
 
         elif self.state == "textBox":
-            if self.controller == "Controller (Xbox One For Windows)":
+            if self.controller != "key":
                 if self.textEngine.ready_to_continue and event.type == JOYBUTTONDOWN and event.button == 2:
                     if self.pauseEngine.paused:
                         self.pauseEngine.textBox = False
@@ -443,7 +449,7 @@ class ScreenManager(object):
                     return
                     ##Close the textBox
 
-            if self.controller == "Controller (Xbox One For Windows)":
+            if self.controller != "key":
                 self.textEngine.handleEvent_C(event)
             else:
                 self.textEngine.handleEvent(event)
@@ -451,7 +457,7 @@ class ScreenManager(object):
             
 
         elif self.state == "intro":
-            if self.controller == "Controller (Xbox One For Windows)":
+            if self.controller != "key":
                 if event.type == JOYBUTTONDOWN and event.button == 7:
                     self.intro.fading = True
                     self.intro.textInt = 11
@@ -545,7 +551,7 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Alpha_Flapper.getInstance()
+                        self.game = Intro_2.getInstance()
                         self.game.lockHealth()
                         self.game.initializeRoom()
                         self.state.startGame()
@@ -592,6 +598,9 @@ class ScreenManager(object):
                 self.intro.light.image = SpriteManager.getInstance().getSprite("light.png", (self.intro.frame, 0))
             else:
                 self.intro.frameTimer += seconds """
+
+            if self.textEngine.voiceInt == -1:
+                self.textEngine.voiceInt = 0
 
             self.intro.update(seconds)
             if self.intro.introDone:

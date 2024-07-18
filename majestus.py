@@ -9,7 +9,7 @@ def main():
     pygame.font.init()
 
     ##Set the screen up
-    flags = pygame.SCALED | pygame.NOFRAME | pygame.FULLSCREEN
+    flags = pygame.SCALED #| pygame.NOFRAME | pygame.FULLSCREEN
     screen = pygame.display.set_mode(list(map(int, UPSCALED)), flags=flags)
     drawSurface = pygame.Surface(list(map(int, RESOLUTION)))
     transparentSurface = drawSurface.subsurface(drawSurface.get_rect())

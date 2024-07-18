@@ -369,7 +369,8 @@ class Intro_1(AbstractEngine):
             Display elements
             """
             #Background/room
-            self.background = Level("test.png")
+            self.background = Level("intro_1.png")
+            self.shadow = Shadow("shadow_1.png")
 
         def drawText(self, drawSurface):
             self.draw(drawSurface)
@@ -398,6 +399,8 @@ class Intro_1(AbstractEngine):
         """
         Draw
         """
+        def draw(self, drawSurface):
+            super().draw(drawSurface)
         
         
 
@@ -573,8 +576,7 @@ class Intro_2(AbstractEngine):
             """
             #Background/room
             self.background = Level("intro_2.png")
-
-            
+            self.shadow = Shadow("shadow_2.png")
             
             for i in range(2):
                 self.enemies.append(Mofos(direction = 1))
@@ -2746,6 +2748,89 @@ class Frost_1(AbstractEngine):
                     self.displayText("David has been slain!&&")
                 self.portal.update(seconds)
 
+
+class Frost_2(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._Frost_2()
+      
+        return cls._INSTANCE
+    
+    class _Frost_2(AE):
+        def __init__(self):
+            super().__init__()
+            self.bgm = "LA_color.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 0
+            self.enemyPlacement = 0
+            self.background = Level("frost_1.png")
+            self.doors = [0]
+            self.npcs = [
+                Shiver(position=vec(16*9, 16*5))
+            ]
+            self.toChapel = Trigger(door = 0)
+            #self.trigger1 = Trigger(door = 0)
+            self.torch1 = Torch((COORD[7][5]), lit = False)
+            self.torch2 = Torch((COORD[11][5]), lit = False)
+
+            self.chest = Chest(COORD[9][3], text = SPEECH["david"])
+            self.spawning.append(self.chest)
+            self.weightedSwitch = WeightedSwitch((16*9,16*8))
+            self.switches.append(self.weightedSwitch)
+            self.blockP = PushableBlock((16*6,16*8))
+            self.david = David(COORD[9][6], boss = True)
+            #self.david.hp = 1
+            self.portal = Portal(COORD[9][6], 1)
+            self.torches.append(self.torch1)
+            self.torches.append(self.torch2)
+
+        def initializeRoom(self, player=None, pos=None, keepBGM=False):
+            if FLAGS[5] == False:
+                self.displayText("      Abyss of the Frost", large = False)
+                FLAGS[5] = True
+            
+            super().initializeRoom(player, pos, keepBGM)
+        #override
+        def createBlocks(self):
+           self.blocks.append(self.toChapel)
+           
+           
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+               self.enemyCollision(b)
+               self.projectilesOnBlocks(b)
+               if self.player.doesCollide(b):
+                    if b == self.toChapel:
+                       self.transport(Grand_Chapel_L, 2)
+                    elif b == self.portal:
+                        self.transport(Grand_Chapel, 0)
+                    else:
+                       self.player.handleCollision(b)
+            for t in self.torches:
+                if self.player.doesCollide(t):
+                    self.player.handleCollision(t)
+                self.projectilesOnTorches(t)
+        
+        def handleCollision(self):
+            super().handleCollision()
+            if self.blockP not in self.pushableBlocks and (self.torch1.lit and self.torch2.lit):
+                self.playSound("menuclose.wav")
+                self.pushableBlocks.append(self.blockP)
+            if not self.david.dead:
+                if self.weightedSwitch.pressed:
+                    if self.david not in self.npcs:
+                        self.npcs.append(self.david)
+        
+        def update(self, seconds):
+            super().update(seconds)
+            if self.david.dead:
+                if self.portal not in self.blocks:
+                    self.blocks.append(self.portal)
+                    self.playSound("room_clear.mp3")
+                    self.displayText("David has been slain!&&")
+                self.portal.update(seconds)
 
 
 """

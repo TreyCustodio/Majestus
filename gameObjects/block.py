@@ -104,7 +104,6 @@ class Torch(Animated):
         else:
             super().__init__(position, "torch.png", (0,4))
             color = 4
-
         self.lit = lit
         self.nFrames = 4
         self.framesPerSecond = 8

@@ -55,6 +55,7 @@ class TextEngine(object):
             self.highlighted = 0 #0 -> No, #1 -> Yes
             self.choosing = False#The state of choosing yes or no
             self.promptResult = False
+            self.voiceInt = -1
 
         def setPromptHighlight(self, position):
             self.promptHighlight.position = vec(position[0]+64-6, position[1]+32-6)
@@ -99,6 +100,7 @@ class TextEngine(object):
             self.highlightTimer = 0
             self.highlighted = 0 #0 -> No, #1 -> Yes
             self.choosing = False#The state of choosing yes or no
+            self.voiceInt = -1
         
 
         def playSFX(self, name, checkBusy = False):
@@ -239,7 +241,7 @@ class TextEngine(object):
         Try if not mixer busy for slower text
         """
         def displayText(self, position, drawSurface, question = False): 
-                
+            print(self.voiceInt)
             if self.lineNum == 2:
                 Text(((position[0] + 10) + (8 * self.charIndex), position[1]+34), self.line[self.charIndex]).draw(drawSurface)
             elif "&&" in self.line:
@@ -260,6 +262,31 @@ class TextEngine(object):
 
                 elif "\n" in self.text:
                     if self.large and self.lineNum == 1 and (not "&&" in self.line):
+                        if self.voiceInt == 0:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Before.wav")
+                            self.voiceInt += 1
+                        elif self.voiceInt == 1:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Abyss.wav")
+                            self.voiceInt += 1
+                        elif self.voiceInt == 2:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Transformed.wav")
+                            self.voiceInt += 1
+                        elif self.voiceInt == 3:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Factions.wav")
+                            self.voiceInt += 1
+                        elif self.voiceInt == 4:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Foundation.wav")
+                            self.voiceInt += 1
+                        elif self.voiceInt == 5:
+                            SoundManager.getInstance().stopAllSFX()
+                            SoundManager.getInstance().playVoice("Infant.wav")
+                            self.voiceInt += 1
+
                         self.line = self.text[:self.text.index("\n")]
                         self.charIndex = 0
                         self.lineNum = 2

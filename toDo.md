@@ -7,6 +7,8 @@ Debug:
 - [ ] bombos
 - [ ] FLAGS
 - [ ] Alpha Flapper reset
+- [ ] Syringe putting hp at 0 when on 5 hp
+- [ ] Decrease keyCount in Flame_10
 
 
 Additions:

@@ -1,5 +1,6 @@
 from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block, HBlock, LockBlock
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec
+from UI import InputManager
 import pygame
 
 
@@ -11,7 +12,7 @@ class Player(Animated):
         self.hp = INV["max_hp"]
         #Frames, vel, speed, and row
         #Must reach this far to move player
-        self.analogTrack = 0.40
+        self.analogTrack = 0.20
         self.drunk = False#Buff to attack, nerf to speed
         self.drunkTimer = 0
         self.height = 26
@@ -346,7 +347,7 @@ class Player(Animated):
         Buttons up routine
         """
         if self.freezing:
-            if event.button == 3:
+            if InputManager.getUnpressed(event, "element"):
                 #print("C")
                 #self.frame = 4
                 self.freezing = False
@@ -354,14 +355,14 @@ class Player(Animated):
                 return
             
         elif self.running:
-            if event.button == 0:
+            if InputManager.getUnpressed(event, "interact"):
                 #Stop running
                 self.stop()
                 
 
         else:
             if self.charging:
-                if event.button == 3:
+                if InputManager.getUnpressed(event, "element"):
                     self.shootSlash()
     
     def shootArrow(self):
@@ -381,19 +382,20 @@ class Player(Animated):
                 INV["bombo"] -= 1
 
     def buttonsDown(self, event):
-        if event.button == 2 and INV["shoot"] and self.arrowCount > 0 and self.arrowReady and not self.invincible: #and self.ammo > 0:
+        if InputManager.getPressed(event, "shoot") and INV["shoot"] and self.arrowCount > 0 and self.arrowReady and not self.invincible: #and self.ammo > 0:
             #Fire bullet
             self.shootArrow()
         
-        if event.button == 1:
+        """ if event.button == 1:
             #Hook
             #SoundManager.getInstance().playSFX("OOT_DekuSeed_Shoot.wav")
             self.hook = Hook(self.position, self.getDirection(self.row))
-            self.keyLock()
+            self.keyLock() """
             
         if not self.running:
             if not self.charging:
-                if event.button == 3 and not self.invincible:
+                ##Elements
+                if InputManager.getPressed(event, "element") and not self.invincible:
                     equippedC = EQUIPPED["C"]
                     if equippedC != None:
                         if equippedC == 0 and self.swordReady:
@@ -425,7 +427,7 @@ class Player(Animated):
                             self.charge()
 
 
-                elif event.button == 0 and INV["cleats"] and not self.invincible  and ( self.walking and (not self.movingDiagonal()) ):
+                elif InputManager.getPressed(event, "interact") and INV["cleats"] and not self.invincible  and ( self.walking and (not self.movingDiagonal()) ):
                     #Tackle
                     self.runningDirection = self.row
                     self.run()
@@ -458,7 +460,7 @@ class Player(Animated):
                 if not self.pushing:
                     #print(3)
                     if interactableObject != None:
-                        if event.type == pygame.JOYBUTTONDOWN and event.button == 0:
+                        if InputManager.getPressed(event, "interact"):
                             interactableObject.interact(engine)
                             self.stop()
                             return
@@ -476,7 +478,6 @@ class Player(Animated):
                         return
                     
                 elif event.type == pygame.JOYAXISMOTION:
-                    #print(4)
                     self.stopPushing(event)
                     return
                 
@@ -669,7 +670,10 @@ class Player(Animated):
     def interactable(self, object):
         if object.id == "greenHeart" or not object.drop:
             return self.getCollisionRect().colliderect(object.getInteractionRect())
-        
+    
+    def interactableObjects(self, object):
+        return self.getCollisionRect().colliderect(object.getInteractionRect())
+    
     def handleCollision(self, object):
         if self.dying:
             return
