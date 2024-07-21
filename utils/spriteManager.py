@@ -36,8 +36,11 @@ class SpriteManager(object):
       _ENEMY_FOLDER = "images\\enemies"
 
       _ROOM_FOLDER = "images\\levels"
+
+      
+
       # Static information about the sprite sizes of particular image sheets.
-      _SPRITE_SIZES = {"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
+      _SPRITE_SIZES = {"heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
                        "TextBox2.png": (244,64), "indicator.png":(58,32),
                        "icon.png": (32,32), "blockP.png":(16,16), "fire.png":(18,18), "black.png": (304, 208), 
                        "bar.png":(16,16), "ammo.png": (16,16), "torch.png": (16,16), 
@@ -59,7 +62,7 @@ class SpriteManager(object):
       _DEFAULT_SPRITE = (18,26)
       
       # A list of images that require to be loaded with transparency
-      _TRANSPARENCY = ["light_2.png","shadow_1.png","shadow_2.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "Pause.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
+      _TRANSPARENCY = ["stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "Pause.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
                        "icon.png", "TextBox.png", "TextBox2.png", "geemer.png", "item.png", "fire.png", "black.png", "blessing.png",
                        "thunder.png", "energy.png", "gale.png", "indicator.png",
                        "gremlin_blue.png", "mofos.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies
@@ -108,12 +111,19 @@ class SpriteManager(object):
             self._loadImage(fileName, level = True)
          return self[fileName]
       
+      def getFx(self, room_dir, fileName, offset = None):
+         if fileName not in self._surfaces.keys():
+            self._loadFx(room_dir, fileName, offset != None)
+         else:
+            delattr
+            self._loadFx(room_dir, fileName, offset != None)
+         return self[fileName]
+      
       def getEnemy(self, fileName, direction):
          if fileName not in self._surfaces.keys():
             self._loadImage(fileName, sheet = True, enemy = True)
          return self[fileName][direction][0]
       
-   
       def _loadImage(self, fileName, sheet=False, level = False, enemy = False):
          # Load the full image
          if level:
@@ -123,6 +133,14 @@ class SpriteManager(object):
          else:
             fullImage = image.load(join(SpriteManager._SM._IMAGE_FOLDER, fileName))
          
+         self._loadRoutine(fullImage, fileName, sheet)
+         
+      def _loadFx(self, room_dir, fileName, sheet = False):
+          effects_folder = SpriteManager._SM._ROOM_FOLDER + "\\"+room_dir
+          fullImage = image.load(join(effects_folder, fileName))
+          self._loadRoutine(fullImage, fileName, sheet)
+
+      def _loadRoutine(self, fullImage, fileName, sheet = False):
          # Look up some information about the image to be loaded
          transparent = fileName in SpriteManager._SM._TRANSPARENCY
          colorKey = fileName in SpriteManager._SM._COLOR_KEY
@@ -170,6 +188,5 @@ class SpriteManager(object):
             # If we need to set the color key
             if colorKey:
                self[fileName].set_colorkey(self[fileName].get_at((0,0)))
-               
             
          

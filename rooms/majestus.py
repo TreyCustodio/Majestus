@@ -325,7 +325,7 @@ class Intro_1(AbstractEngine):
             #add self.yblock1-3 back
             self.blocks = [self.trigger1,  self.trigger2, 
                            self.block, self.block1, self.block2, self.block3,
-                            self.yblock1, self.yblock2, self.yblock3,
+                            #self.yblock1, self.yblock2, self.yblock3,
                            self.rblock1, self.rblock2, self.rblock3]
 
             #Switches
@@ -369,8 +369,15 @@ class Intro_1(AbstractEngine):
             Display elements
             """
             #Background/room
-            self.background = Level("intro_1.png")
-            self.shadow = Shadow("shadow_1.png")
+            self.walls = Walls("intro_1")
+            self.floor = Floor("intro_1")
+            self.effects = [
+                Shadow("intro_1", alpha=20)
+            ]
+            self.effects_behind_walls = [
+                #Shadow("intro_1", alpha=20)
+            ]
+
 
         def drawText(self, drawSurface):
             self.draw(drawSurface)
@@ -505,6 +512,7 @@ class Intro_1(AbstractEngine):
             Update the objects that need to be updated
             """
             super().update(seconds)
+            self.effects[0].position = vec(self.blockP.position[0]-(16*6), self.blockP.position[1]-(16*8))
             
                 
 
@@ -575,9 +583,16 @@ class Intro_2(AbstractEngine):
             Display elements
             """
             #Background/room
-            self.background = Level("intro_2.png")
-            self.shadow = Shadow("shadow_2.png")
+            self.floor = Floor("intro_2")
+            self.walls = Walls("intro_2")
+            self.effects = [
+                Shadow(room_dir="intro_2", animate=False),
+                
             
+            ]
+            self.effects_behind_walls =[
+                Shadow(room_dir="intro_2", animate=True)
+            ]
             for i in range(2):
                 self.enemies.append(Mofos(direction = 1))
             for i in range(2):
@@ -638,7 +653,7 @@ class Intro_2(AbstractEngine):
                         elif b == self.trigger2:
                             self.transport(Alpha_Flapper, 0)
                         elif b == self.trigger3:
-                            self.transport(Geemer_1, 1)
+                            self.transport(Stardust_1, 1, fade_white=True)
                     else:
                         self.player.handleCollision(b)
 
@@ -648,7 +663,7 @@ class Intro_2(AbstractEngine):
             pass
 
 
-class Geemer_1(AbstractEngine):
+class Stardust_1(AbstractEngine):
     @classmethod
     def getInstance(cls):
         if cls._INSTANCE == None:
@@ -665,7 +680,6 @@ class Geemer_1(AbstractEngine):
             self.resetting = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("geemer_1.png")
             self.doors = [1,2]
             self.trigger1 = Trigger(door = 1)
             self.trigger2 = Trigger(door = 2)
@@ -677,7 +691,11 @@ class Geemer_1(AbstractEngine):
             ]
             self.max_enemies = 1
             self.enemyPlacement = 0
-
+            self.area_fading = True
+            
+            self.areaIntro = AreaIntro("stardust_1","stardust.png")
+            self.walls = Walls("stardust_1")
+            self.floor = Floor("stardust_1")
         #override
         def createBlocks(self):
             self.blocks.append(self.trigger1)
@@ -714,8 +732,22 @@ class Geemer_1(AbstractEngine):
                         self.transport(Shop, 0, keepBGM=True)
                     else:
                         self.player.handleCollision(b)
+        
+        def draw(self, drawSurface):
+            
+            super().draw(drawSurface)
+            if self.areaIntro.fading:
+                if self.areaIntro.fading_in:
+                    Drawable(fileName="white.png").draw(drawSurface)
+                self.areaIntro.draw(drawSurface)
 
-
+        def update(self, seconds):
+            if self.areaIntro.fading:
+                self.areaIntro.update(seconds)
+                if not self.areaIntro.fading:
+                    self.player.keyUnlock()
+            else:
+                super().update(seconds)
 class Shop(AbstractEngine):
     @classmethod
     def getInstance(cls):
@@ -787,7 +819,11 @@ class Alpha_Flapper(AbstractEngine):
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("alpha_flapper.png")
+            self.floor = Floor("alpha_flapper")
+            self.walls = Walls("alpha_flapper")
+            self.effects = [
+                Shadow("alpha_flapper")
+            ]
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 2)
             self.doors = [0,2]
@@ -836,6 +872,7 @@ class Alpha_Flapper(AbstractEngine):
                         self.player.handleCollision(b)
 
         def update(self, seconds):
+            print(self.effects)
             if FLAGS[110]:
                 super().update(seconds)
                 return

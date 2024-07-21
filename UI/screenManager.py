@@ -34,6 +34,7 @@ class ScreenManager(object):
 
         ##  Fade control
         self.fade = Fade.getInstance()
+        self.white = WhiteOut()
         self.fade.setRow(1)
         self.fade.setFrame(8)
         self.fading = False
@@ -210,6 +211,7 @@ class ScreenManager(object):
         Drawing the game based on the state
         """
         if self.state == "game":
+            
             self.game.draw(drawSurf)
             if self.game.textBox:
                 self.state.speak()
@@ -217,7 +219,8 @@ class ScreenManager(object):
                     self.textEngine.setText(self.game.text, self.game.icon, prompt = True)
                 else:
                     self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText)
-
+            if self.game.whiting:
+                self.white.draw(drawSurf)
 
 
         elif self.state == "paused":
@@ -492,18 +495,26 @@ class ScreenManager(object):
                 self.returningToMain = True
             
             ##Room transition
-            elif self.game.readyToTransition:
+            if self.game.readyToTransition:
                 #print("transition")
                 pos = self.game.tra_pos
                 player = self.game.player
                 newGame = self.game.tra_room.getInstance()
                 keepBGM = self.game.tra_keepBGM
+
                 self.game.reset()
                 self.game = newGame
                 self.game.initializeRoom(player, pos, keepBGM)
                 self.fade.frame = 9
                 self.fading = False
                 self.fadingIn = True
+            elif self.game.whiting:
+                
+                if self.white.alpha == 255:
+                    self.game.readyToTransition = True
+                else:
+                    self.white.update(seconds)
+            
 
         elif self.state == "textBox":
             #self.updateLight(seconds)
@@ -546,7 +557,7 @@ class ScreenManager(object):
                         
                 else:
                     self.fade.update(seconds)
-            
+                    
             ##Continue
             elif self.continuingGame:
                 if self.fade.frame == 8:

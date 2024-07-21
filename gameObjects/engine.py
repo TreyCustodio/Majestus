@@ -118,8 +118,9 @@ class AE(object):
 
         #Size of the room
         self.size = vec(*RESOLUTION)
-        self.shadow = None
-        self.light = None
+        self.effects = []
+        self.effects_behind_walls = []
+        self.whiting = False
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -475,9 +476,12 @@ class AE(object):
         self.player.keyLock()
         self.fading = True
 
+    def whiteOut(self):
+        self.player.keyLock()
+        self.whiting = True
 
 
-    def transport(self, room=None, position=None, keepBGM = False, intro = False):
+    def transport(self, room=None, position=None, keepBGM = False, intro = False, fade_white = False):
         """
         Transport the player to a different room.
         room -> room (class) name in majestus.py
@@ -493,7 +497,10 @@ class AE(object):
                 return
             
             #self.player.keyDownLock()
-            self.fade()
+            if fade_white:
+                self.whiteOut()
+            else:
+                self.fade()
             self.transporting = True
             self.tra_room = room
             
@@ -1124,6 +1131,13 @@ class AE(object):
                 self.mapCondition = True
                 Map.getInstance().rooms[self.area][self.roomId].clearRoom()
         
+        ##Visual effects
+        if self.effects:
+            for e in self.effects:
+                e.update(seconds)
+        if self.effects_behind_walls:
+            for e in self.effects_behind_walls:
+                e.update(seconds)
         ##Pop-up messages
         if not FLAGS[17] and INV["flameShard"] > 0:
             FLAGS[17] = True
@@ -1294,7 +1308,8 @@ class AE(object):
         """
         ##  Heart Image to the left and HP count
         self.healthBar.drawHeart(drawSurface, self.player)
-        self.drawNumber(vec(8,0), self.player.hp, drawSurface)
+
+        
         ##  Rest of the bar
         if not self.healthBarLock:
             if self.healthBar.drawn:
@@ -1367,35 +1382,47 @@ class AE(object):
             return
         
         #Background/Tiles
+        self.floor.draw(drawSurface)
         
-        self.background.draw(drawSurface)
         
         self.drawTiles(drawSurface)
         
-        #Blocks
-        self.drawBlocks(drawSurface)
-
         #Switches
         self.drawSwitches(drawSurface)
 
         #Projectiles
         
+        
+
+       
+        
+        
+
+        if self.effects_behind_walls:
+            for e in self.effects_behind_walls:
+                e.draw(drawSurface)
+        self.walls.draw(drawSurface)
+
+        #Blocks
+        self.drawBlocks(drawSurface)
+        #Pushable blocks
+        self.drawPushable(drawSurface)
         #Npcs
         self.drawNpcs(drawSurface)
 
-        #Pushable blocks
-        self.drawPushable(drawSurface)
-        
         self.drawProjectiles(drawSurface)
-
+        
         #Player
         self.player.draw(drawSurface)
+
+        
 
         #Objects above player
         self.drawTopLayer(drawSurface)
 
-        if self.shadow:
-            self.shadow.draw(drawSurface)
+        if self.effects:
+            for e in self.effects:
+                e.draw(drawSurface)
         
         
 

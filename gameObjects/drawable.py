@@ -535,6 +535,9 @@ class HealthBar(object):
             self.subtractingPixels = False
             self.drawingHeal = False
             self.healthPixels = 0
+            self.heartFrame = 0
+            self.heartFps = 4
+            self.heartTimer = 0.0
 
         
         def getLength(self):
@@ -545,16 +548,30 @@ class HealthBar(object):
         
         def getHeartImage(self, player):
             if player.hp == INV["max_hp"]:
-                return SpriteManager.getInstance().getSprite(self.fileName, (0,1))
+                return SpriteManager.getInstance().getSprite("heart.png", (self.heartFrame,1))
             elif player.hp <= INV["max_hp"] // 3:
-                return SpriteManager.getInstance().getSprite(self.fileName, (0,3))
+                return SpriteManager.getInstance().getSprite("heart.png", (self.heartFrame, 0))
             else:
-                return SpriteManager.getInstance().getSprite(self.fileName, (0,2))
+                return SpriteManager.getInstance().getSprite("heart.png", (self.heartFrame, 0))
         
         def blit(self, drawSurface, color):
             drawSurface.blit(color, self.drawPos)
             self.drawPos[0] += 1
 
+
+        def drawNumber(self, position, number, drawSurface, row = 0):
+            if number >= 10:
+                currentPos = vec(position[0]-3, position[1])
+                number = str(number)
+                for char in number:
+                    num = Number(currentPos, int(char), row)
+                    num.position[0] -= num.getSize()[0] // 2
+                    num.draw(drawSurface)
+                    currentPos[0] += 6
+            else:
+                num = Number(position, number, row)
+                num.position[0] -= num.getSize()[0] // 2
+                num.draw(drawSurface)
 
         def drawFull(self, drawSurface, player):
             ##Green##
@@ -722,6 +739,7 @@ class HealthBar(object):
 
         def drawHeart(self, drawSurface, player):
             drawSurface.blit(self.getHeartImage(player), self.position)
+            self.drawNumber(vec(8,0), player.hp, drawSurface)
 
         def drawFirst(self, drawSurface, player):
             """
@@ -808,6 +826,12 @@ class HealthBar(object):
             Draws 1 pixel of the healthbar
             each frame on initialization.
             """
+            if self.heartTimer > 1/self.heartFps:
+                self.heartTimer -= 1/ self.heartFps
+                self.heartFrame += 1
+                self.heartFrame %= 4
+            else:
+                self.heartTimer += seconds
             if self.drawingHurt:
                 if self.subtractingPixels:
                     self.damageToDraw -= 1
