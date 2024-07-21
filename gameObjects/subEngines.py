@@ -241,7 +241,7 @@ class TextEngine(object):
         Try if not mixer busy for slower text
         """
         def displayText(self, position, drawSurface, question = False): 
-            print(self.voiceInt)
+            #print(self.voiceInt)
             if self.lineNum == 2:
                 Text(((position[0] + 10) + (8 * self.charIndex), position[1]+34), self.line[self.charIndex]).draw(drawSurface)
             elif "&&" in self.line:

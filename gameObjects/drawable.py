@@ -29,8 +29,7 @@ class Drawable(object):
                                     worldSize[i] - RESOLUTION[i])))
         
         cls.CAMERA_OFFSET = offset
-        
-        
+
 
     @classmethod    
     def translateMousePosition(cls, mousePos):

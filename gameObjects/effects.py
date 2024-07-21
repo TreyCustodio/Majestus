@@ -7,9 +7,17 @@ from utils import SpriteManager, vec
 This file contains several objects that add special effects
 to room images. Additionally, I've decided to include
 all the building blocks that compose a room's layers, such as
-tiles, walls, etc. for more precice effects.
+tiles, walls, etc. for more precice effects, as well as
+the Camera.
 """
 
+class Camera(object):
+    def __init__(self, position = vec(0,0)):
+        self.position = position
+    
+    def getSize(self):
+        return vec(304,208)
+        
 class Floor(Drawable):
     """
     The bottom layer of a room that may be animated
@@ -92,7 +100,13 @@ class WhiteOut(Drawable):
         self.image = SpriteManager.getInstance().getSprite("white.png")
         self.image.set_alpha(0)
         self.alpha = 0
-        
+    
+    def reset(self):
+        self.image.set_alpha(0)
+        self.alpha = 0
+
+    def setAlpha(self):
+        self.image.set_alpha(self.alpha)
 
     def update(self, seconds):
         if self.alpha <= 255:
@@ -106,12 +120,15 @@ class AreaIntro(Drawable):
         self.position = position
         self.image = SpriteManager.getInstance().getFx(room_dir, fileName)
         self.image.set_alpha(0)
-        self.fading = True
-        self.fading_in = True
+        self.fading = False
+        self.fading_in = False
         self.fading_out = False
         self.alpha = 0
         self.timer = 0.0
         
+    def fadeIn(self):
+        self.fading = True
+        self.fading_in = True
 
     def update(self, seconds):
         if self.fading:

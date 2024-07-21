@@ -147,50 +147,7 @@ Text for the intro cutscene
 && -> clear textbox before printing another line
 """
 INTRO = {
-    -1:"          Majestus.&&\n\
-The ruins of an ancient\n\
-tribe of religious mages:\n\
-      The Naturalites.&&\n\
-In paradise, the Naturalites\n\
-prayed to their Gods,\n\
-the four elemental deities:&&\n\
-Firion, of the Flame,&&\n\
-Estelle, of the Frost,&&\n\
-Kuwabara, of the Bolt,&&\n\
-Gladius, of the Gale.&&\n\
-The deities granted their\n\
-worshippers with power,\n\
-and the Naturalites lived\n\
-prosperous lives for eons.\n\
-Until one day...&&\n\
-Vash, the Naturalite King,\n\
-waged war on the world.\n\
-Using their Gods' blessings\n\
-for selfish conquest,\n\
-the undefeatable mages\n\
-tore apart the outside world,\n\
-scorching fields,\n\
-freezing oceans,\n\
-shocking hearts,\n\
-slicing heads.\n\
-At the war's climax, the\n\
-King, with great audacity,\n\
-asked his Gods to grant\n\
-him more of their power.\n\
-So, the Gods punished his\n\
-unquenchable thirst.\n\
-They sealed the King and\n\
-his people within Majestus,\n\
-never to be seen again.&&\n\
-As for the Gods...&&\n\
-They forsook their role\n\
-in the mortal realm,\n\
-leaving behind fragments\n\
-of their power in Majestus.\n\
-Today, some search for\n\
-these fragments.\n\
-But none who make the\n\
-venture have returned...\n",
+
 
 0:"Before everything began,\n\
 there was nothing.\n\

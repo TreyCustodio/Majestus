@@ -116,6 +116,7 @@ class ScreenManager(object):
                         elif self.pauseEngine.promptFlag == "quit":
                             SoundManager.getInstance().fadeoutBGM()
                             self.returningToMain = True
+                            self.fading = True
                             self.fade.setRow(1)             
                             
                     
@@ -221,6 +222,8 @@ class ScreenManager(object):
                     self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText)
             if self.game.whiting:
                 self.white.draw(drawSurf)
+            if self.game.area_fading:
+                self.game.drawArea(drawSurf)
 
 
         elif self.state == "paused":
@@ -242,23 +245,14 @@ class ScreenManager(object):
             self.pauseEngine.draw(drawSurf)
 
         elif self.state == "intro":
-            
-                
             if not self.intro.playingBgm:
                 self.intro.playBgm()
             self.intro.draw(drawSurf)
             if self.intro.textBox:
                 self.state.speakI()
                 self.textEngine.setText(self.intro.text, self.intro.icon, self.intro.largeText)
-        
-        if (not (self.fading or self.fadingIn)) and self.game and self.game.fading:
-            self.fading = True
 
         if self.fading or self.returningToMain:
-            self.fade.draw(drawSurf)
-            return
-        
-        elif self.fadingIn:
             self.fade.draw(drawSurf)
             return
         
@@ -285,6 +279,7 @@ class ScreenManager(object):
             SoundManager.getInstance().fadeoutBGM()
             #SoundManager.getInstance().playSFX("WW_PressStart.wav")
             self.startingGame = True
+            self.fading =  True
             self.fade.setRow(1)
 
 
@@ -292,6 +287,7 @@ class ScreenManager(object):
             SoundManager.getInstance().fadeoutBGM()
             #SoundManager.getInstance().playSFX("WW_PressStart.wav")
             self.continuingGame = True
+            self.fading =  True
             self.fade.setRow(1)
             
         elif choice == 2:
@@ -478,7 +474,6 @@ class ScreenManager(object):
     def update(self, seconds): 
         if self.state == "game":
             if self.returningToMain:
-                self.fade.update(seconds)
                 if self.fade.frame == 8:
                     self.state.toMain()
                     self.fadingIn = True
@@ -486,32 +481,43 @@ class ScreenManager(object):
             
             if self.fadingIn:
                 self.game.updatingPlayer = False
-                self.game.update(seconds)
             else:
                 if not self.game.updatingPlayer:
                     self.game.updatingPlayer = True
                 self.game.update(seconds)
+
             if self.game.dead:
                 self.returningToMain = True
-            
+
+            if not self.fading and self.game.fading:
+                self.fading = True
             ##Room transition
             if self.game.readyToTransition:
-                #print("transition")
+                ##Runs twice
                 pos = self.game.tra_pos
                 player = self.game.player
                 newGame = self.game.tra_room.getInstance()
                 keepBGM = self.game.tra_keepBGM
+                if not self.game.transporting_area:
+                    self.fadingIn = True
+                    self.game.reset()
+                    self.game = newGame
+                    self.game.initializeRoom(player, pos, keepBGM)
+                    self.fade.frame = 9
+                else:
+                    self.game.reset()
+                    self.game = newGame
+                    self.game.initializeArea(player, pos, keepBGM)
 
-                self.game.reset()
-                self.game = newGame
-                self.game.initializeRoom(player, pos, keepBGM)
-                self.fade.frame = 9
-                self.fading = False
-                self.fadingIn = True
-            elif self.game.whiting:
                 
+            elif self.game.whiting:
                 if self.white.alpha == 255:
-                    self.game.readyToTransition = True
+                    if self.game.transporting_area:
+                        self.game.readyToTransition = True
+                    elif self.game.areaIntro.fading_out:
+                        self.white.alpha = 0
+                        self.white.setAlpha()
+                        self.game.whiting = False
                 else:
                     self.white.update(seconds)
             
@@ -526,7 +532,6 @@ class ScreenManager(object):
                 self.game.updateHealthBar(seconds)
             
             if self.returningToMain:
-                self.fade.update(seconds)
                 if self.fade.frame == 8:
                     self.state.toMain()
                     self.fadingIn = True
@@ -554,15 +559,13 @@ class ScreenManager(object):
                             self.state.startGame()
                             
                         else: """
-                        
-                else:
-                    self.fade.update(seconds)
+            
                     
             ##Continue
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Intro_2.getInstance()
+                        self.game = Intro_3.getInstance()
                         self.game.lockHealth()
                         self.game.initializeRoom()
                         self.state.startGame()
@@ -598,23 +601,14 @@ class ScreenManager(object):
                             self.state.toIntro()
                             self.fadingIn = True
                         
-                else:
-                    self.fade.update(seconds)
-
         elif self.state == "intro":
-            #self.updateLight(seconds)
-            """ if self.intro.frameTimer >= 0.8:
-                self.intro.frame += 1
-                self.intro.frame %= 9
-                self.intro.light.image = SpriteManager.getInstance().getSprite("light.png", (self.intro.frame, 0))
-            else:
-                self.intro.frameTimer += seconds """
 
             if self.textEngine.voiceInt == -1:
                 self.textEngine.voiceInt = 0
 
             self.intro.update(seconds)
             if self.intro.introDone:
+                self.fading = True
                 self.fadingIn = True
                 ##Transition to Entrance##
                 self.inIntro = False
@@ -624,33 +618,34 @@ class ScreenManager(object):
                 self.state.toGame()
 
         if self.fading:
-            self.fade.update(seconds)
-            if self.fade.frame == 8:
-                self.game.finishFade()
-                self.fading = False
-
-        elif self.fadingIn:
-            self.fade.updateIn(seconds)
-            if self.fade.frame == 0:
-                self.fadingIn = False
-                if self.state == "game":
-                    if self.continuingGame:
+            if self.fadingIn:
+                self.fade.updateIn(seconds)
+                if self.fade.frame == 0:
+                    self.fading = False
+                    self.fadingIn = False
+                    if self.state == "game":
+                        if self.continuingGame:
+                            self.fade.setRow()
+                            self.continuingGame = False
+                            self.game.unlockHealth()
+                        self.game.stopFadeIn()
+                    elif self.state == "intro":
                         self.fade.setRow()
-                        self.continuingGame = False
-                        self.game.unlockHealth()
-                    self.game.stopFadeIn()
-                elif self.state == "intro":
-                    self.fade.setRow()
-                    self.startingGame = False
-                elif self.state == "mainMenu":
-                    if self.returningToMain:
-                        self.game.deathReset()
-                        self.pauseEngine.resetMenu()
-                        self.playTheme()
-                        self.fade.setRow()
-                        self.returningToMain = False   
-
+                        self.startingGame = False
+                    elif self.state == "mainMenu":
+                        if self.returningToMain:
+                            self.game.deathReset()
+                            self.pauseEngine.resetMenu()
+                            self.playTheme()
+                            self.fade.setRow()
+                            self.returningToMain = False 
+            else:
+                self.fade.update(seconds)
+                if self.game and self.game.transporting and self.fade.frame == 8:
+                    self.game.finishFade()
+                
         self.updateLight(seconds)
+
     def updateLight(self, seconds):
         if self.inIntro:
             if self.intro.textInt == 3:

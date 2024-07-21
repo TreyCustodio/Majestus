@@ -5,7 +5,8 @@ from utils import SpriteManager
 from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Text, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger, HBlock,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
-               Tile, Portal, Buck, Boulder, Map, BossHealth)
+               Tile, Portal, Buck, Boulder, Map, BossHealth,
+               Shadow, Walls, Floor, Camera)
 
 
 
@@ -37,10 +38,19 @@ class DamageNumber(object):
 
 
 class AE(object):
-    def __init__(self):
+    def __init__(self, room_dir = "", camera = False, size = vec(*RESOLUTION)):
         """
         __init__ is only ever called once
         """
+        if room_dir != "":
+            self.room_dir = room_dir
+            self.walls = Walls(room_dir)
+            self.floor = Floor(room_dir)
+        
+        if camera:
+            self.camera = Camera()
+        else:
+            self.camera = None
         self.updatingPlayer = True
         self.textInt = 0
         self.timer = 0.0 #A universal timer; can be used for anything
@@ -68,6 +78,7 @@ class AE(object):
 
         self.readyToTransition = False
         self.transporting = False
+        self.transporting_area = False
         self.tra_room = None
         self.tra_pos = None
         self.tra_keepBGM = False
@@ -76,6 +87,7 @@ class AE(object):
         #Flash
         self.flashes = 0
         self.fading = False
+        self.area_fading = False
 
         #Speaking
         self.textBox = False
@@ -117,7 +129,8 @@ class AE(object):
         
 
         #Size of the room
-        self.size = vec(*RESOLUTION)
+        self.size = size#vec(*RESOLUTION)
+
         self.effects = []
         self.effects_behind_walls = []
         self.whiting = False
@@ -174,8 +187,10 @@ class AE(object):
         self.fightingBoss = False
 
     def stopFadeIn(self):
+        self.whiting = False
         self.transLock = False
         self.fading = False
+        self.area_fading = False
         self.player.keyUnlock()
         self.player.keyDownUnlock()
 
@@ -197,12 +212,16 @@ class AE(object):
         self.indicator.setImage(0)
         self.readyToTransition = False
         self.transporting = False
+        self.transporting_area = False
+        self.whiting = False
         self.tra_room = None
         self.tra_pos = None
         self.tra_keepBGM = False
         if self.resetting:
             self.enemyCounter = 0
             self.room_clear = False
+        if self.camera:
+            self.camera.position = vec(0,0)
         
 
     def titleReset(self):
@@ -258,34 +277,6 @@ class AE(object):
         self.player.hurt(damage)
         self.healthBar.drawHurt(self.player.hp, damage)
 
-    def initializeRoom(self, player= None, pos = None, keepBGM = False):
-        """
-        Called every time you enter the room
-        1. create wall boundaries
-        2. adjust wall collision for doors in self.doors
-        3. call createBlocks
-        4. place the enemies in self.enemies
-        """
-        self.moneyImage = HudImageManager.getMoney()
-        self.keyImage = HudImageManager.getKeys()
-        self.bomboImage = HudImageManager.getBombos()
-        EventManager.getInstance().toggleFetching()
-        #SoundManager.getInstance().stopAllSFX()
-        EQUIPPED["room"] = self.roomId
-        if player != None:
-            self.player = player
-            self.player.position = pos 
-        else:
-            self.player = Player(vec(16*9, (16*11) - 8))
-
-        self.createBounds()
-        self.setDoors()
-        self.createBlocks()
-        self.placeEnemies(self.enemies)
-        if not keepBGM:
-            #SoundManager.getInstance().fadeoutBGM()
-            if self.bgm != None:
-                SoundManager.getInstance().playBGM(self.bgm)
 
     def initializeRoom(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
         """
@@ -316,6 +307,40 @@ class AE(object):
             #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
                 SoundManager.getInstance().playBGM(self.bgm)
+
+    def initializeArea(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
+        """
+        Called every time you enter the room
+        1. create wall boundaries
+        2. adjust wall collision for doors in self.doors
+        3. call createBlocks
+        4. place the enemies in self.enemies
+        """
+        self.moneyImage = HudImageManager.getMoney()
+        self.keyImage = HudImageManager.getKeys()
+        self.bomboImage = HudImageManager.getBombos()
+        EventManager.getInstance().toggleFetching()
+        #SoundManager.getInstance().stopAllSFX()
+        EQUIPPED["room"] = self.roomId
+        if player != None:
+            self.player = player
+            self.player.position = pos 
+        else:
+            self.player = Player(vec(16*9, (16*11) - 8))
+
+        self.createBounds()
+        self.setDoors()
+        self.createBlocks()
+        if placeEnemies:
+            self.placeEnemies(self.enemies)
+        if not keepBGM:
+            #SoundManager.getInstance().fadeoutBGM()
+            if self.bgm != None:
+                SoundManager.getInstance().playBGM(self.bgm)
+
+        self.area_fading = True
+        self.whiting = True
+        self.areaIntro.fadeIn()
 
     def createBounds(self):
         """
@@ -490,6 +515,7 @@ class AE(object):
         intro -> special properties for transport because no player yet
         """
         if not self.transporting and not self.transLock:
+            
             EventManager.getInstance().startTransition()
             if intro:
                 self.transporting = True
@@ -518,6 +544,30 @@ class AE(object):
             self.tra_keepBGM = keepBGM
             if not keepBGM:
                 SoundManager.getInstance().fadeoutBGM()
+            
+            pygame.event.clear()
+
+    def transportArea(self, room = None, position= None):
+        if not self.transporting and not self.transLock:
+            EventManager.getInstance().startTransition()
+            self.whiteOut()
+            self.transporting = True
+            self.transporting_area = True
+            self.tra_room = room
+            
+            if position == 0:
+                self.tra_pos = vec(16*9, 16*11)
+            elif position == 1:
+                self.tra_pos = vec(16*16, 16*6 - 8)
+            elif position == 2:
+                self.tra_pos = vec(16*9, 8)
+            elif position == 3:
+                self.tra_pos = vec(16*2, 16*6-8)
+            else:
+                self.tra_pos = position
+                
+            self.tra_keepBGM = False
+            SoundManager.getInstance().fadeoutBGM()
             
             pygame.event.clear()
 
@@ -1048,7 +1098,19 @@ class AE(object):
         if self.pushableBlocks:
             for block in self.pushableBlocks:
                 block.update(seconds, self.player, self.player.row)
-                
+
+    def updateCamera(self,seconds):
+        """ if self.camera.position[0] == 0:
+            return
+        elif self.camera.position[0] == 912:
+            return """
+
+        self.camera.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
+        
+        #self.camera.position += self.player.vel * seconds
+        Drawable.updateOffset(self.camera, self.size)
+        pass
+
     #abstract
     def handleClear(self):
         """
@@ -1112,20 +1174,30 @@ class AE(object):
             INV["syringe"] = True
             self.promptResult = False
             self.selectedItem = ""
+
     def finishFade(self):
         """
         Sets self.readyToTransition to True.
         This lets the ScreenManager know
         to switch game engines.
         """
+        self.fading = False
         self.readyToTransition = True
 
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
+        
         if self.transporting:
             return
         
+        if self.area_fading:
+            if self.areaIntro.fading:
+                self.areaIntro.update(seconds)
+                if not self.areaIntro.fading:
+                    self.stopFadeIn()
+            return
+                    
         if not self.mapCondition:
             if self.itemsToCollect == 0:
                 self.mapCondition = True
@@ -1192,7 +1264,10 @@ class AE(object):
                 self.clearFlag = 1
                 self.handleClear()
         
-        Drawable.updateOffset(self.player, self.size)
+        if self.camera:
+            self.updateCamera(seconds)
+        
+        
     
 
     """
@@ -1255,6 +1330,8 @@ class AE(object):
             for torch in self.torches:
                 torch.draw(drawSurface)
         
+    def drawArea(self, drawSurface):
+        self.areaIntro.draw(drawSurface)
 
     def drawPushable(self, drawSurface):
         if self.pushableBlocks:
@@ -1389,15 +1466,7 @@ class AE(object):
         
         #Switches
         self.drawSwitches(drawSurface)
-
-        #Projectiles
         
-        
-
-       
-        
-        
-
         if self.effects_behind_walls:
             for e in self.effects_behind_walls:
                 e.draw(drawSurface)

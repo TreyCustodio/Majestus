@@ -20,6 +20,9 @@ class Intro_Cut(AbstractEngine):
     
     class _Intro_Cut(AE):
         def __init__(self):
+            """
+            Does not call super().__init()
+            """
             FLAGS[50] = True
             self.fading = False
             self.player = None
@@ -585,6 +588,7 @@ class Intro_2(AbstractEngine):
             #Background/room
             self.floor = Floor("intro_2")
             self.walls = Walls("intro_2")
+            self.areaIntro = AreaIntro("intro_2", "area_intro.png")
             self.effects = [
                 Shadow(room_dir="intro_2", animate=False),
                 
@@ -653,7 +657,7 @@ class Intro_2(AbstractEngine):
                         elif b == self.trigger2:
                             self.transport(Alpha_Flapper, 0)
                         elif b == self.trigger3:
-                            self.transport(Stardust_1, 1, fade_white=True)
+                            self.transportArea(Stardust_1, 1)
                     else:
                         self.player.handleCollision(b)
 
@@ -673,9 +677,9 @@ class Stardust_1(AbstractEngine):
     
     class _Geemer_1(AE):
         def __init__(self):
-            super().__init__()
+            super().__init__("stardust_1")
             self.roomId = 9
-            self.bgm = "Nujabes_Decade.mp3"
+            self.bgm = "stardust.mp3"
             self.ignoreClear = True
             self.resetting = True
             self.max_enemies = 0
@@ -691,11 +695,8 @@ class Stardust_1(AbstractEngine):
             ]
             self.max_enemies = 1
             self.enemyPlacement = 0
-            self.area_fading = True
-            
             self.areaIntro = AreaIntro("stardust_1","stardust.png")
-            self.walls = Walls("stardust_1")
-            self.floor = Floor("stardust_1")
+  
         #override
         def createBlocks(self):
             self.blocks.append(self.trigger1)
@@ -727,27 +728,19 @@ class Stardust_1(AbstractEngine):
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
-                        self.transport(Intro_2, 3)
+                        self.transportArea(Intro_2, 3)
                     elif b == self.trigger2:
                         self.transport(Shop, 0, keepBGM=True)
                     else:
                         self.player.handleCollision(b)
         
         def draw(self, drawSurface):
-            
             super().draw(drawSurface)
-            if self.areaIntro.fading:
-                if self.areaIntro.fading_in:
-                    Drawable(fileName="white.png").draw(drawSurface)
-                self.areaIntro.draw(drawSurface)
+        
+        def update(self, seconds, updateEnemies=True, updatePlayer=True):
+            #print(self.readyToTransition)
+            return super().update(seconds, updateEnemies, updatePlayer)
 
-        def update(self, seconds):
-            if self.areaIntro.fading:
-                self.areaIntro.update(seconds)
-                if not self.areaIntro.fading:
-                    self.player.keyUnlock()
-            else:
-                super().update(seconds)
 class Shop(AbstractEngine):
     @classmethod
     def getInstance(cls):
@@ -814,13 +807,11 @@ class Alpha_Flapper(AbstractEngine):
     
     class _AF(AE):
         def __init__(self):
-            super().__init__()
+            super().__init__("alpha_flapper")
             self.bgm = "tension.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.floor = Floor("alpha_flapper")
-            self.walls = Walls("alpha_flapper")
             self.effects = [
                 Shadow("alpha_flapper")
             ]
@@ -872,7 +863,6 @@ class Alpha_Flapper(AbstractEngine):
                         self.player.handleCollision(b)
 
         def update(self, seconds):
-            print(self.effects)
             if FLAGS[110]:
                 super().update(seconds)
                 return
@@ -911,13 +901,12 @@ class Intro_3(AbstractEngine):
     class _Intro_3(AE):
 
         def __init__(self):
-            super().__init__()
+            super().__init__("intro_3")
             self.roomId = 3
             self.bgm = "fire.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("intro_3.png")
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 2)
             self.torches = []
@@ -967,7 +956,7 @@ class Intro_3(AbstractEngine):
                         if b == self.trigger1:
                             self.transport(Alpha_Flapper, 2)
                         elif b == self.trigger2:
-                            self.transport(Grand_Chapel, 0)
+                            self.transportPos(Grand_Chapel, vec(16*28,16*11))
                             
                     else:
                         self.player.handleCollision(b)
@@ -1081,13 +1070,12 @@ class Grand_Chapel(AbstractEngine):
     
     class _Intro_4(AE):
         def __init__(self):
-            super().__init__()
+            super().__init__("grand_chapel", True, vec(912,208))
             self.roomId = 4
             self.bgm = "hymn.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("grand_chapel.png")
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 3)
             self.trigger3 = Trigger(door = 2)
@@ -1096,16 +1084,14 @@ class Grand_Chapel(AbstractEngine):
             self.portal = Portal(COORD[14][3], 3)
 
 
-
-            self.fire = Blessing((COORD[3][4]), 0)
-            self.ice = Blessing((COORD[6][4]), 1)
-            self.thunder = Blessing((COORD[12][4]), 2)
-            self.wind = Blessing((COORD[15][4]), 3)
-
+            self.fire = Blessing(vec(16*3, 16*4 + 304), 0)
+            self.ice = Blessing(vec(16*6, 16*4 + 304), 1)
+            self.thunder = Blessing(vec(16*12 + 304, 16*4), 2)
+            self.wind = Blessing(vec(16*15 + 304, 16*4), 3)
 
 
-            self.geemer = Geemer((16*9 - 4, 16*6), text = SPEECH["chapel_geemer"], color = 1)
-            self.prompt = Geemer((16*11-4, 16*9), text = "Praise be to Majestus&&")
+            self.geemer = Geemer((16*9 - 4 + 304, 16*6), text = SPEECH["chapel_geemer"], color = 1)
+            self.prompt = Geemer((16*11-4 + 304, 16*9), text = "Praise be to Majestus&&")
             
 
             self.spawning = [self.ice,
@@ -1190,12 +1176,12 @@ class Grand_Chapel(AbstractEngine):
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
                         self.transport(Intro_3, 2)
-                    elif b == self.trigger2:
-                        self.transport(Grand_Chapel_L, 1, keepBGM=True)
-                    elif b == self.trigger4:
-                        self.transport(Grand_Chapel_R, 3, keepBGM=True)
-                    elif b == self.trigger3:
-                        self.transport(Chamber_Access, 0)
+                    #elif b == self.trigger2:
+                        #self.transport(Grand_Chapel_L, 1, keepBGM=True)
+                    #elif b == self.trigger4:
+                        #self.transport(Grand_Chapel_R, 3, keepBGM=True)
+                    #elif b == self.trigger3:
+                        #self.transport(Chamber_Access, 0)
                     elif b == self.portal:
                         #self.transport(Gale_1, (16*9, 16*9))
                         pass
@@ -1310,13 +1296,12 @@ class Entrance(AbstractEngine):
     
     class _EN(AE):
         def __init__(self):
-            super().__init__()
+            super().__init__("entrance")
             self.healthBarLock = True
             self.bgm = "droplets.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("entrance.png")
             self.door1 = Trigger(door = 2)
             self.trigger1 = Trigger(text = SPEECH["intro_entrance"], door = 0)
 
