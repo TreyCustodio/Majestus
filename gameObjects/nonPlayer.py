@@ -7,7 +7,7 @@ class NonPlayer(Animated):
     Non playable objects with an additional collision rect for interaction w/ player
     """
 
-    def __init__(self, position = vec(0,0), fileName="", offset=None):
+    def __init__(self, position = vec(0,0), fileName="", offset=None, mobster = False):
         super().__init__(position, fileName, offset)
         self.interacted = False
         self.animate = False
@@ -17,6 +17,8 @@ class NonPlayer(Animated):
         self.disappear = False
         self.id = ""
         self.ignoreCollision = False
+
+        self.mobster = mobster
 
     def updateIconPos(self):
         self.interactIcon.position = (self.position[0], self.position[1] - 16)
@@ -39,6 +41,10 @@ class NonPlayer(Animated):
 
     def interact(self, player):
         pass
+
+    def startMobster(self, engine):
+        engine.displayText("Y/NWant to battle?")
+        engine.selectedItem = "mobster"
 
     def vanish(self, lst):
         lst.pop(lst.index(self))
@@ -211,8 +217,8 @@ class Mage(NonPlayer):
         super().update(seconds)
 
 class Geemer(NonPlayer):
-    def __init__(self, position = vec(0,0), text = SPEECH["null"], variant = None, maxCount = 0, fps = 16, color = 0, hungry = False, feedText = ""):
-        super().__init__(position, "geemer.png", (0, color))
+    def __init__(self, position = vec(0,0), text = SPEECH["null"], variant = None, maxCount = 0, fps = 16, color = 0, hungry = False, feedText = "", mobster = False):
+        super().__init__(position, "geemer.png", (0, color), mobster=mobster)
         self.interactIcon.position = (self.position[0]+3, self.position[1]-16)
         self.vel = vec(0,0)
         self.position = position
@@ -317,7 +323,7 @@ class Geemer(NonPlayer):
 
         engine.displayText(self.text, self.icon)
        
-
+    
     def update(self, seconds):
         super().update(seconds)
         self.position += self.vel * seconds

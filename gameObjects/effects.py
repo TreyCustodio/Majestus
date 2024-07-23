@@ -43,20 +43,20 @@ class Shadow(Drawable):
     @param color -> rgb color value
     @param alpha -> alpha value
     """
-    def __init__(self, room_dir, fileName = "", alpha=48, animate = False, nFrames = 6, fps = 8):
+    def __init__(self, room_dir, fileName = "", alpha=48, minAlpha=100, animate = False, nFrames = 6, fps = 8, tick = 3):
         
         if animate:
             if fileName == "":
                 self.image = SpriteManager.getInstance().getFx(room_dir, "shadow_1.png")
             else:
                 self.image = SpriteManager.getInstance().getFx(room_dir, fileName)
-            self.animate = True
+            self.animate = nFrames > 1
             self.frameTimer = 0.0
             self.fps = fps
             self.frame = 0
             self.fading_in = True
             self.nFrames = nFrames
-
+            
         else:
             if fileName == "":
                 self.image = SpriteManager.getInstance().getFx(room_dir, "shadow.png")
@@ -68,8 +68,13 @@ class Shadow(Drawable):
         self.image.set_alpha(alpha)
         self.position = vec(0,0)
         self.alpha = alpha
-        
-        
+        self.maxAlpha = alpha
+        self.minAlpha = minAlpha
+        self.tick = tick
+
+    def setAlpha(self):
+        self.image.set_alpha(self.alpha)
+
     
     def update(self, seconds):
         if self.animate:
@@ -85,14 +90,16 @@ class Shadow(Drawable):
             
             ##Glow effect
             if self.fading_in:
-                self.alpha += 1
-                if self.alpha >= 75:
+                self.alpha += self.tick
+                if self.alpha >= self.maxAlpha:
+                    self.alpha = self.maxAlpha
                     self.fading_in = False
             else:
-                self.alpha -= 1
-                if self.alpha <= 50:
+                self.alpha -= self.tick 
+                if self.alpha <= self.minAlpha:
+                    self.alpha = self.minAlpha
                     self.fading_in = True
-            self.image.set_alpha(self.alpha)
+            self.setAlpha()
             
 class WhiteOut(Drawable):
     def __init__(self, position = vec(0,0)):

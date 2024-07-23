@@ -3,10 +3,15 @@ from UI import ScreenManager, Xbox, EventManager
 from utils import RESOLUTION, UPSCALED
 from random import randint
 
+
+
+
+
 def main():
     ##Initialize the module
     pygame.init()
     pygame.font.init()
+    pygame.joystick.init()
 
     ##Set the screen up
     flags = pygame.SCALED #| pygame.NOFRAME | pygame.FULLSCREEN
@@ -38,32 +43,20 @@ def main():
     
     gameEngine = ScreenManager()
     eventManager = EventManager.getInstance()
-
-    controller = Xbox()
-    def setJoystick():
-        ##Set up joystick
-        joysticks = pygame.joystick.get_count()
-        if joysticks == 0:
-            gameEngine.setController("key")
-            gameEngine.controllerSet = False
-
-        elif not gameEngine.controllerSet:
-            for i in range(pygame.joystick.get_count()):
-                controller.setValue(pygame.joystick.Joystick(i))
-                gameEngine.setController(controller.name)
-                gameEngine.controllerSet = True
-            
+    eventManager.setJoystick() #Check for any joysticks right before the game runs
+    
 
     RUNNING = True
     while RUNNING:
         
+        ##Draw
         pygame.transform.scale(drawSurface,
                                list(map(int, UPSCALED)),
                                screen)
         
         
         gameClock = pygame.time.Clock()
-        setJoystick()
+        
         
         if gameEngine.state == "textBox":
             
@@ -83,15 +76,18 @@ def main():
         else:
             pygame.display.flip()
             gameEngine.draw(drawSurface)
+        
 
+        ##Handle events
         eventManager.handleEvents(gameEngine)
-        gameEngine.moveMenuCursor()
-        gameEngine.handleCollision()
+
+        ##Update
         gameClock.tick(60)
-        seconds = gameClock.get_time() / 1000     
+        seconds = gameClock.get_time() / 1000
+        eventManager.updateBuffer(seconds)   
         gameEngine.update(seconds)
-        #gameEngine.updateLight(seconds)
-     
+    
+    #quit if not running
     pygame.quit()
 
 

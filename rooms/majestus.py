@@ -150,12 +150,61 @@ class Intro_Cut(AbstractEngine):
                 self.displayText(INTRO[self.textInt], large = True)
                 self.timer = 0
                 self.textInt += 1
-                
+
+
+
+class Test(AbstractEngine):
+
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._T()
+      
+        return cls._INSTANCE
+    
+    class _T(AE):
+        def __init__(self):
+            super().__init__("test")
+            self.bgm = "tension.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 0
+            self.enemyPlacement = 0
+            self.npcs = [
+  
+            ]
+            self.doors = [0]
+            self.trigger1 = Trigger(door = 0)
+            self.spawning = [ 
+                Geemer(vec(16*5, 16*9), mobster=True)#GreenHeart(vec(16*2, 16*10))
+                ]
+
+            self.obstacles = [
+            ]
+
+        def initializeRoom(self, player=None, pos=None, keepBGM=False, placeEnemies=True):
+            super().initializeRoom(player, pos, keepBGM, placeEnemies)
+           
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                for n in self.npcs:
+                    if n.doesCollide(b):
+                        n.bounce(b)
+
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        pass
+                        #self.transport(Flame_9, 2, keepBGM=True)
+                    else:
+                        self.player.handleCollision(b)
+
                 
                     
 """
 Testing
 """
+
 class Knight(AbstractEngine):
 
     @classmethod
@@ -167,12 +216,11 @@ class Knight(AbstractEngine):
     
     class _Kn(AE):
         def __init__(self):
-            super().__init__()
+            super().__init__("knight")
             self.bgm = "tension.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.background = Level("knight_boss.png")
             self.knight = LavaKnight(vec(RESOLUTION[0]//2-16, RESOLUTION[1]//2-16))
             self.knight.ignoreCollision = True
             self.npcs = [
@@ -375,10 +423,10 @@ class Intro_1(AbstractEngine):
             self.walls = Walls("intro_1")
             self.floor = Floor("intro_1")
             self.effects = [
-                Shadow("intro_1", alpha=20)
+                Shadow("intro_1", alpha=50), Shadow("intro_1", "chest_light.png", alpha=50)
             ]
             self.effects_behind_walls = [
-                #Shadow("intro_1", alpha=20)
+                Shadow(room_dir="intro_1", alpha=64, animate=True, nFrames=1)
             ]
 
 
@@ -590,13 +638,14 @@ class Intro_2(AbstractEngine):
             self.walls = Walls("intro_2")
             self.areaIntro = AreaIntro("intro_2", "area_intro.png")
             self.effects = [
-                Shadow(room_dir="intro_2", animate=False),
+                Shadow(room_dir="intro_2", alpha= 54, animate=False),
                 
             
             ]
-            self.effects_behind_walls =[
-                Shadow(room_dir="intro_2", animate=True)
+            self.effects_behind_walls = [
+                Shadow(room_dir="intro_2", alpha=140, animate=True)
             ]
+
             for i in range(2):
                 self.enemies.append(Mofos(direction = 1))
             for i in range(2):
@@ -1072,22 +1121,34 @@ class Grand_Chapel(AbstractEngine):
         def __init__(self):
             super().__init__("grand_chapel", True, vec(912,208))
             self.roomId = 4
-            self.bgm = "hymn.mp3"
+            self.bgm = "LA_SwordSearch.wav"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.trigger1 = Trigger(door = 0)
-            self.trigger2 = Trigger(door = 3)
-            self.trigger3 = Trigger(door = 2)
-            self.trigger4 = Trigger(door = 1)
+
+            self.trigger1 = Trigger(door = 10)
+            self.trigger2 = Trigger(door = 13)
+            self.trigger3 = Trigger(door = 12)
+            self.trigger4 = Trigger(door = 11)
+
+            self.toLeft = Trigger(door = 1)
+            self.toFlame = Trigger(door = 0)
+            self.toIce = Trigger(door = 2)
+
+            self.toRight = Trigger(door = 23)
+            self.toThunder = Trigger(door = 20)
+            self.toGale = Trigger(door = 22)
+
+            
+
             
             self.portal = Portal(COORD[14][3], 3)
 
 
-            self.fire = Blessing(vec(16*3, 16*4 + 304), 0)
-            self.ice = Blessing(vec(16*6, 16*4 + 304), 1)
-            self.thunder = Blessing(vec(16*12 + 304, 16*4), 2)
-            self.wind = Blessing(vec(16*15 + 304, 16*4), 3)
+            self.fire = Blessing(vec(16*7, 16*4), 0)
+            self.ice = Blessing(vec(16*11, 16*4), 1)
+            self.thunder = Blessing(vec(16*45, 16*4), 2)
+            self.wind = Blessing(vec(16*49, 16*4), 3)
 
 
             self.geemer = Geemer((16*9 - 4 + 304, 16*6), text = SPEECH["chapel_geemer"], color = 1)
@@ -1100,14 +1161,22 @@ class Grand_Chapel(AbstractEngine):
                              self.wind,
                              self.geemer,
                              self.prompt
-                            
                              ]
+            
             self.blocks.append(self.trigger1)
             self.blocks.append(self.trigger2)
             self.blocks.append(self.trigger3)
             self.blocks.append(self.trigger4)
 
-            self.doors = [0,1,2,3]
+            self.blocks.append(self.toLeft)
+            self.blocks.append(self.toFlame)
+            self.blocks.append(self.toIce)
+
+            self.blocks.append(self.toRight)
+            self.blocks.append(self.toThunder)
+            self.blocks.append(self.toGale)
+
+            self.doors = [0,2]
         
         def handlePrompt(self):
             if self.promptResult:
@@ -1166,7 +1235,32 @@ class Grand_Chapel(AbstractEngine):
 
         #override
         def createBlocks(self):
-            pass
+            return
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            #Left side
+            for i in range(1, 5):
+                self.blocks.append(IBlock((8,i*16)))
+            for i in range(8, 12):
+                self.blocks.append(IBlock((8,i*16)))
+            #Right side
+            for i in range(1, 5):
+                self.blocks.append(IBlock((912-24,i*16)))
+            for i in range(8, 12):
+                self.blocks.append(IBlock((912-24,i*16)))
+            #Top side
+            for i in range(1,8):
+                self.blocks.append(IBlock((i*16, 0)))
+            for i in range(11, 18):
+                self.blocks.append(IBlock((i*16, 0)))
+            #Bottom side
+            for i in range(1,8):
+                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
+            for i in range(11, 18):
+                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
             
 
         #override

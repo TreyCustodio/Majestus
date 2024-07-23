@@ -96,6 +96,7 @@ class AE(object):
         self.icon = None
         self.boxPos = vec(30,64)
         self.promptResult = False
+        self.selectedItem = ""
         ##Puzzle conditions
         self.room_set = False
         self.room_clear = False
@@ -134,6 +135,7 @@ class AE(object):
         self.effects = []
         self.effects_behind_walls = []
         self.whiting = False
+        self.startingMobster = False
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -217,6 +219,7 @@ class AE(object):
         self.tra_room = None
         self.tra_pos = None
         self.tra_keepBGM = False
+        self.startingMobster = False
         if self.resetting:
             self.enemyCounter = 0
             self.room_clear = False
@@ -289,7 +292,6 @@ class AE(object):
         self.moneyImage = HudImageManager.getMoney()
         self.keyImage = HudImageManager.getKeys()
         self.bomboImage = HudImageManager.getBombos()
-        EventManager.getInstance().toggleFetching()
         #SoundManager.getInstance().stopAllSFX()
         EQUIPPED["room"] = self.roomId
         if player != None:
@@ -319,7 +321,6 @@ class AE(object):
         self.moneyImage = HudImageManager.getMoney()
         self.keyImage = HudImageManager.getKeys()
         self.bomboImage = HudImageManager.getBombos()
-        EventManager.getInstance().toggleFetching()
         #SoundManager.getInstance().stopAllSFX()
         EQUIPPED["room"] = self.roomId
         if player != None:
@@ -734,6 +735,8 @@ class AE(object):
 
 
     def handleEvent(self, event):
+        if self.startingMobster:
+            return
         self.interactableEvents(event)
     
     def handleEvent_C(self, event):
@@ -1148,6 +1151,11 @@ class AE(object):
 
     def handlePrompt(self):
         pass
+    
+    def handleBattlePrompt(self):
+        self.promptResult = False
+        self.selectedItem = ""
+        self.startingMobster = True
 
     def handleStorePrompt(self):
         if self.selectedItem == "potion":
@@ -1188,7 +1196,7 @@ class AE(object):
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
         
-        if self.transporting:
+        if self.transporting or self.startingMobster:
             return
         
         if self.area_fading:
@@ -1229,7 +1237,11 @@ class AE(object):
         
         ##Prompt Results
         if self.promptResult:
-            self.handlePrompt()
+            if self.selectedItem == "mobster":
+                self.handleBattlePrompt()
+            else:
+                self.handlePrompt()
+
         if self.dying:
             
             self.updatePlayer(seconds)

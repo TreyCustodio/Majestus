@@ -113,7 +113,7 @@ INV = {
     "galeShard": 0,
     
     ##Maps
-    "map0":False,
+    "map0":True,
     "map1":False,
     "map2":False,
     "map3":False,

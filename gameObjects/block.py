@@ -31,7 +31,7 @@ class IBlock(Block):
     def getCollisionRect(self):
         return pygame.Rect(self.position, (self.width, self.height))
     
-    def draw(self, drawSurface, drawBox = False):
+    def draw(self, drawSurface, drawBox = True):
         super().draw(drawSurface, drawBox)
 
 
@@ -72,9 +72,33 @@ class Trigger(IBlock):
 
         elif door == 1:
             super().__init__((RESOLUTION[0]-16, 6*16))
-
+        
         elif door == 5:
             super().__init__(position, (1,0))
+
+        elif door == 10:
+            super().__init__((16*9 +304, (16*12 + 8)))
+
+        elif door == 13:
+            super().__init__((0 +304, 6*16))
+            
+        elif door == 12:
+            super().__init__((16*9 +304, (-6)))
+
+        elif door == 11:
+            super().__init__((RESOLUTION[0]-16 +304, 6*16))
+        
+        elif door == 20:
+            super().__init__((16*9 + 608, (16*12 + 8)))
+        elif door == 23:
+            super().__init__((0 + 608, 6*16))
+            
+        elif door == 22:
+            super().__init__((16*9 + 608, (-6)))
+
+        elif door == 21:
+            super().__init__((RESOLUTION[0]-16 + 608, 6*16))
+
         else:
             super().__init__(position)
             self.width = width

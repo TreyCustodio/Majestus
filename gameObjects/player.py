@@ -488,14 +488,20 @@ class Player(Animated):
         elif event.type != pygame.JOYAXISMOTION and (self.vel[0] != 0 or self.vel[1] != 0):
             self.stop()
 
+
+
+
     def handleEvent(self, event, interactableObject = None, engine = None):
         if not self.key_lock:
             if not self.keyDown_lock and event.type == pygame.KEYDOWN and (not self.freezing):
                 if not self.pushing:
-                    if interactableObject != None and event.key == pygame.K_z:
+                    if interactableObject != None:
+                        if event.key == pygame.K_z:
                         
-                        interactableObject.interact(engine)
-                        self.stop()
+                            interactableObject.interact(engine)
+                            self.stop()
+                        elif interactableObject.mobster and event.key == pygame.K_c:
+                            interactableObject.startMobster(engine)
 
                     """ if event.key == pygame.K_f:
                         self.moveTo(vec(16*4,16*10)) """

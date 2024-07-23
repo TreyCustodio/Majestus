@@ -1,6 +1,6 @@
 from gameObjects import Drawable, Text, Pointer
-from utils.vector import vec, magnitude
-from utils import SoundManager
+from utils import SoundManager, vec, magnitude
+from UI import ACTIONS
 from . import TextEntry
 
 import pygame
@@ -142,7 +142,8 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["continue"].position[1]
         self.pointer2.position[1] = self.options["continue"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
-
+        self.eventHandle = False
+        
     def newGame_up(self):
         self.eventHandle = False
         self.pointer.setChoice(2)
@@ -151,7 +152,8 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["quit"].position[1]
         self.pointer2.position[1] = self.options["quit"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
-    
+        self.eventHandle = False
+
     def continueGame_down(self):
         self.eventHandle = False
         self.pointer.position[0] += 16
@@ -160,6 +162,7 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["quit"].position[1]
         self.pointer2.position[1] = self.options["quit"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
+        self.eventHandle = False
 
     def continueGame_up(self):
         self.eventHandle = False
@@ -167,7 +170,8 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["start"].position[1]
         self.pointer2.position[1] = self.options["start"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
-        
+        self.eventHandle = False
+
     def quitGame_down(self):
         self.eventHandle = False
         self.pointer.setChoice(0)
@@ -176,6 +180,7 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["start"].position[1]
         self.pointer2.position[1] = self.options["start"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
+        self.eventHandle = False
 
     def quitGame_up(self):
         self.eventHandle = False
@@ -185,32 +190,33 @@ class EventMenu(AbstractMenu):
         self.pointer.position[1] = self.options["continue"].position[1]
         self.pointer2.position[1] = self.options["continue"].position[1]
         SoundManager.getInstance().playSFX("FF_cursor.wav")
+        self.eventHandle = False
 
+    def handleEvent(self):
+        if self.eventHandle:
+            ##On new Game
+            if self.pointer.choice == 0:
+                if ACTIONS["down"]:
+                    self.newGame_down()
+                
+                elif ACTIONS["up"]:
+                    self.newGame_up()
 
-    def handleEvent(self, event):
-        ##On new Game
-        if self.pointer.choice == 0:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.newGame_down()
-            
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.newGame_up()
+            ##On continue
+            elif self.pointer.choice == 1:
+                if ACTIONS["up"]:
+                    self.continueGame_up()
 
-        ##On continue
-        elif self.pointer.choice == 1:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.continueGame_up()
+                elif ACTIONS["down"]:
+                    self.continueGame_down()
 
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.continueGame_down()
+            ##On quit
+            elif self.pointer.choice == 2:
+                if ACTIONS["up"]:
+                    self.quitGame_up()
 
-        ##On quit
-        elif self.pointer.choice == 2:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.quitGame_up()
-
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.quitGame_down()
+                elif ACTIONS["down"]:
+                    self.quitGame_down()
     
     """
     Returns:
@@ -232,13 +238,13 @@ class EventMenu(AbstractMenu):
         else:
             self.movingUp = True
     
-    def handleEvent_C(self, event):
+    """ def handleEvent_C(self, event):
         ##On new Game
         if event.type == pygame.JOYAXISMOTION and event.axis == 1:
             self.movedDown(event)
-            self.movedUp(event)
+            self.movedUp(event) """
                 
-    def moveCursor(self):
+    """     def moveCursor(self):
         if self.eventHandle:
             if self.pointer.choice == 0:
                 if self.movingDown:
@@ -261,7 +267,7 @@ class EventMenu(AbstractMenu):
                     self.quitGame_up()
 
                 elif self.movingDown:
-                    self.quitGame_down()
+                    self.quitGame_down() """
 
     def update(self, seconds):
         if not self.initialized:

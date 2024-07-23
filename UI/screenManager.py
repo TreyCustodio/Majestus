@@ -1,6 +1,6 @@
 from FSMs import ScreenManagerFSM
 from gameObjects import PauseEngine, TextEngine, HudImageManager
-from UI import InputManager
+from UI import ACTIONS
 from rooms import *
 
 from utils import SoundManager
@@ -21,6 +21,7 @@ class ScreenManager(object):
         self.controllerSet = False
         self.inIntro = False
         self.game = None # Add your game engine here!
+        self.mobsterEngine = MobsterEngine()
         self.pauseEngine = PauseEngine()
         self.textEngine = TextEngine.getInstance()
         self.state = ScreenManagerFSM(self)
@@ -252,6 +253,9 @@ class ScreenManager(object):
                 self.state.speakI()
                 self.textEngine.setText(self.intro.text, self.intro.icon, self.intro.largeText)
 
+        elif self.state == "mobster":
+            self.mobsterEngine.draw(drawSurf)
+
         if self.fading or self.returningToMain:
             self.fade.draw(drawSurf)
             return
@@ -293,177 +297,102 @@ class ScreenManager(object):
         elif choice == 2:
             return pygame.quit()
         
-    def moveMenuCursor(self):
-        if self.state == "mainMenu":
-            self.mainMenu.moveCursor()
+    
 
-    def handleEvent(self, event):
+    def handleEvent(self):
         ##Quick quit for debugging##
         """ if event.type == pygame.KEYDOWN and event.key == K_DELETE:
             return pygame.quit() """
             
         if self.state == "game":
+            print("game")
             ##  Pause the game if the window is moved   ##
             if not self.game.pause_lock:
-                if event.type == pygame.WINDOWMOVED:
-                    if self.game.player:
-                        self.game.player.stop()
-                    self.state.pause()
-                    return
-
                 ##  Handle events once the healthbar is initialized   ##
                 if self.game.getHealthbarInitialized():
-                    if self.controller != "key":
-                        if InputManager.getPressed(event, "pause"):
+                    if not self.game.fading:
+                        if ACTIONS["pause"]:
+                            ACTIONS["pause"] = False
                             self.pause()
-                        else:
-                            self.game.handleEvent_C(event)
-
-                        """ if event.type == JOYBUTTONDOWN and event.button == 7:
-                            self.pause()
+                            return
                         
-                        elif event.type == JOYBUTTONDOWN and event.button == 6:
-                            self.openMap()
-                            
-                        else:
-                            self.game.handleEvent_C(event) """
-
-                    else:
-                        if not self.game.fading:
-                            if event.type == KEYDOWN and event.key == K_RETURN:
-                                self.pause()
-                                return
-                            
-                            
-                            elif event.type == KEYDOWN and event.key == K_LSHIFT:
-                                if INV["map0"]:
-                                    self.openMap()
-                                return
-                            
-                        self.game.handleEvent(event)
+                        
+                        elif ACTIONS["map"]:
+                            ACTIONS["map"] = False
+                            if INV["map0"]:
+                                self.openMap()
+                            return
+                    
+                    #self.game.handleEvent()
 
 
 
         elif self.state == "paused":
             if self.returningToMain:
                 return
-            if self.controller != "key":
-                if InputManager.getPressed(event, "pause"):
-                    self.pauseEngine.mapOpen = False
-                    self.pauseEngine.paused = False
-                    self.pauseEngine.closing = True
-                    SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
-                else:
-                    self.pauseEngine.handleEvent_C(event)
-                    
-            
-            else:
-                if event.type == pygame.KEYDOWN and event.key == K_ESCAPE:
-                    pygame.display.toggle_fullscreen()
-                elif event.type == KEYDOWN and (event.key == K_RETURN or event.key == K_LSHIFT):
-                    self.pauseEngine.paused = False
-                    self.pauseEngine.closing = True
-                    SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
-                    self.pauseEngine.mapOpen = False
+            if ACTIONS["map"]:
+                pygame.display.toggle_fullscreen()
+            elif ACTIONS["pause"]:
+                self.pauseEngine.paused = False
+                self.pauseEngine.closing = True
+                SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
+                self.pauseEngine.mapOpen = False
 
-                else:
-                    self.pauseEngine.handleEvent(event)
-                    if self.pauseEngine.text != "":
-                        self.state.speakP()
-                        if "Y/N" in self.pauseEngine.text:
-                            self.textEngine.setText(self.pauseEngine.text, prompt = True)
-                        else:
-                            self.textEngine.setText(self.pauseEngine.text)
+            else:
+                self.pauseEngine.handleEvent()
+                if self.pauseEngine.text != "":
+                    self.state.speakP()
+                    if "Y/N" in self.pauseEngine.text:
+                        self.textEngine.setText(self.pauseEngine.text, prompt = True)
+                    else:
+                        self.textEngine.setText(self.pauseEngine.text)
+                
                 
         elif self.state == "mainMenu":
             if self.mainMenu.readyToDisplay:
                 if not self.fadingIn and not self.continuingGame and not self.startingGame:
-                    if self.controller != "key":
-                        self.mainMenu.handleEvent_C(event)
-                        if event.type == JOYBUTTONDOWN and (event.button == 2):
-                            choice = self.mainMenu.getChoice()
-                            self.handleChoice(choice)
-                    else:
-                        self.mainMenu.handleEvent(event)
-                        if event.type == pygame.KEYDOWN and event.key == K_z:
-                            choice = self.mainMenu.getChoice()
-                            self.handleChoice(choice)
-                        elif event.type == pygame.KEYDOWN and event.key == K_ESCAPE:
-                            pygame.display.toggle_fullscreen()
-                    
-            
-
+                    self.mainMenu.handleEvent()
+                    if ACTIONS["interact"]:
+                        ACTIONS["interact"] = False
+                        choice = self.mainMenu.getChoice()
+                        self.handleChoice(choice)
 
         elif self.state == "textBox":
-            if self.controller != "key":
-                if self.textEngine.ready_to_continue and event.type == JOYBUTTONDOWN and event.button == 2:
-                    if self.pauseEngine.paused:
-                        self.pauseEngine.textBox = False
-                        self.pauseEngine.text = ""
-                        self.state.speakP()
 
-                    elif self.inIntro:
-                        ##Skip the intro
-                        self.intro.textBox = False
-                        self.intro.text = ""
-                        self.intro.icon = None
-                        self.intro.fading = True
-                        self.state.speakI()
-                        self.intro.fading = True
-                        self.intro.textInt = 11
-                        
-                        
-                    else:
-                        self.game.textBox = False
-                        self.game.text = ""
-                        self.game.icon = None
-                        self.state.speak()
-                    self.textEngine.reset()
-                    return
-                    ##Close the textBox
+            if ACTIONS["map"]:
+                ##Skip textbox
+                if self.pauseEngine.paused:
+                    self.pauseEngine.textBox = False
+                    self.pauseEngine.text = ""
+                    self.state.speakP()
+                elif self.inIntro:
+                    ##Skip the intro
+                    self.intro.textBox = False
+                    self.intro.text = ""
+                    self.intro.icon = None
+                    self.intro.fading = True
+                    self.state.speakI()
+                    self.intro.fading = True
+                    self.intro.textInt = 11
+                else:
+                    self.game.textBox = False
+                    self.game.text = ""
+                    self.game.icon = None
+                    self.state.speak()
+                self.textEngine.reset()
+                return
 
-            else:
-                if event.type == KEYDOWN and event.key == K_SPACE:
-                    if self.pauseEngine.paused:
-                        self.pauseEngine.textBox = False
-                        self.pauseEngine.text = ""
-                        self.state.speakP()
-                    elif self.inIntro:
-                        ##Skip the intro
-                        self.intro.textBox = False
-                        self.intro.text = ""
-                        self.intro.icon = None
-                        self.intro.fading = True
-                        self.state.speakI()
-                        self.intro.fading = True
-                        self.intro.textInt = 11
-                        
-                        
-                    else:
-                        self.game.textBox = False
-                        self.game.text = ""
-                        self.game.icon = None
-                        self.state.speak()
-                    self.textEngine.reset()
-                    return
-                    ##Close the textBox
-
-            if self.controller != "key":
-                self.textEngine.handleEvent_C(event)
-            else:
-                self.textEngine.handleEvent(event)
+            self.textEngine.handleEvent()
 
             
 
         elif self.state == "intro":
-            if self.controller != "key":
-                if event.type == JOYBUTTONDOWN and event.button == 7:
-                    self.intro.fading = True
-                    self.intro.textInt = 11
-            else:
-                if event.type == KEYDOWN and event.key == K_SPACE:
-                    self.intro.fading = True
-                    self.intro.textInt = 11
+            if ACTIONS["map"]:
+                self.intro.fading = True
+                self.intro.textInt = 11
+
+        elif self.state == "mobster":
+            self.mobsterEngine.handleEvent()
 
     #Only runs if in game
     def handleCollision(self):
@@ -521,6 +450,10 @@ class ScreenManager(object):
                 else:
                     self.white.update(seconds)
             
+            if self.game.startingMobster:
+                self.game.reset()
+                self.state = "mobster"
+                self.mobsterEngine.initialize()
 
         elif self.state == "textBox":
             #self.updateLight(seconds)
@@ -565,7 +498,7 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Intro_3.getInstance()
+                        self.game = Test.getInstance()
                         self.game.lockHealth()
                         self.game.initializeRoom()
                         self.state.startGame()
@@ -617,6 +550,9 @@ class ScreenManager(object):
                 self.game.initializeRoom()
                 self.state.toGame()
 
+        elif self.state == "mobster":
+            self.mobsterEngine.update(seconds)
+
         if self.fading:
             if self.fadingIn:
                 self.fade.updateIn(seconds)
@@ -643,7 +579,7 @@ class ScreenManager(object):
                 self.fade.update(seconds)
                 if self.game and self.game.transporting and self.fade.frame == 8:
                     self.game.finishFade()
-                
+    
         self.updateLight(seconds)
 
     def updateLight(self, seconds):

@@ -4,6 +4,8 @@ from . import Drawable,  Animated, Text, Highlight, Map, Number
 
 from utils import  vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED
 
+from UI import ACTIONS, EventManager
+
 from pygame.locals import *
 
 class TextEngine(object):
@@ -309,19 +311,20 @@ class TextEngine(object):
                 
                 
 
-        def handleEvent(self, event):
+        def handleEvent(self):
             ##Prompt selection
             if self.choosing:
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and self.highlighted == 0:
+                if ACTIONS["right"] and self.highlighted == 0:
                     self.highlighted = 1
                     self.promptHighlight.position = vec(self.promptHighlight.position[0]+88, self.promptHighlight.position[1])
                     self.playSFX("pause_cursor.wav")
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and self.highlighted == 1:
+                elif ACTIONS["left"] and self.highlighted == 1:
                     self.highlighted = 0
                     self.promptHighlight.position = vec(self.promptHighlight.position[0]-88, self.promptHighlight.position[1])
                     self.playSFX("pause_cursor.wav")
 
-                elif (event.type == pygame.KEYDOWN and event.key == pygame.K_z):
+                elif (ACTIONS["interact"]):
+                    ACTIONS["interact"] = False
                     self.playSFX("WW_Textbox_Close.wav")
                     self.setClosing()
                     if self.highlighted == 0:
@@ -330,7 +333,8 @@ class TextEngine(object):
                         self.promptResult = True
                     
             ##Progressing text
-            elif (event.type == pygame.KEYDOWN and event.key == pygame.K_z) and self.ready_to_continue:
+            elif (ACTIONS["interact"]) and self.ready_to_continue:
+                ACTIONS["interact"] = False
                 if self.end == True:
                     self.playSFX("WW_Textbox_Close.wav")
                     self.setClosing()
@@ -339,38 +343,7 @@ class TextEngine(object):
                     self.box_drawn = False
                     self.ready_to_continue = False
                     self.backgroundBool = True
-                    #self.blackBool = True
                     
-
-
-        def handleEvent_C(self, event):
-            if self.choosing:
-                if event.type == JOYAXISMOTION:
-                    if event.value >= 0.8 and self.highlighted == 0:
-                        self.highlighted = 1
-                        self.promptHighlight.position = vec(self.promptHighlight.position[0]+88, self.promptHighlight.position[1])
-                        self.playSFX("pause_cursor.wav")
-                    elif event.value <= -0.8 and self.highlighted == 1:
-                        self.highlighted = 0
-                        self.promptHighlight.position = vec(self.promptHighlight.position[0]-88, self.promptHighlight.position[1])
-                        self.playSFX("pause_cursor.wav")
-                elif event.type == JOYBUTTONDOWN and event.button == 0:
-                    self.playSFX("WW_Textbox_Close.wav")
-                    self.setClosing()
-                    if self.highlighted == 0:
-                        self.promptResult = False
-                    elif self.highlighted == 1:
-                        self.promptResult = True
-
-            ##Progress text
-            elif (event.type == pygame.JOYBUTTONDOWN and event.button == 0) and self.ready_to_continue:
-                if self.end == True:
-                    self.playSFX("WW_Textbox_Close.wav")
-                    self.setClosing()
-                else:
-                    self.playSFX("OOT_Dialogue_Next.wav")
-                    self.box_drawn = False
-                    self.ready_to_continue = False
 
         def setClosing(self):
             self.closing = True
@@ -414,15 +387,6 @@ class TextEngine(object):
                     return
             if self.prompt:
                 self.promptHighlight.update(seconds)
-            """ self.displayTimer += seconds
-            self.highlightTimer += seconds
-
-            if self.displayTimer >= 0.2:
-                self.ready_to_display = True
-                self.displayTimer = 0
-            
-            if self.highlightTimer >= .5:
-                self.highlightTimer = 0 """
 
 
 
@@ -739,83 +703,10 @@ class PauseEngine(object):
 
         else:
             SoundManager.getInstance().playSFX("bump.mp3")
-
-    def handleEvent_C(self, event):
-        if self.closing or not self.inPosition:
-            return
-        
-        if self.mapOpen and INV["map"+str(Map.getInstance().mapNum)]:
-            if event.type == JOYBUTTONDOWN:
-                if event.button == 2:
-                    #close map
-                    self.mapOpen = False
-            
-            if event.type == JOYAXISMOTION and self.trackAnalog:
-                if event.axis == 1 and event.value < -0.8:
-                    if Map.getInstance().selectedPos[1] < 146.0:
-                        Map.getInstance().selectedPos[1] += 10
-                        Map.getInstance().updateSelected()
-
-                elif event.axis == 1 and event.value > 0.8:
-                    #print(Map.getInstance().selectedPos[1])
-                    Map.getInstance().selectedPos[1] -= 10
-                    Map.getInstance().updateSelected()
-
-                elif event.axis == 0 and event.value < 0.8:
-                    #print(Map.getInstance().selectedPos[0])
-                    Map.getInstance().selectedPos[0] -= 10
-                    Map.getInstance().updateSelected()
-                elif event.axis == 0 and event.value > 0.8:
-                    #print(Map.getInstance().selectedPos[0])
-                    Map.getInstance().selectedPos[0] += 10
-                    Map.getInstance().updateSelected()
-            return
-        
-        if event.type == JOYBUTTONDOWN:
-            if event.button == 0:
-                self.showInfo()
-            elif event.button == 3:
-                self.equipElement()
-
-
-        if event.type == JOYAXISMOTION and self.trackAnalog:
-            if event.axis == 1 and event.value < -0.8:
-                #print("A")
-                if self.highlighted[1] != 0:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] -= 1
-                    self.highlight.position[1] -= 16
-                self.trackAnalog = False
-                    
-
-            elif event.axis == 1 and event.value > 0.8:
-                #print("A")
-                if self.highlighted[1] != 4:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] += 1
-                    self.highlight.position[1] += 16
-                self.trackAnalog = False
-            
-            ##Move right
-            elif event.axis == 0 and event.value > 0.8:
-                #print("A")
-                if self.highlighted[0] != 7 and self.highlighted[1] != 4:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[0] += 1
-                    self.highlight.position[0] += 16
-                self.trackAnalog = False
-
-            elif event.axis == 0 and event.value < -0.8:
-                #print("A")
-                if self.highlighted[0] != 0 and self.highlighted[1] != 4:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[0] -= 1
-                    self.highlight.position[0] -= 16
-                self.trackAnalog = False
                     
             
 
-    def handleEvent(self, event):
+    def handleEvent(self):
         """
            0    1    2   3   4   5   6   7
         0
@@ -832,40 +723,38 @@ class PauseEngine(object):
         """
         if self.closing or not self.inPosition:
             return
+        ##  Map Controls
         if self.mapOpen and INV["map"+str(Map.getInstance().mapNum)]:
-            if event.type == KEYDOWN:
-                if event.key == K_x:
-                    #close map
-                    self.mapOpen = False
-                elif event.key == K_DOWN:
-                    if Map.getInstance().selectedPos[1] < 146.0:
-                        Map.getInstance().selectedPos[1] += 10
-                        Map.getInstance().updateSelected()
-                elif event.key == K_UP:
-                    #print(Map.getInstance().selectedPos[1])
-                    Map.getInstance().selectedPos[1] -= 10
+            if ACTIONS["shoot"]:
+                #close map
+                self.mapOpen = False
+            elif ACTIONS["down"]:
+                if Map.getInstance().selectedPos[1] < 146.0:
+                    Map.getInstance().selectedPos[1] += 10
                     Map.getInstance().updateSelected()
-                elif event.key == K_LEFT:
-                    #print(Map.getInstance().selectedPos[0])
-                    Map.getInstance().selectedPos[0] -= 10
-                    Map.getInstance().updateSelected()
-                elif event.key == K_RIGHT:
-                    #print(Map.getInstance().selectedPos[0])
-                    Map.getInstance().selectedPos[0] += 10
-                    Map.getInstance().updateSelected()
-            
+
+            elif ACTIONS["up"]:
+                Map.getInstance().selectedPos[1] -= 10
+                Map.getInstance().updateSelected()
+
+            elif ACTIONS["left"]:
+                Map.getInstance().selectedPos[0] -= 10
+                Map.getInstance().updateSelected()
+                
+            elif ACTIONS["right"]:
+                Map.getInstance().selectedPos[0] += 10
+                Map.getInstance().updateSelected()
+        
             return
         
-        if event.type == KEYDOWN and event.key == K_c:
+        ##  Menu Controls
+        if EventManager.getInstance().performAction("element"):
             self.equipElement()
 
-        elif event.type == KEYDOWN and event.key == K_z:
-            ##Selecting an item and pulling up textbox
-            ##Will have to switch the order of conditionals. Check position first so that the program
-            ##Doesn't check every inventory slot
+        elif EventManager.getInstance().performAction("interact"):
             self.showInfo()
         
-        elif event.type == KEYDOWN and event.key == K_x:
+        elif EventManager.getInstance().performAction("shoot"):
             self.equipArrow()
         
             """
@@ -874,50 +763,59 @@ class PauseEngine(object):
             highlighted = integer value corresponding to inv item
             highlight.position = actual value to draw at (mult. of 16)
             """
-        elif event.type == KEYDOWN and event.key == K_UP:
-            if self.highlighted[1] == 0:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[1] = 4
-                self.highlight.position[1] = 128
+        elif EventManager.getInstance().getCursorReady():
+            if  ACTIONS["up"]:
+                EventManager.getInstance().buffCursor()
+                if self.highlighted[1] == 0:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[1] = 4
+                    self.highlight.position[1] = 128
 
-            else:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[1] -= 1
-                self.highlight.position[1] -= 16
+                else:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[1] -= 1
+                    self.highlight.position[1] -= 16
 
-        elif event.type == KEYDOWN and event.key == K_DOWN:
-            #print(self.highlight.position[1])
-            if self.highlighted[1] == 4:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[1] = 0
-                self.highlight.position[1] = 16*4
-            else:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[1] += 1
-                self.highlight.position[1] += 16
+            elif ACTIONS["down"]:
+                EventManager.getInstance().buffCursor()
+                if self.highlighted[1] == 4:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[1] = 0
+                    self.highlight.position[1] = 16*4
+                else:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[1] += 1
+                    self.highlight.position[1] += 16
 
-        elif event.type == KEYDOWN and event.key == K_RIGHT:
-            if self.highlighted[0] == 7:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[0] = 0
-                self.highlight.position[0] = 16*3
+            elif ACTIONS["right"]:
+                EventManager.getInstance().buffCursor()
+                if self.highlighted[0] == 7:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[0] = 0
+                    self.highlight.position[0] = 16*3
 
-            elif self.highlighted[1] != 4:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[0] += 1
-                self.highlight.position[0] += 16
+                elif self.highlighted[1] != 4:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[0] += 1
+                    self.highlight.position[0] += 16
 
-        elif event.type == KEYDOWN and event.key == K_LEFT:
-            #print(self.highlight.position[0])
-            if self.highlighted[0] == 0:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[0] = 7
-                self.highlight.position[0] = 160
+            elif ACTIONS["left"]:
+                EventManager.getInstance().buffCursor()
+                #print(self.highlight.position[0])
+                if self.highlighted[0] == 0:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[0] = 7
+                    self.highlight.position[0] = 160
 
-            elif self.highlighted[1] != 4:
-                SoundManager.getInstance().playSFX("pause_cursor.wav")
-                self.highlighted[0] -= 1
-                self.highlight.position[0] -= 16
+                elif self.highlighted[1] != 4:
+                    SoundManager.getInstance().playSFX("pause_cursor.wav")
+                    self.highlighted[0] -= 1
+                    self.highlight.position[0] -= 16
+
+
+
+
+
 
     def update(self, seconds):
         if self.closing:

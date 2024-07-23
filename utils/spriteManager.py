@@ -138,11 +138,12 @@ class SpriteManager(object):
       def _loadFx(self, room_dir, fileName, sheet = False):
           effects_folder = SpriteManager._SM._ROOM_FOLDER + "\\"+room_dir
           fullImage = image.load(join(effects_folder, fileName))
-          self._loadRoutine(fullImage, fileName, sheet)
+          self._loadRoutine(fullImage, fileName, sheet, True)
 
-      def _loadRoutine(self, fullImage, fileName, sheet = False):
-         # Look up some information about the image to be loaded
-         transparent = fileName in SpriteManager._SM._TRANSPARENCY
+      def _loadRoutine(self, fullImage, fileName, sheet = False, transparent = False):
+         if not transparent:
+            # Look up some information about the image to be loaded
+            transparent = fileName in SpriteManager._SM._TRANSPARENCY
          colorKey = fileName in SpriteManager._SM._COLOR_KEY
          
          # Detect if a transparency is needed
