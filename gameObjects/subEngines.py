@@ -323,8 +323,7 @@ class TextEngine(object):
                     self.promptHighlight.position = vec(self.promptHighlight.position[0]-88, self.promptHighlight.position[1])
                     self.playSFX("pause_cursor.wav")
 
-                elif (ACTIONS["interact"]):
-                    ACTIONS["interact"] = False
+                elif EventManager.getInstance().performAction("interact"):
                     self.playSFX("WW_Textbox_Close.wav")
                     self.setClosing()
                     if self.highlighted == 0:
@@ -333,8 +332,7 @@ class TextEngine(object):
                         self.promptResult = True
                     
             ##Progressing text
-            elif (ACTIONS["interact"]) and self.ready_to_continue:
-                ACTIONS["interact"] = False
+            elif EventManager.getInstance().performAction("interact") and self.ready_to_continue:
                 if self.end == True:
                     self.playSFX("WW_Textbox_Close.wav")
                     self.setClosing()

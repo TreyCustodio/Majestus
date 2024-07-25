@@ -43,7 +43,6 @@ def main():
     
     gameEngine = ScreenManager()
     eventManager = EventManager.getInstance()
-    eventManager.setJoystick() #Check for any joysticks right before the game runs
     
 
     RUNNING = True

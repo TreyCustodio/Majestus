@@ -16,8 +16,9 @@ Global boolean values that represent flags.
 Used for a variety of special events.
 """
 FLAGS = [False for i in range(150)]
-for i in range (1, 10):
-    FLAGS[i] = True
+FLAGS[110] = True
+#for i in range (1, 10):
+    #FLAGS[i] = True
 
 #FLAGS[62] = True
 #1-20 -> Pop-up messages and area names
@@ -91,14 +92,14 @@ EQUIPPED = {
     "area":0,
 }
 
-bombos = 20
+bombos = 50
 """
 The Player's inventory
 """
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 3,
+    "max_hp": 10,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -121,10 +122,10 @@ INV = {
 
     ##Consumables and key items
     "plant": 0,
-    "chanceEmblem": False,
-    "syringe":False,
-    "potion": 0,
-    "smoothie": 0,
+    "chanceEmblem": True,
+    "syringe":True,
+    "potion": 5,
+    "smoothie": 5,
     "beer": 0,
     "joint":0,
     "speed":0,

@@ -1,6 +1,7 @@
 from FSMs import ScreenManagerFSM
+import gc
 from gameObjects import PauseEngine, TextEngine, HudImageManager
-from UI import ACTIONS
+from UI import ACTIONS, EventManager
 from rooms import *
 
 from utils import SoundManager
@@ -305,34 +306,32 @@ class ScreenManager(object):
             return pygame.quit() """
             
         if self.state == "game":
-            print("game")
             ##  Pause the game if the window is moved   ##
             if not self.game.pause_lock:
                 ##  Handle events once the healthbar is initialized   ##
                 if self.game.getHealthbarInitialized():
                     if not self.game.fading:
-                        if ACTIONS["pause"]:
-                            ACTIONS["pause"] = False
+                        if EventManager.getInstance().performAction("pause"):
                             self.pause()
                             return
                         
                         
-                        elif ACTIONS["map"]:
-                            ACTIONS["map"] = False
+                        elif EventManager.getInstance().performAction("map"):
                             if INV["map0"]:
                                 self.openMap()
                             return
                     
-                    #self.game.handleEvent()
+                    self.game.handleEvent()
 
 
 
         elif self.state == "paused":
             if self.returningToMain:
                 return
-            if ACTIONS["map"]:
+            if EventManager.getInstance().performAction("map"):
                 pygame.display.toggle_fullscreen()
-            elif ACTIONS["pause"]:
+
+            elif EventManager.getInstance().performAction("pause"):
                 self.pauseEngine.paused = False
                 self.pauseEngine.closing = True
                 SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
@@ -352,14 +351,13 @@ class ScreenManager(object):
             if self.mainMenu.readyToDisplay:
                 if not self.fadingIn and not self.continuingGame and not self.startingGame:
                     self.mainMenu.handleEvent()
-                    if ACTIONS["interact"]:
-                        ACTIONS["interact"] = False
+                    if EventManager.getInstance().performAction("interact"):
                         choice = self.mainMenu.getChoice()
                         self.handleChoice(choice)
 
         elif self.state == "textBox":
 
-            if ACTIONS["map"]:
+            if EventManager.getInstance().performAction("map"):
                 ##Skip textbox
                 if self.pauseEngine.paused:
                     self.pauseEngine.textBox = False
@@ -387,7 +385,7 @@ class ScreenManager(object):
             
 
         elif self.state == "intro":
-            if ACTIONS["map"]:
+            if EventManager.getInstance().performAction("map"):
                 self.intro.fading = True
                 self.intro.textInt = 11
 
@@ -402,10 +400,19 @@ class ScreenManager(object):
     #Update all states
     def update(self, seconds): 
         if self.state == "game":
+            
             if self.returningToMain:
                 if self.fade.frame == 8:
                     self.state.toMain()
                     self.fadingIn = True
+                else:
+                    self.fade.update(seconds)
+                return
+            
+            if self.game.dead:
+                self.fading = True
+                self.returningToMain = True
+                self.fade.setRow(1)
                 return
             
             if self.fadingIn:
@@ -415,8 +422,7 @@ class ScreenManager(object):
                     self.game.updatingPlayer = True
                 self.game.update(seconds)
 
-            if self.game.dead:
-                self.returningToMain = True
+            
 
             if not self.fading and self.game.fading:
                 self.fading = True
@@ -428,13 +434,15 @@ class ScreenManager(object):
                 newGame = self.game.tra_room.getInstance()
                 keepBGM = self.game.tra_keepBGM
                 if not self.game.transporting_area:
-                    self.fadingIn = True
                     self.game.reset()
+                    gc.collect()
                     self.game = newGame
                     self.game.initializeRoom(player, pos, keepBGM)
+                    self.fadingIn = True
                     self.fade.frame = 9
                 else:
                     self.game.reset()
+                    gc.collect()
                     self.game = newGame
                     self.game.initializeArea(player, pos, keepBGM)
 
@@ -498,7 +506,8 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Test.getInstance()
+                        #self.game = Test.getInstance()
+                        self.game = Intro_1.getInstance()#Intro_3.getInstance()
                         self.game.lockHealth()
                         self.game.initializeRoom()
                         self.state.startGame()

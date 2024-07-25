@@ -31,7 +31,7 @@ class IBlock(Block):
     def getCollisionRect(self):
         return pygame.Rect(self.position, (self.width, self.height))
     
-    def draw(self, drawSurface, drawBox = True):
+    def draw(self, drawSurface, drawBox = False):
         super().draw(drawSurface, drawBox)
 
 

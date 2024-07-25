@@ -64,6 +64,7 @@ class AE(object):
 
         self.damageNums = DamageNumberManager()
         self.player = None
+        self.firi = None
         self.resetting = False
         self.ignoreClear = False
         self.dropCount = 0
@@ -136,6 +137,7 @@ class AE(object):
         self.effects_behind_walls = []
         self.whiting = False
         self.startingMobster = False
+
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -197,12 +199,15 @@ class AE(object):
         self.player.keyDownUnlock()
 
     def reset(self):
+        Drawable.resetOffset()
         for n in self.npcs:
             n.respawn()
             if n.vanish:
                 self.disappear(n)
-        for d in self.drops:
-            self.disappear(d)
+        self.drops = [
+            
+        ]
+            
         self.dropCount = 0
 
         self.textInt = 0
@@ -225,7 +230,6 @@ class AE(object):
             self.room_clear = False
         if self.camera:
             self.camera.position = vec(0,0)
-        
 
     def titleReset(self):
         self.reset()
@@ -289,6 +293,11 @@ class AE(object):
         3. call createBlocks
         4. place the enemies in self.enemies
         """
+        if self.camera:
+            if self.camera:
+                self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
+                Drawable.updateOffset(self.camera, self.size)
+       
         self.moneyImage = HudImageManager.getMoney()
         self.keyImage = HudImageManager.getKeys()
         self.bomboImage = HudImageManager.getBombos()
@@ -309,6 +318,8 @@ class AE(object):
             #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
                 SoundManager.getInstance().playBGM(self.bgm)
+        
+        self.on_enter()
 
     def initializeArea(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
         """
@@ -342,6 +353,14 @@ class AE(object):
         self.area_fading = True
         self.whiting = True
         self.areaIntro.fadeIn()
+        self.on_enter()
+
+    #abstract
+    def on_enter(self):
+        """
+        Called when room is entered
+        """
+        pass
 
     def createBounds(self):
         """
@@ -517,7 +536,6 @@ class AE(object):
         """
         if not self.transporting and not self.transLock:
             
-            EventManager.getInstance().startTransition()
             if intro:
                 self.transporting = True
                 self.tra_room = room.getInstance()
@@ -546,11 +564,9 @@ class AE(object):
             if not keepBGM:
                 SoundManager.getInstance().fadeoutBGM()
             
-            pygame.event.clear()
 
     def transportArea(self, room = None, position= None):
         if not self.transporting and not self.transLock:
-            EventManager.getInstance().startTransition()
             self.whiteOut()
             self.transporting = True
             self.transporting_area = True
@@ -570,14 +586,12 @@ class AE(object):
             self.tra_keepBGM = False
             SoundManager.getInstance().fadeoutBGM()
             
-            pygame.event.clear()
 
     """
     Transports the player to a specified position
     """
     def transportPos(self, room = None, position = None, keepBGM = False):
         if not self.transporting:
-            EventManager.getInstance().startTransition()
             
             self.fade()
             self.transporting = True
@@ -589,43 +603,46 @@ class AE(object):
             if not keepBGM:
                 SoundManager.getInstance().fadeoutBGM()
             
-            pygame.event.clear()
 
     def displayText(self, text = "", icon = None, large = True):
         """
         Display text
         """
-        if icon != None:
-            self.icon = icon
-            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-            if self.boxPos[0] < 16:
-                self.boxPos[0] = 16
-            elif self.boxPos[0]+244 > RESOLUTION[0]-16:
-                self.boxPos[0] = (RESOLUTION[0] - 16) - 244
-
-            if self.boxPos[1] < 32:
-                self.boxPos[1] = 32
-            elif self.boxPos[1]+64 > RESOLUTION[1]-16:
-                self.boxPos[1] = (RESOLUTION[1] - 16)-64
-
+        if self.camera:
+            pass
         else:
-            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-            if self.boxPos[0] < 16:
-                self.boxPos[0] = 16
-            elif self.boxPos[0]+244 > RESOLUTION[0]-16:
-                self.boxPos[0] = (RESOLUTION[0] - 16) - 244
+            if icon != None:
+                self.icon = icon
+                self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
+                if self.boxPos[0] < 16:
+                    self.boxPos[0] = 16
+                elif self.boxPos[0]+244 > RESOLUTION[0]-16:
+                    self.boxPos[0] = (RESOLUTION[0] - 16) - 244
 
-            if self.boxPos[1] < 16:
-                self.boxPos[1] = 16
-            elif self.boxPos[1]+64 > RESOLUTION[1]-16:
-                self.boxPos[1] = (RESOLUTION[1] - 16)-64
+                if self.boxPos[1] < 32:
+                    self.boxPos[1] = 32
+                elif self.boxPos[1]+64 > RESOLUTION[1]-16:
+                    self.boxPos[1] = (RESOLUTION[1] - 16)-64
 
-        self.textBox = True
-        self.text = text
-        self.largeText = large
-        
-        if self.player != None:
-            self.player.stop()
+            else:
+                self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
+                if self.boxPos[0] < 16:
+                    self.boxPos[0] = 16
+                elif self.boxPos[0]+244 > RESOLUTION[0]-16:
+                    self.boxPos[0] = (RESOLUTION[0] - 16) - 244
+
+                if self.boxPos[1] < 16:
+                    self.boxPos[1] = 16
+                elif self.boxPos[1]+64 > RESOLUTION[1]-16:
+                    self.boxPos[1] = (RESOLUTION[1] - 16)-64
+
+            self.textBox = True
+            self.text = text
+            self.largeText = large
+            
+            if self.player != None:
+                self.player.stop()
+    
     
     def flash(self, num = 0):
         """
@@ -712,35 +729,24 @@ class AE(object):
             self.projectiles.append(self.player.getHook())
             self.player.hook = None
 
-    def interactableEvents(self, event):
+    def interactableEvents(self):
         """
         Handles interaction from the player
         """
         if self.spawning:
             for n in self.spawning:
                 if not n.drop and self.player.interactable(n):
-                    self.player.handleEvent(event, n, self)
+                    self.player.handleEvent(n, self)
                     return 
                 
-        self.player.handleEvent(event)
-
-    def interactableEvents_C(self, event):
-        if self.spawning:
-            for n in self.spawning:
-                if not n.drop and self.player.interactable(n):
-                    self.player.handleEvent_C(event, n, self)
-                    return
-                
-        self.player.handleEvent_C(event)
+        self.player.handleEvent()
 
 
-    def handleEvent(self, event):
+    def handleEvent(self):
         if self.startingMobster:
             return
-        self.interactableEvents(event)
-    
-    def handleEvent_C(self, event):
-        self.interactableEvents_C(event)
+        self.interactableEvents()
+
     
     """
     Collision methods
@@ -1084,7 +1090,9 @@ class AE(object):
             self.player.update(seconds)
         elif not self.fading:
             self.player.update(seconds)
-    
+
+        if self.firi:
+            self.firi.update(seconds)
     #abstract
     def updateSwitches(self, seconds):
         """
@@ -1103,13 +1111,15 @@ class AE(object):
                 block.update(seconds, self.player, self.player.row)
 
     def updateCamera(self,seconds):
-        """ if self.camera.position[0] == 0:
+        """ 
+        if self.camera.position[0] == 0:
             return
         elif self.camera.position[0] == 912:
             return """
-
         self.camera.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
-        
+        #self.healthBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
+        #self.elementIcon.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
+        #self.energyBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.camera.position += self.player.vel * seconds
         Drawable.updateOffset(self.camera, self.size)
         pass
@@ -1196,7 +1206,7 @@ class AE(object):
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
         
-        if self.transporting or self.startingMobster:
+        if self.transporting or self.startingMobster or self.dead:
             return
         
         if self.area_fading:
@@ -1271,6 +1281,7 @@ class AE(object):
         if self.tiles:
             for t in self.tiles:
                 t.update(seconds)
+        self.floor.update(seconds)
         if not self.ignoreClear:
             if self.room_clear and self.clearFlag == 0:
                 self.clearFlag = 1
@@ -1460,7 +1471,6 @@ class AE(object):
         """
         Draw the objects on the drawSurface after updating them
         """
-    
         if self.dying:
             Drawable(fileName="b.png").draw(drawSurface)
             self.player.draw(drawSurface)
@@ -1494,7 +1504,10 @@ class AE(object):
         self.drawProjectiles(drawSurface)
         
         #Player
-        self.player.draw(drawSurface)
+        if self.player:
+            self.player.draw(drawSurface)
+        if self.firi:
+            self.firi.draw(drawSurface)
 
         
 

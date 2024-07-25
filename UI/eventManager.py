@@ -11,10 +11,12 @@ Dictionaries
 ## Specifies which actions are on and off
 ACTIONS = {
     "interact": False, #Talking/interacting with objects
+    "run":False,
     "shoot": False, #Shooting your ranged weapon
     "element": False, #Attacking with your element
     "pause": False, #Pause / Start
     "map": False, #Map / Select
+    "target": False,
     "motion": False, #Movement
     "motion_axis": 0,
     "motion_value": 0,
@@ -26,24 +28,39 @@ ACTIONS = {
 
 ##  Gives the button for each GAMECUBE action
 GAMECUBE = {
-        "interact": 2,
-        "shoot": 0,
-        "element": 3,
-        "pause": 9,
-        "map": 1
+        "interact": 2, #A
+        "run": 2,
+        "shoot": 0, #Y
+        "element": 3, #B
+        "pause": 9, #Start
+        "map": 1, #X
+        "target": 4 #X
+    }
+
+##  Gives the button for each SWITCH action
+SWITCH = {
+        "interact": 0, #A
+        "run": 0,
+        "shoot": 3, #Y
+        "element": 1, #B
+        "pause": 6, #Start
+        "map": 4, #X
+        "target": 4, #Axis 4, 1.0 -> down, -1.0 -> up
     }
 
 ##  Gives the button for each KEYBOARD action
 KEY = {
         "interact": pygame.K_z,
+        "run": pygame.K_z,
         "shoot": pygame.K_x,
         "element": pygame.K_c,
         "pause": pygame.K_RETURN,
-        "map": pygame.K_LSHIFT,
+        "map": pygame.K_SPACE,
         "down":pygame.K_DOWN,
         "right":pygame.K_RIGHT,
         "up":pygame.K_UP,
        "left":pygame.K_LEFT,
+       "target": pygame.K_LSHIFT
     }
 
 
@@ -52,25 +69,6 @@ KEY = {
 """
 Classes
 """
-class InputManager(object):
-    """
-    The duty of this class is to check if any available actions should
-    be activated based on the most recent event.
-    """
-    def getPressed(event, action: str):
-        """
-        Returns true if an action is pressed
-        """
-        if action == "motion":
-            ##True if joystick is being moved
-            return event.type == pygame.JOYAXISMOTION
-        
-        #otherwise return true if a button is pressed and that button corresponds to the action
-        return event.type == pygame.JOYBUTTONDOWN and event.button == GAMECUBE[action]
-
-    def getUnpressed(event, action: str):
-        #True if a button is released
-        return event.type == pygame.JOYBUTTONUP and event.button == GAMECUBE[action]
 
 
 class EventManager(object):
@@ -99,7 +97,7 @@ class EventManager(object):
             self.deadZone = 0.5
 
             self.cursorReady = False
-            self. eventBufferTimer = 0.0
+            self.eventBufferTimer = 0.0
         
         def toggleFetching(self):
             self.readyToFetch = not self.readyToFetch
@@ -125,6 +123,9 @@ class EventManager(object):
                 if joystick.get_name() == "Generic USB Joystick":
                     self.controller = "Gamecube"
                     pygame.joystick.Joystick(i).init()
+                elif joystick.get_name() == "Nintendo Switch Pro Controller":
+                    self.controller = "Switch"
+                    pygame.joystick.Joystick(i).init()
                 
         
         def removeJoystick(self, id):
@@ -145,9 +146,9 @@ class EventManager(object):
         ##Handle each event
         def handleEvents(self, engine):
             if self.readyToFetch:
-               
                 ##Handle events in the queue
                 for event in pygame.event.get():
+                    
                     
                     ##Quit game
                     if event.type == pygame.QUIT:
@@ -155,12 +156,15 @@ class EventManager(object):
                         return
                     
                     ##  Window manipulation
-                    if event.type == pygame.WINDOWMOVED:
+                    if event.type == pygame.WINDOWMOVED or event.type == pygame.WINDOWLEAVE or not pygame.mouse.get_focused():
                         if engine.state == "game":
                             if engine.game.player:
                                 engine.game.player.stop()
+                            
                             engine.state.pause()
+                        pygame.event.clear()
                         return
+                        
 
                     ##  Controller plugged
                     if event.type == pygame.JOYDEVICEADDED:
@@ -175,15 +179,20 @@ class EventManager(object):
                     if self.controller == "Gamecube":
                         if event.type == pygame.JOYBUTTONDOWN:
                             ACTIONS["interact"] = event.button == GAMECUBE["interact"]
+                            ACTIONS["run"] = event.button == GAMECUBE["run"]
                             ACTIONS["shoot"] = event.button == GAMECUBE["shoot"]
                             ACTIONS["element"] = event.button == GAMECUBE["element"]
                             ACTIONS["pause"] = event.button == GAMECUBE["pause"]
                             ACTIONS["map"] = event.button == GAMECUBE["map"]
-                        
+                            if event.button == GAMECUBE["target"]:
+                                ACTIONS["target"] = True
+
                         elif event.type == pygame.JOYBUTTONUP:
                             button = event.button
                             if button == GAMECUBE["interact"]:
                                 ACTIONS["interact"] = False
+                            elif button == GAMECUBE["run"]:
+                                ACTIONS["run"] = False
                             elif button == GAMECUBE["shoot"]:
                                 ACTIONS["shoot"] = False
                             elif button == GAMECUBE["element"]:
@@ -192,8 +201,15 @@ class EventManager(object):
                                 ACTIONS["pause"] = False
                             elif button == GAMECUBE["map"]:
                                 ACTIONS["map"] = False
+                            elif button == GAMECUBE["target"]:
+                                ACTIONS["target"] = False
 
                         elif event.type == pygame.JOYAXISMOTION:
+                            if event.value <= self.deadZone:
+                                ACTIONS["motion"] = False
+                            ACTIONS["motion"] = True
+                            ACTIONS["motion_axis"] = event.axis
+                            ACTIONS["motion_value"] = event.value
                             if event.axis == 1:
                                 ##Upwards
                                 if event.value < 0:
@@ -240,15 +256,111 @@ class EventManager(object):
                                 else:
                                     ACTIONS["left"] = False
                                     ACTIONS["right"] = False
-                    
+                
+                    #Switch
+                    elif self.controller == "Switch":
+                        if event.type == pygame.JOYBUTTONDOWN:
+                            ACTIONS["interact"] = event.button == SWITCH["interact"]
+                            ACTIONS["run"] = event.button == SWITCH["run"]
+                            ACTIONS["shoot"] = event.button == SWITCH["shoot"]
+                            ACTIONS["element"] = event.button == SWITCH["element"]
+                            ACTIONS["pause"] = event.button == SWITCH["pause"]
+                            ACTIONS["map"] = event.button == SWITCH["map"]
+
+                        elif event.type == pygame.JOYBUTTONUP:
+                            button = event.button
+                            if button == SWITCH["interact"]:
+                                ACTIONS["interact"] = False
+                            elif button == SWITCH["run"]:
+                                ACTIONS["run"] = False
+                            elif button == SWITCH["shoot"]:
+                                ACTIONS["shoot"] = False
+                            elif button == SWITCH["element"]:
+                                ACTIONS["element"] = False
+                            elif button == SWITCH["pause"]:
+                                ACTIONS["pause"] = False
+                            elif button == SWITCH["map"]:
+                                ACTIONS["map"] = False
+
+                        elif event.type == pygame.JOYAXISMOTION:
+                            if event.axis == 4:
+                                #print(event)
+                                if event.value >= self.deadZone:
+                                    ACTIONS["target"] = True
+                                else:
+                                    ACTIONS["target"] = False
+                            
+                            else:
+                                if event.value <= self.deadZone:
+                                    ACTIONS["motion"] = False
+                                ACTIONS["motion"] = True
+                                ACTIONS["motion_axis"] = event.axis
+                                ACTIONS["motion_value"] = event.value
+                                if event.axis == 1:
+                                    ##Upwards
+                                    if event.value < 0:
+                                        if event.value < -self.deadZone:
+                                            ACTIONS["up"] = True
+                                            ACTIONS["down"] = False
+                                        else:
+                                            ACTIONS["up"] = False
+                                            ACTIONS["down"] = False
+                                    
+                                    ##Downwards
+                                    elif event.value > 0:
+                                        if event.value > self.deadZone:
+                                            ACTIONS["down"] = True
+                                            ACTIONS["up"] = False
+                                        else:
+                                            ACTIONS["down"] = False
+                                            ACTIONS["up"] = False
+                                    
+                                    else:
+                                        ACTIONS["up"] = False
+                                        ACTIONS["down"] = False
+                            
+
+                                elif event.axis == 0:
+                                    ##Leftwards
+                                    if event.value < 0:
+                                        if event.value < -self.deadZone:
+                                            ACTIONS["left"] = True
+                                            ACTIONS["right"] = False
+                                        else:
+                                            ACTIONS["left"] = False
+                                            ACTIONS["right"] = False
+                                    
+                                    ##Rightwards
+                                    elif event.value > 0:
+                                        if event.value > self.deadZone:
+                                            ACTIONS["right"] = True
+                                            ACTIONS["left"] = False
+                                        else:
+                                            ACTIONS["right"] = False
+                                            ACTIONS["left"] = False
+
+                                    else:
+                                        ACTIONS["left"] = False
+                                        ACTIONS["right"] = False
                     #Keyboard
                     elif self.controller == "key":
                         if event.type == pygame.KEYDOWN:
-                            ACTIONS["interact"] = event.key == KEY["interact"]
-                            ACTIONS["shoot"] = event.key == KEY["interact"]
-                            ACTIONS["element"] = event.key == KEY["interact"]
-                            ACTIONS["pause"] = event.key == KEY["interact"]
-                            ACTIONS["map"] = event.key == KEY["interact"]
+                            key = event.key
+                            ACTIONS["interact"] = key == KEY["interact"]
+                            ACTIONS["shoot"] = key == KEY["shoot"]
+                            ACTIONS["element"] = key == KEY["element"]
+                            ACTIONS["pause"] = key == KEY["pause"]
+                            ACTIONS["map"] = key == KEY["map"]
+                            ##Movement
+                            if key == KEY["down"]:
+                                ACTIONS["down"] = True
+                            elif key == KEY["up"]:
+                                ACTIONS["up"] = True
+                            elif key == KEY["right"]:
+                                ACTIONS["right"] = True
+                            elif key == KEY["left"]:
+                                ACTIONS["left"] = True
+         
 
                         elif event.type == pygame.KEYUP:
                             key = event.key
@@ -262,23 +374,30 @@ class EventManager(object):
                                 ACTIONS["pause"] = False
                             elif key == KEY["map"]:
                                 ACTIONS["map"] = False
-                    
+                            elif key == KEY["down"]:
+                                ACTIONS["down"] = False
+                            elif key == KEY["up"]:
+                                ACTIONS["up"] = False
+                            elif key == KEY["right"]:
+                                ACTIONS["right"] = False
+                            elif key == KEY["left"]:
+                                ACTIONS["left"] = False
                     
                     
                     ##Move menu cursors
                     #engine.moveMenuCursor()
                     ##Handle collision
-                    engine.handleCollision()
-                    
-                    
-                    
                 
+                    
+                    
+                    
+                engine.handleCollision()
                 engine.handleEvent()
         
 
         def updateBuffer(self, seconds):
             if not self.cursorReady:
                 self.eventBufferTimer += seconds
-                if self.eventBufferTimer >= 0.2:
+                if self.eventBufferTimer >= 0.15:
                     self.cursorReady = True
                     self.eventBufferTimer = 0.0

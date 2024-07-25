@@ -22,9 +22,31 @@ class Floor(Drawable):
     """
     The bottom layer of a room that may be animated
     """
-    def __init__(self, room_dir, animate = False):
+    def __init__(self, room_dir, prefix = "tiles", animate = False, nFrames = 6, fps = 8, tick = 3):
         self.position = vec(0,0)
-        self.image = SpriteManager.getInstance().getFx(room_dir, "tiles.png")
+        self.prefix = prefix
+        
+        self.animate = animate
+        if animate:
+            self.roomDir = room_dir
+            self.frame = 0
+            self.nFrames = nFrames
+            self.fps = fps
+            self.frameTimer = 0.0
+            self.image = SpriteManager.getInstance().getFx(self.roomDir, self.prefix  + "_" + str(self.frame+1)+".png")
+        else:
+            self.image = SpriteManager.getInstance().getFx(room_dir, prefix + ".png")
+        
+    def update(self, seconds):
+        if self.animate:
+            ##Update frame
+            if self.frameTimer > 1 / self.fps:
+                self.frameTimer -= 1 / self.fps
+                self.frame += 1
+                self.frame %= self.nFrames
+                self.image = SpriteManager.getInstance().getFx(self.roomDir, self.prefix  + "_" + str(self.frame+1)+".png")
+            else:
+                self.frameTimer += seconds
    
 
 class Walls(Drawable):

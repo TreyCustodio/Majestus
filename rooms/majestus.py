@@ -165,13 +165,15 @@ class Test(AbstractEngine):
     class _T(AE):
         def __init__(self):
             super().__init__("test")
-            self.bgm = "tension.mp3"
+            self.bgm = "MSM_Castle.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
+            self.firi = Firi(vec(16*9, 16*6), 1)
             self.npcs = [
-  
+
             ]
+
             self.doors = [0]
             self.trigger1 = Trigger(door = 0)
             self.spawning = [ 
@@ -240,6 +242,12 @@ class Knight(AbstractEngine):
             ]
             for i in range(3):
                 self.obstacles.append(ForceField(COORD[8+i][11], render = False))
+
+            self.floor = Floor("knight", animate=True, nFrames=3)
+            
+            self.effects_behind_walls = [
+                Floor("knight")
+            ]
 
         def reset(self):
             super().reset()
@@ -435,13 +443,7 @@ class Intro_1(AbstractEngine):
             image = Drawable(self.boxPos, "TextBox2.png", (0,7))
             image.draw(drawSurface)
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            
-            
-            super().initializeRoom(player, pos, keepBGM)
-            if FLAGS[2] == False:
-                self.displayText("       Entrance Hall    ", large = False)
-                FLAGS[2] = True
+
 
         """
         Auxilary
@@ -867,16 +869,20 @@ class Alpha_Flapper(AbstractEngine):
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 2)
             self.doors = [0,2]
-            self.flapper = AlphaFlapper(vec(16*8 + 8, 16*3))
-            self.npcs = [self.flapper]
-            self.textInt = 0
+            if not FLAGS[110]:
+                self.flapper = AlphaFlapper(vec(16*8 + 8, 16*3))
+                self.npcs = [self.flapper]
+            self.textInt = -1
+            self.tileFrame = 0
             self.obstacles = [
             ]
             for i in range(3):
                 self.obstacles.append(ForceField(COORD[8+i][1], render=False))
             for i in range(3):
                 self.obstacles.append(ForceField(COORD[8+i][11], render = False))
-            
+            if FLAGS[110]:
+                self.floor = Floor("alpha_flapper", "tiles_8")
+
         def reset(self):
             super().reset()
             if not FLAGS[110]:
@@ -884,6 +890,9 @@ class Alpha_Flapper(AbstractEngine):
                 self.flapper.hp = self.flapper.maxHp
                 self.flapper.moving = False
                 self.vanishObstacles()
+                self.tileFrame = 0
+                self.textInt = -1
+                self.floor = Floor("alpha_flapper")
 
         def bsl(self, enemy, bossTheme):
             super().bsl(enemy, bossTheme)
@@ -921,6 +930,29 @@ class Alpha_Flapper(AbstractEngine):
                     self.textInt += 1
                 super().update(seconds)
             elif self.textInt == 2:
+                if self.timer >= 0.1:
+                    self.timer = 0.0
+                    #3, 2, 1, 5, 6, 7, 8
+                    self.floor = Floor("alpha_flapper", "tiles_"+str(self.tileFrame-1))
+                    self.tileFrame -= 1
+                    if self.tileFrame == 1:
+                        self.textInt = 3
+                        self.tileFrame = 4
+                else:
+                    self.timer += seconds
+            elif self.textInt == 3:
+                if self.timer >= 0.1:
+                    self.timer = 0.0
+                    ##Fall
+                    if self.tileFrame == 8:
+                        self.textInt = 4
+                    else:
+                        #5, 6, 7, 8
+                        self.floor = Floor("alpha_flapper", "tiles_"+str(self.tileFrame+1))
+                        self.tileFrame += 1
+                else:
+                    self.timer += seconds
+            elif self.textInt == 4:
                 super().update(seconds)
                 if self.flapper.dead:
                     self.vanishObstacles()
@@ -934,6 +966,17 @@ class Alpha_Flapper(AbstractEngine):
                     SoundManager.getInstance().fadeoutBGM()
                     self.displayText("Skreeeeeeee!&&\nOutsider, begone!&&\n")
                     self.textInt += 1
+                elif self.textInt == -1:
+                    if self.timer >= 0.1:
+                        self.timer = 0.0
+                        ##Fall
+                        if self.tileFrame == 4:
+                            self.textInt = 0
+                        else:
+                            self.floor = Floor("alpha_flapper", "tiles_"+str(self.tileFrame+1))
+                            self.tileFrame += 1
+                    else:
+                        self.timer += seconds
             else:
                 super().update(seconds)
                 
@@ -1224,14 +1267,10 @@ class Grand_Chapel(AbstractEngine):
                         self.displayText("Not enough shards.")
                     self.promptResult = False
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            super().initializeRoom(player, pos, keepBGM)
-            self.fire.updateCost()
+            
 
-            if FLAGS[1] == False:
-                self.displayText("        Grand  Chapel    ", large = False)
-                FLAGS[1] = True
-                FLAGS[51] = True
+        def on_enter(self):
+            self.fire.updateCost()
 
         #override
         def createBlocks(self):
@@ -1638,12 +1677,6 @@ class Flame_1(AbstractEngine):
             self.blocks.append(self.yblock2)
             self.blocks.append(self.yblock3)
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if FLAGS[3] == False:
-                self.displayText("    Corridor of the Flame", large = False)
-                FLAGS[3] = True
-            
-            super().initializeRoom(player, pos, keepBGM)
 
 
         def handleClear(self):
@@ -1982,9 +2015,7 @@ class Flame_4(AbstractEngine):
             self.barTrigger = Trigger(COORD[3][3], width=32)
             self.shopTrigger = Trigger(COORD[13][5], width = 32, height = 16)
             
-
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            super().initializeRoom(player, pos, keepBGM)
+        def on_enter(self):
             if not FLAGS[52]:
                 FLAGS[52] = True
 
@@ -2363,6 +2394,7 @@ class Flame_7(AbstractEngine):
            self.blocks.append(self.trigger2)
         
         def popBlocks(self):
+            INV["keys"] -= 1
             self.playSound("LA_Dungeon_Teleport_Appear.wav")
             self.blocks.pop(self.blocks.index(self.block))
             self.blocks.pop(self.blocks.index(self.yblock1))

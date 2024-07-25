@@ -1,5 +1,5 @@
 from utils import vec, SpriteManager, SoundManager
-from UI import InputManager
+from UI import EventManager
 from . import Drawable
 """
 This file contains everything pertaining to

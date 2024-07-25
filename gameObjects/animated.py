@@ -213,63 +213,7 @@ class Animated(Drawable):
             self.image = SpriteManager.getInstance().getSprite(self.fileName,
                                                 (self.frame, self.row))
 
-"""
-Represents animated images on the HUD
-"""
-class HudImage(Animated):
-    def __init__(self, position, offset, nFrames=4, fps=2):
-        super().__init__(position, fileName="drops.png", offset=(0,0))
-        self.row = offset[1]
-        self.nFrames = nFrames
-        self.framesPerSecond = fps
-        self.image = SpriteManager.getInstance().getSprite("drops.png", offset)
 
-    
-"""
-Manages images in the hud in a singleton style
-"""
-class HudImageManager(object):
-
-    MONEY = None
-    KEYS = None
-    BOMBOS = None
-    OBJECTS = []
-
-    def initialize():
-        HudImageManager.MONEY = HudImage((0, RESOLUTION[1]-50), offset= (0,1))
-        HudImageManager.KEYS = HudImage((0, RESOLUTION[1]-16), offset=(0,3))
-        HudImageManager.BOMBOS = HudImage((0, RESOLUTION[1]-34), offset=(0,8))
-    
-    def addObject(obj):
-        HudImageManager.OBJECTS.append(obj)
-        
-    def getMoney():
-        return HudImageManager.MONEY
-    
-    def getKeys():
-        return HudImageManager.KEYS
-
-    def getBombos():
-        return HudImageManager.BOMBOS
-
-    def getObjects():
-        return HudImageManager.OBJECTS
-
-    def draw(drawSurface):
-        if HudImageManager.OBJECTS:
-            for o in HudImageManager.OBJECTS:
-                o.draw(drawSurface)
-
-    def update(seconds):
-        if HudImageManager.MONEY != None:
-            HudImageManager.MONEY.update(seconds)
-        if HudImageManager.KEYS != None:
-            HudImageManager.KEYS.update(seconds)
-        if HudImageManager.BOMBOS != None:
-            HudImageManager.BOMBOS.update(seconds)
-        if HudImageManager.OBJECTS:
-            for o in HudImageManager.OBJECTS:
-                o.update(seconds)
 
 class Fade():
     """
