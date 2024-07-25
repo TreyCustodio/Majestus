@@ -229,38 +229,56 @@ class Knight(AbstractEngine):
                 self.knight,
                 Bopper(COORD[2][2]),
                 Bopper(COORD[16][2]),
-                Bopper(COORD[2][9]),
-                Bopper(COORD[16][9]),
+                Bopper(COORD[2][10]),
+                Bopper(COORD[16][10]),
             ]
-            self.doors = [0]
+            self.doors = [0, 2]
             self.trigger1 = Trigger(door = 0)
             self.spawning = [ 
                 #GreenHeart(vec(16*2, 16*10))
                 ]
             self.playingMusic = False
-            self.obstacles = [
-            ]
-            for i in range(3):
-                self.obstacles.append(ForceField(COORD[8+i][11], render = False))
 
             self.floor = Floor("knight", animate=True, nFrames=3)
             
             self.effects_behind_walls = [
                 Floor("knight")
             ]
+            self.textInt = -2
+            self.tileFrame = 0
 
         def reset(self):
             super().reset()
+            self.effects_behind_walls = [
+                    Floor("knight")
+                ]
             if not FLAGS[111]:
                 self.knight.reset()
                 self.vanishObstacles()
+                
         
-        def initializeRoom(self, player=None, pos=None, keepBGM=False, placeEnemies=True):
-            super().initializeRoom(player, pos, keepBGM, placeEnemies)
+        def renderObstacles(self):
+            for i in range(8,11):
+                self.blocks.append(IBlock(vec(16*i, 16*12), vanish=True))
+                self.blocks.append(IBlock(vec(16*i, 0), vanish=True))
+        
+        def vanishObstacles(self):
+            self.vanishBlocks()
 
         #override
         def createBlocks(self):
-           self.blocks.append(self.trigger1)
+            self.blocks.append(self.trigger1)
+            for i in range(1,12):
+                self.terrain.append(Lava(vec(16*3, 16*i), width=8))
+                self.terrain.append(Lava(vec(16*4 - 8, 16*i)))
+                self.terrain.append(Lava(vec(16*14 + 8, 16*i)))
+                self.terrain.append(Lava(vec(16*15 + 8, 16*i), width=8))
+            for i in range(3,10):
+                self.terrain.append(Lava(vec(16*2, 16*i)))
+                self.terrain.append(Lava(vec(16*2 - 8, 16*i), width=8))
+
+                self.terrain.append(Lava(vec(16*16, 16*i)))
+                self.terrain.append(Lava(vec(16*17, 16*i), width=8))
            
         #override
         def blockCollision(self):
@@ -286,6 +304,19 @@ class Knight(AbstractEngine):
 
         def update(self, seconds):
             if FLAGS[111]:
+                if self.textInt == 3:
+                    if self.timer >= 0.1:
+                        self.timer = 0.0
+                        self.effects_behind_walls[0] = Floor("knight", "ground_"+str(self.tileFrame-1))
+                        self.tileFrame -= 1
+                        if self.tileFrame == 1:
+                            self.textInt += 1
+                    else:
+                        self.timer += seconds
+                elif self.textInt == 4:
+                    self.textInt = -2
+                    self.effects_behind_walls[0] = Floor("knight")
+
                 super().update(seconds)
                 return
             if self.fightingBoss:
@@ -308,11 +339,24 @@ class Knight(AbstractEngine):
                     else:
                         super().update(seconds)
                 elif self.textInt == 0:
+                    self.knight.ignoreCollision = False
+                    self.displayText(SPEECH["lava_knight"], icon=ICON["knight"])
+                    self.textInt += 1
+                
+                elif self.textInt == -1:
+                    if self.timer >= 0.1:
+                        self.timer = 0.0
+                        self.effects_behind_walls[0] = Floor("knight", "ground_"+str(self.tileFrame+1))
+                        self.tileFrame += 1
+                        if self.tileFrame == 4:
+                            self.textInt += 1
+                    else:
+                        self.timer += seconds
+
+                elif self.textInt == -2:
                     self.player.stop()
                     self.player.keyLock()
                     SoundManager.getInstance().fadeoutBGM()
-                    self.knight.ignoreCollision = False
-                    self.displayText(SPEECH["lava_knight"], icon=ICON["knight"])
                     self.textInt += 1
             else:
                 super().update(seconds)
@@ -886,9 +930,7 @@ class Alpha_Flapper(AbstractEngine):
         def reset(self):
             super().reset()
             if not FLAGS[110]:
-                self.flapper.position = vec(16*8 + 8, 16*3)
-                self.flapper.hp = self.flapper.maxHp
-                self.flapper.moving = False
+                self.flapper.reset(vec(16*8 + 8, 16*3))
                 self.vanishObstacles()
                 self.tileFrame = 0
                 self.textInt = -1
@@ -897,16 +939,37 @@ class Alpha_Flapper(AbstractEngine):
         def bsl(self, enemy, bossTheme):
             super().bsl(enemy, bossTheme)
             self.renderObstacles()
+        
+        def vanishObstacles(self):
+            self.blocks = [b for b in self.blocks if not b.vanish]
             
 
+        def renderObstacles(self):
+            for i in range(8,11):
+                self.blocks.append(IBlock(vec(16*i, 16*10), popProjectiles=False, vanish=True))
+            for i in range(8,11):
+                self.blocks.append(IBlock(vec(16*i, 16*2), popProjectiles=False, vanish=True))
+        
         def bse(self):
             super().bse()
 
         #override
         def createBlocks(self):
-           self.blocks.append(self.trigger1)
-           self.blocks.append(self.trigger2)
-        
+            self.blocks.append(self.trigger1)
+            self.blocks.append(self.trigger2)
+            for i in range(3,8):
+                self.blocks.append(IBlock(vec(16*i, 16*10), popProjectiles=False))
+            for i in range(11,16):
+                self.blocks.append(IBlock(vec(16*i, 16*10), popProjectiles=False))
+            for i in range(3,8):
+                self.blocks.append(IBlock(vec(16*i, 16*2), popProjectiles=False))
+            for i in range(11,16):
+                self.blocks.append(IBlock(vec(16*i, 16*2), popProjectiles=False))
+            for i in range(3,10):
+                self.blocks.append(IBlock(vec(16*2, 16*i), popProjectiles=False))
+            for i in range(3,10):
+                self.blocks.append(IBlock(vec(16*16, 16*i), popProjectiles=False))
+
         #override
         def blockCollision(self):
             for b in self.blocks:

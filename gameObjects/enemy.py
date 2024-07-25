@@ -587,9 +587,8 @@ class LavaKnight(Enemy):
 
     def getCollisionRect(self):
         return pygame.Rect((self.position[0], self.position[1]+8), (32,24))
-    
     def getStartupRect(self):
-        return pygame.Rect((self.position[0]-8, self.position[1]+32), (48, 24))
+        return pygame.Rect((self.position[0]-200, self.position[1]+32), (400, 24))
     
     def getShadowRect(self):
         return pygame.Rect((self.shadow.position[0] + 7, self.shadow.position[1] + 27), (19,5))
@@ -602,7 +601,7 @@ class LavaKnight(Enemy):
         self.frame %= 3
 
     def draw(self, drawSurface):
-        super().draw(drawSurface)
+        super().draw(drawSurface, True)
     
     def drawTop(self, drawSurface):
         self.shadow.draw(drawSurface)
@@ -1831,6 +1830,7 @@ class AlphaFlapper(Enemy):
         super().__init__(position, "alphaflapper.png", typeRow)
         self.typeRow = typeRow
         self.speed = 20
+        self.initial_speed = 20
         self.hurtRow = 1
         self.maxHp = 60
         self.hp = self.maxHp
@@ -1841,6 +1841,12 @@ class AlphaFlapper(Enemy):
         self.secondsPerFrame = 0.1
         self.fading = False
 
+    def reset(self, position):
+        self.position = position
+        self.hp = self.maxHp
+        self.moving = False
+        self.ignoreCollision = True
+        self.speed = self.initial_speed
 
     def getCollisionRect(self):
         return pygame.Rect((self.position[0] + 4, self.position[1] + 8), (24,20))
@@ -1855,6 +1861,7 @@ class AlphaFlapper(Enemy):
             Flapper.move(self, seconds)
     
     def adjustVelocity(self):
+        print("S")
         if self.vel[0] > 0:
             self.vel[0] = self.speed
         elif self.vel[0] > 0:

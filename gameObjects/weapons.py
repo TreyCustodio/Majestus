@@ -78,11 +78,11 @@ class AbstractWeapon(Animated):
         vanishes once out of bounds, updates position otherwise
         """
         if self.direction == 0:
-            if (self.position[1]) >= RESOLUTION[1]:
+            if (self.position[1]) >= engine.size[1]:
                 engine.disappear(self)
                 return
         elif self.direction == 1:
-            if (self.position[0]) >= RESOLUTION[0]:
+            if (self.position[0]) >= engine.size[0]:
                 engine.disappear(self)
                 return
         elif self.direction == 2:
@@ -114,14 +114,15 @@ class AbstractWeapon(Animated):
 
     def setArrowProperties(self, hp=0):
         if self.id == "bombo":
-            if hp == INV["max_hp"]:
-                self.speed = 300
-                damage = 5
-                self.column = 4
-            elif hp <= INV["max_hp"]//3 or hp == 1:
+            
+            if hp <= INV["max_hp"]//3 or hp == 1:
                 self.speed = 175
                 damage = 10
                 self.column = 5
+            elif hp == INV["max_hp"]:
+                self.speed = 300
+                damage = 5
+                self.column = 4
             else:
                 damage = 5
                 self.speed = 175
@@ -129,14 +130,15 @@ class AbstractWeapon(Animated):
             return damage
         
         elif self.id == "arrow":
-            if hp == INV["max_hp"]:
-                self.speed = 900
-                damage = 2
-                self.column = 1
-            elif hp <= INV["max_hp"]//3 or hp == 1:
+            
+            if hp <= INV["max_hp"]//3 or hp == 1:
                 self.speed = 300
                 damage = 6
                 self.column = 2
+            elif hp == INV["max_hp"]:
+                self.speed = 900
+                damage = 2
+                self.column = 1
             else:
                 damage = 2
                 self.speed = 300

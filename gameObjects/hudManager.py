@@ -1,8 +1,199 @@
 from . import Drawable, Animated, Number
-from utils import SpriteManager, SoundManager, vec, INV, RESOLUTION
+from utils import SpriteManager, SoundManager, vec, INV, RESOLUTION, EQUIPPED, INV
 import pygame
 
+class AmmoBar(object):
+    """
+    Displays the currently selected arrow on the HUD
+    """
+    _INSTANCE = None
+    
+    @classmethod
+    def getInstance(cls):
+        if AmmoBar._INSTANCE == None:
+            AmmoBar._INSTANCE = cls._AB()
+            return AmmoBar._INSTANCE
+        else:
+            return AmmoBar._INSTANCE
+    
+    class _AB(Drawable):
+        def __init__(self):
+            super().__init__(vec(0,15), "ammo.png", (0, EQUIPPED["Arrow"]+1))
+            self.damageId = 0
+            self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
+            
 
+        def setArrow(self, player):
+            if not player.arrowReady:
+                self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (3, 0))
+                self.image = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, EQUIPPED["Arrow"]+1))
+            else:
+                self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
+                self.image = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, EQUIPPED["Arrow"]+1))
+            
+        def draw(self, drawSurface, player):
+            if player.hp <= INV["max_hp"]//3 or player.hp == 1:
+                self.damageId = 2
+            elif player.hp == INV["max_hp"]:
+                self.damageId = 1
+            else:
+                self.damageId = 0
+            
+            self.setArrow(player)
+            drawSurface.blit(self.backImage, self.position)
+            drawSurface.blit(self.image, self.position)
+            #super().draw(drawSurface)
+
+"""
+Displays the currently selected element on the HUD
+"""
+class ElementIcon(object):
+    _INSTANCE = None
+    
+    @classmethod
+    def getInstance(cls):
+        if ElementIcon._INSTANCE == None:
+            ElementIcon._INSTANCE = cls._EI()
+            return ElementIcon._INSTANCE
+        else:
+            return ElementIcon._INSTANCE
+    
+    class _EI(Drawable):
+        def __init__(self):
+            super().__init__(vec(15,15), "element.png", (0,0))
+
+        def draw(self, drawSurface):
+            equipped = EQUIPPED["C"]
+            if equipped != None:
+                self.image = SpriteManager.getInstance().getSprite("element.png", (equipped+1, 0))
+            drawSurface.blit(self.image, self.position)
+
+class EnergyBar(Drawable):
+    """
+    Displays the player's energy meter on the HUD.
+    For Gale Slash and Thunder Clap
+    """
+    def __init__(self):
+        super().__init__(vec(0,31), "energy.png", (0,0))
+        self.element = 0
+        self.flashTimer = 0
+
+    def setElement(self, int=0):
+        self.element = int
+        self.image = SpriteManager.getInstance().getSprite("energy.png", (self.element,0))
+
+    def draw(self, drawSurface):
+        drawSurface.blit(self.image, self.position)
+
+
+    
+    def drawWind(self, timer, drawSurface):
+        """
+        fill meter as timer increases
+        """
+        
+        #convert timer to an int and shift decimal
+        if timer < 2.5:
+            convertedTimer = int(timer * 10)
+        else:
+            convertedTimer = 25
+
+        #print(convertedTimer)
+        #28 pixels to fill
+        #1 pixel on top and 1 on bottom 
+        drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (2, 0)), list(map(int, self.position)))
+        
+        innerFlash = pygame.Surface((1,1), pygame.SRCALPHA)
+        innerFlash.fill(pygame.Color(0,235,0))
+
+        light = pygame.Surface((1,1), pygame.SRCALPHA)
+        light.fill(pygame.Color(0,220,0))
+        green = pygame.Surface((1,1), pygame.SRCALPHA)
+        green.fill(pygame.Color(0,180,0))
+
+        def drawBar(timer, width, drawPos, edge = False):
+            if edge:
+                for i in range(width):
+                    if timer >= 2.5:
+                        if timer < 2.7:
+                            light.fill(pygame.Color(0,255,0))
+                        elif timer >= 2.7 and timer < 2.9:
+                            light.fill(pygame.Color(0,220,0))
+                        elif timer >= 2.9:
+                            light.fill(pygame.Color(0,255,0))
+                    drawSurface.blit(light, (drawPos[0]+i, drawPos[1]))
+                return
+            
+            bottomPos = drawPos
+            for i in range(1, width):
+                if timer >= 2.5:
+                    if timer < 2.7:
+                        drawSurface.blit(innerFlash, (drawPos[0]+i, drawPos[1]))
+                        light.fill(pygame.Color(0,255,0))
+                    elif timer >= 2.7 and timer < 2.9:
+                        drawSurface.blit(green, (drawPos[0]+i, drawPos[1]))
+                        light.fill(pygame.Color(0,220,0))
+                    elif timer >= 2.9:
+                        drawSurface.blit(innerFlash, (drawPos[0]+i, drawPos[1]))
+                        light.fill(pygame.Color(0,255,0))
+                    
+                    
+                else:
+                    drawSurface.blit(green, (drawPos[0]+i, drawPos[1]))
+
+            drawSurface.blit(light, bottomPos)
+            drawSurface.blit(light, (drawPos[0]+width-1, drawPos[1]))
+        
+        ##Draw bottom bar of pixels
+        if timer > 0:
+            drawPos = vec(3,60)
+            drawBar(timer, 10, drawPos, edge=True)
+
+            ##Draw the middle part
+            if timer >= 0.1:
+                drawPos = vec(2, 60-convertedTimer)
+                yPos = int(drawPos[1])
+                for i in range(60 - yPos):
+                    drawPos[1] = yPos + i
+                    drawBar(timer,12, drawPos)
+   
+
+                ##Draw the top pixel
+                if convertedTimer >= 25:
+                    drawPos = vec(2,34)
+                    drawBar(timer,12, drawPos)
+            
+            
+
+                    drawPos = vec(3,33)
+                    drawBar(timer, 10, drawPos, edge= True)
+
+
+        """ elif timer > 0:
+            print("B")
+            sprite = pygame.Surface((10,1), pygame.SRCALPHA)
+            sprite.fill(pygame.Color(0,255,0))
+            drawPos = vec(3,60-convertedTimer)
+            drawSurface.blit(sprite, drawPos) """
+
+            
+     
+        """ if timer >= 2.5:
+            drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (2, 5)), list(map(int, self.position)))
+        elif timer >= 1.5:
+            drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (2, 3)), list(map(int, self.position)))
+        elif timer >= 0.5:
+            drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (2, 2)), list(map(int, self.position)))
+        else: """
+        
+
+    def drawThunder(self, timer, drawSurface):
+        if timer == 0:
+            drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (1, 5)), list(map(int, self.position)))
+        else:
+            drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (1, int(timer))), list(map(int, self.position)))
+
+            
 class HealthBar(object):
     """
     Displays the player's health on the HUD
@@ -91,18 +282,22 @@ class HealthBar(object):
 
 
         def drawNumber(self, position, number, drawSurface, row = 0):
+            position += Drawable.CAMERA_OFFSET
             if number >= 10:
                 currentPos = vec(position[0]-3, position[1])
                 number = str(number)
                 for char in number:
                     num = Number(currentPos, int(char), row)
                     num.position[0] -= num.getSize()[0] // 2
+                    
                     num.draw(drawSurface)
                     currentPos[0] += 6
             else:
                 num = Number(position, number, row)
                 num.position[0] -= num.getSize()[0] // 2
                 num.draw(drawSurface)
+
+
 
         def drawFull(self, drawSurface, player):
             ##Green##
@@ -405,6 +600,9 @@ class HudImage(Animated):
         self.framesPerSecond = fps
         self.image = SpriteManager.getInstance().getSprite("drops.png", offset)
 
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
+        drawSurface.blit(self.image, self.position)
+        #return super().draw(drawSurface, drawHitbox, use_camera)
 
 """
 Manages images in the hud in a singleton style

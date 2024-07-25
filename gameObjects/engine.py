@@ -112,9 +112,11 @@ class AE(object):
         self.projectiles = [] #weapons
         self.switches = []
         self.blocks = []
+        self.terrain = []
         self.torches = []
         self.doors = []
         self.tiles = []
+        self.trash = []
         self.drops = []
         self.topObjects = [] #Objects that need to be drawn after the player
         self.indicator = DamageIndicator()
@@ -205,7 +207,7 @@ class AE(object):
             if n.vanish:
                 self.disappear(n)
         self.drops = [
-            
+
         ]
             
         self.dropCount = 0
@@ -257,6 +259,9 @@ class AE(object):
     def vanishObstacles(self):
         for o in self.obstacles:
             o.vanish()
+    
+    def vanishBlocks(self):
+        self.blocks = [b for b in self.blocks if not b.vanish]
 
     def healPlayer(self, integer):
         if self.player.hp == INV["max_hp"]:
@@ -264,11 +269,11 @@ class AE(object):
         amountHealed = self.player.heal(integer)
         #self.healthBar.drawHeal(amountHealed)
 
-    def getDrunk(self):
+    def drink(self):
         self.player.drink()
     
-    def getHigh(self):
-        self.player.smoke()
+    def see(self):
+        self.player.see()
     
     def zoom(self):
         self.player.zoom()
@@ -942,11 +947,12 @@ class AE(object):
             
 
     def projectilesOnBlocks(self, block):
-        for p in self.projectiles:
-            if not p.hit:
-                if p.doesCollide(block):
-                #p.handleCollision(self)
-                    p.handleCollision(self)
+        if block.popProjectiles:
+            for p in self.projectiles:
+                if not p.hit:
+                    if p.doesCollide(block):
+                    #p.handleCollision(self)
+                        p.handleCollision(self)
     
     def projectilesOnTorches(self, torch):
         for p in self.projectiles:
@@ -965,7 +971,16 @@ class AE(object):
                             p.handleCollision(self)
                             o.handleCollision(p, self)
 
+    def terrainCollision(self):
+        if self.terrain:
+            for t in self.terrain:
+                if self.player.doesCollide(t):
+                    if t.id == "lava":
+                        if not INV["lavaBoots"]:
+                            self.player.hurt(2)
+
     def handleCollision(self):
+        self.terrainCollision()
         self.npcCollision()
         self.obstacleCollision()
         if not self.dying:
@@ -1352,6 +1367,9 @@ class AE(object):
         if self.torches:
             for torch in self.torches:
                 torch.draw(drawSurface)
+        if self.terrain:
+            for t in self.terrain:
+                t.draw(drawSurface)
         
     def drawArea(self, drawSurface):
         self.areaIntro.draw(drawSurface)
@@ -1382,7 +1400,7 @@ class AE(object):
         Money
         """
         self.moneyImage.draw(drawSurface)        
-        Number((14, self.moneyImage.position[1]), row = 1).draw(drawSurface)
+        Number((14 + Drawable.CAMERA_OFFSET[0], self.moneyImage.position[1]), row = 1).draw(drawSurface)
         if INV["money"] == INV["wallet"]:
             self.drawNumber(vec(34, self.moneyImage.position[1]), INV["money"], drawSurface, row = 2)
         else:
@@ -1392,7 +1410,7 @@ class AE(object):
         Keys
         """
         self.keyImage.draw(drawSurface)
-        Number((14, self.keyImage.position[1]), row = 1).draw(drawSurface)
+        Number((14 + Drawable.CAMERA_OFFSET[0], self.keyImage.position[1]), row = 1).draw(drawSurface)
         self.drawNumber(vec(34, self.keyImage.position[1]), INV["keys"], drawSurface)
         
         """
@@ -1400,8 +1418,12 @@ class AE(object):
         """
         if EQUIPPED["Arrow"] == 1:
             self.bomboImage.draw(drawSurface)
-            Number((14, self.bomboImage.position[1]), row = 1).draw(drawSurface)
+            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), row = 1).draw(drawSurface)
             self.drawNumber(vec(34, self.bomboImage.position[1]), INV["bombo"], drawSurface)
+        elif EQUIPPED["Arrow"] == 0:
+            self.bomboImage.draw(drawSurface)
+            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), row = 1).draw(drawSurface)
+            Number((30 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), number=1, row = 1).draw(drawSurface)
 
         """
         Healthbar
@@ -1446,6 +1468,9 @@ class AE(object):
             self.drawNumber(vec(8,64), int(self.player.drunkTimer), drawSurface, row = 3)
 
         
+
+
+
     def drawTiles(self, drawSurface):
         if self.tiles:
             for t in self.tiles:
@@ -1453,6 +1478,7 @@ class AE(object):
 
 
     def drawNumber(self, position, number, drawSurface, row = 0):
+        position += Drawable.CAMERA_OFFSET
         if number >= 10:
             currentPos = vec(position[0]-3, position[1])
             number = str(number)

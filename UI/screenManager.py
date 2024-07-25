@@ -102,11 +102,11 @@ class ScreenManager(object):
                         
                         elif self.pauseEngine.promptFlag == "beer":
                             INV["beer"] -= 1
-                            self.game.getDrunk()
+                            self.game.drink()
                         
                         elif self.pauseEngine.promptFlag == "joint":
                             INV["joint"] -= 1
-                            self.game.getHigh()
+                            self.game.see()
                         
                         elif self.pauseEngine.promptFlag == "speed":
                             INV["speed"] -= 1
@@ -506,8 +506,7 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        #self.game = Test.getInstance()
-                        self.game = Intro_1.getInstance()#Intro_3.getInstance()
+                        self.game = Knight.getInstance()#Intro_3.getInstance()
                         self.game.lockHealth()
                         self.game.initializeRoom()
                         self.state.startGame()

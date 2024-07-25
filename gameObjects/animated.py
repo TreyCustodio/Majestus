@@ -4,15 +4,15 @@ from utils import SpriteManager, SoundManager, EQUIPPED, vec, RESOLUTION, INV, E
 
 class Animated(Drawable):
     
-    def __init__(self, position=(0,0), fileName="", offset = (0,0)):
+    def __init__(self, position=(0,0), fileName="", offset = (0,0), nFrames = 1, fps = 16):
         
         super().__init__(position, fileName, offset)
         self.fileName = fileName
         self.row = 0
         self.frame = 0
-        self.nFrames = 1
+        self.nFrames = nFrames
         self.animate = True
-        self.framesPerSecond = 16
+        self.framesPerSecond = fps
         self.animationTimer = 0
         self.FSManimated = None
 
@@ -35,11 +35,35 @@ class Animated(Drawable):
     def startAnimation(self, frame, state):
         pass
 
+    def updateTarget(self, seconds):
+        if self.getDirection() == 0:
+            self.target.position = vec(self.position[0], self.position[1]+24)
+        elif self.getDirection() == 1:
+            self.target.position = vec(self.position[0]+20, self.position[1]+4)
+        elif self.getDirection() == 2:
+            self.target.position = vec(self.position[0], self.position[1]-16)
+        elif self.getDirection() == 3:
+            self.target.position = vec(self.position[0]-20, self.position[1]+4)
 
+        self.target.animationTimer += seconds
+        
+        if self.target.animationTimer > 1 / self.target.framesPerSecond:
+            
+            self.target.frame += 1
+            self.target.frame %= self.target.nFrames
+            
+            self.target.animationTimer -= 1 / self.target.framesPerSecond
+            self.target.image = SpriteManager.getInstance().getSprite(self.target.fileName,
+                                                (self.target.frame, self.target.row))
+                                                
+  
+            
     def updatePlayer(self, seconds):
         """
         Update the player based on their states
         """
+        self.updateTarget(seconds)
+        
         self.animationTimer += seconds
         ##Animate Charging Sprite
         

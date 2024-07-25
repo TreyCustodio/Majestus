@@ -25,6 +25,7 @@ class Player(Animated):
         self.row = direction # (0 down), (1 right), (2 up), (3 left)
         self.dying = False
         self.dead = False
+
         #States
         
         
@@ -83,6 +84,8 @@ class Player(Animated):
         self.idleTimer = 0#Timer used for having the player stand still
         self.idleFrame = 9##Integer used to display flashing idle sprite while charging
         self.targeting = False
+        self.target = Animated(self.position, fileName="target.png", nFrames=4, fps=16)
+        self.rot = 1
         
         
     def drink(self):
@@ -95,7 +98,7 @@ class Player(Animated):
         self.speed = 100
         self.drunk = False
 
-    def smoke(self):
+    def see(self):
         self.high = True
     
     def heal(self, integer):
@@ -109,8 +112,23 @@ class Player(Animated):
             return integer
         
     def hurt(self, integer):
-        self.hp -= integer
-        
+        if not self.invincible:
+            if INV["chanceEmblem"]:
+                ##Only die on 1 hp
+                if self.hp <= 1:
+                    self.hp = 0
+                else:
+                    ##Take damage, set to 1 hp if hp <= 0
+                    self.hp -= integer
+                    if self.hp <= 0:
+                        self.hp = 1
+                    self.invincible = True
+                    SoundManager.getInstance().playSFX("hurt.wav")
+            else:
+                ##Regular damage routine
+                self.hp -= integer
+                SoundManager.getInstance().playSFX("hurt.wav")
+                self.invincible = True
     """
     Getter methods
     """
@@ -129,10 +147,12 @@ class Player(Animated):
     def getSlash(self):
         return self.slash
     
-    def getDirection(self, row):
+    def getDirection(self, row=None):
         """
         Return the direction of the player based on the row of its sprite
         """
+        if row == None:
+            row = self.row
         if row > 3:
             if row > 4 and row < 8:
                 return row - 4
@@ -184,6 +204,8 @@ class Player(Animated):
             self.ammo += 1 """
 
     def draw(self, drawSurface, drawHitbox = False, invis = False):
+        if self.targeting:
+            self.target.draw(drawSurface)
         if invis:
             drawSurface.blit(SpriteManager.getInstance().getSprite("null.png"), (0,0))
         else:
@@ -353,22 +375,23 @@ class Player(Animated):
                     self.shootSlash()
     
     def shootArrow(self):
-        equipped = EQUIPPED["Arrow"]
-        if equipped == 0:
-            ACTIONS["shoot"] = False
-            self.bullet = Bullet(self.position, self.getDirection(self.row), self.hp)
-            self.arrowCount -= 1
-            self.arrowReady = False
-            self.setWeaponDamage(self.bullet)
-
-        elif equipped == 1:
-            ACTIONS["shoot"] = False
-            if INV["bombo"] > 0:
-                self.bullet = Bombo(self.position, self.getDirection(self.row), self.hp)
-                self.arrowCount -= 1
+        if self.arrowReady:
+            equipped = EQUIPPED["Arrow"]
+            if equipped == 0:
+                ACTIONS["shoot"] = False
+                self.bullet = Bullet(self.position, self.getDirection(self.row), self.hp)
+                #self.arrowCount -= 1
                 self.arrowReady = False
                 self.setWeaponDamage(self.bullet)
-                INV["bombo"] -= 1
+
+            elif equipped == 1:
+                ACTIONS["shoot"] = False
+                if INV["bombo"] > 0:
+                    self.bullet = Bombo(self.position, self.getDirection(self.row), self.hp)
+                    #self.arrowCount -= 1
+                    self.arrowReady = False
+                    self.setWeaponDamage(self.bullet)
+                    INV["bombo"] -= 1
 
     def buttonsDown(self, event):
         if InputManager.getPressed(event, "shoot") and INV["shoot"] and self.arrowCount > 0 and self.arrowReady and not self.invincible: #and self.ammo > 0:
@@ -783,23 +806,10 @@ class Player(Animated):
 
     def enemyCollision(self, enemy, side):
         if self.invincible or enemy.frozen:
-            pass
+            return
         else:
-            if INV["chanceEmblem"]:
-                if self.hp == 1:
-                    self.hp = 0
-                else:
-                    self.hp -= enemy.getDamage()
-                    if self.hp <= 0:
-                        self.hp = 1
-                    SoundManager.getInstance().playSFX("hurt.wav")
-                    self.invincible = True
-                    self.knockback(side)
-            else:
-                self.hp -= enemy.getDamage()
-                SoundManager.getInstance().playSFX("hurt.wav")
-                self.invincible = True
-                self.knockback(side)
+            self.hurt(enemy.getDamage())
+            self.knockback(side)
             
     def preventCollision(self, object, side):
         #print("object", object)
@@ -1015,8 +1025,11 @@ class Player(Animated):
                 self.clapTimer = 0
                 self.clapReady = True
         
-        super().updatePlayer(seconds)
         self.position += self.vel * seconds
+        super().updatePlayer(seconds)
+        
+        
+        
 
     def updateMovement(self):
         pass

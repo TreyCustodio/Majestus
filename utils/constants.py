@@ -16,7 +16,7 @@ Global boolean values that represent flags.
 Used for a variety of special events.
 """
 FLAGS = [False for i in range(150)]
-FLAGS[110] = True
+#FLAGS[110] = True
 #for i in range (1, 10):
     #FLAGS[i] = True
 
@@ -99,7 +99,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 10,
+    "max_hp": 8,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -123,6 +123,7 @@ INV = {
     ##Consumables and key items
     "plant": 0,
     "chanceEmblem": True,
+    "lavaBoots": True,
     "syringe":True,
     "potion": 5,
     "smoothie": 5,

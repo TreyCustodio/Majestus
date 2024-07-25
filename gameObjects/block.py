@@ -7,10 +7,12 @@ Blocks are static, 16x16, cube-shaped objects
 that impede the player's movement.
 """
 class Block(Drawable):
-    def __init__(self, position=vec(0,0), offset = (5,0)):
+    def __init__(self, position=vec(0,0), offset = (5,0), vanish = False):
         super().__init__(position, "Objects.png", offset)
         self.width = 16
         self.height = 16
+        self.popProjectiles = True
+        self.vanish = vanish
     
     def draw(self, drawSurface, drawBox = False):
         super().draw(drawSurface, drawBox)
@@ -23,8 +25,9 @@ class IBlock(Block):
     """
     Invisible blocks
     """
-    def __init__(self, position = vec(0,0), width = 16, height = 16):
-        super().__init__(position, (0,0))
+    def __init__(self, position = vec(0,0), width = 16, height = 16, popProjectiles = True, vanish = False):
+        super().__init__(position, (0,0), vanish)
+        self.popProjectiles = popProjectiles
         self.width = width
         self.height = height
 
@@ -32,8 +35,23 @@ class IBlock(Block):
         return pygame.Rect(self.position, (self.width, self.height))
     
     def draw(self, drawSurface, drawBox = False):
-        super().draw(drawSurface, drawBox)
+        super().draw(drawSurface, False)
 
+class Terrain(IBlock):
+    def __init__(self, position=vec(0, 0), width=16, height=16, popProjectiles=True, vanish=False, id = ""):
+        super().__init__(position, width, height, popProjectiles, vanish)
+        self.id = id
+
+class Lava(Terrain):
+    def __init__(self, position=vec(0, 0), width=16, height=16, popProjectiles=True, vanish=False):
+        super().__init__(position, width, height, popProjectiles, vanish, "lava")
+
+    def draw(self, drawSurface, drawBox = False):
+        super().draw(drawSurface, False)
+        self.speedFactor = 1.5 #value to decrease speed by
+        if drawBox:
+            collision = rectAdd(-Drawable.CAMERA_OFFSET, self.getCollisionRect())
+            pygame.draw.rect(drawSurface, (255,100,0), collision, 1)
 
 
 class HBlock(Block):
