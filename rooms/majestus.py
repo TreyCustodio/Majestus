@@ -1078,26 +1078,26 @@ class Intro_3(AbstractEngine):
         def createBlocks(self):
             self.blocks.append(self.trigger1)
             self.blocks.append(self.trigger2)
-            for i in range(1,12):
+            for i in range(2,11):
                 self.blocks.append(Block(COORD[7][i], offset = (5,6)))
-            for i in range(1,12):
-                self.blocks.append(Block(COORD[6][i], offset = (5,6)))
-            for i in range(1,12):
+            for i in range(2,11):
+                self.blocks.append(Block(COORD[2][i], offset = (5,6)))
+            for i in range(2,11):
                 self.blocks.append(Block(COORD[11][i], offset = (5,6)))
-            for i in range(1,12):
-                self.blocks.append(Block(COORD[12][i], offset = (5,6)))
+            for i in range(2,11):
+                self.blocks.append(Block(COORD[16][i], offset = (5,6)))
 
-            for j in range(2,6,2):
-                for i in range(1,12):
+            for j in range(3,6,2):
+                for i in range(2,11):
                     self.torches.append(Torch((COORD[j][i])))
-            for j in range(3,7,2):
-                for i in range(1,12):
+            for j in range(4,7,2):
+                for i in range(2,11):
                     self.torches.append(Torch((COORD[j][i]),2))
-            for j in range(14, 17, 2):
-                for i in range(1,12):
-                    self.torches.append(Torch((COORD[j][i]),3))
             for j in range(13, 17, 2):
-                for i in range(1,12):
+                for i in range(2,11):
+                    self.torches.append(Torch((COORD[j][i]),3))
+            for j in range(12, 16, 2):
+                for i in range(2,11):
                     self.torches.append(Torch((COORD[j][i]),1))
 
 
@@ -1122,7 +1122,7 @@ class Intro_3(AbstractEngine):
             super().update(seconds)
             
 
-class Grand_Chapel_L(AbstractEngine):
+""" class Grand_Chapel_L(AbstractEngine):
     @classmethod
     def getInstance(cls):
         if cls._INSTANCE == None:
@@ -1213,7 +1213,7 @@ class Grand_Chapel_R(AbstractEngine):
                     elif b == self.trigger3:
                         self.transport(Gale_1, 0)
                     else:
-                        self.player.handleCollision(b)
+                        self.player.handleCollision(b) """
 
 class Grand_Chapel(AbstractEngine):
     @classmethod
@@ -1339,10 +1339,14 @@ class Grand_Chapel(AbstractEngine):
         def createBlocks(self):
             return
 
+        def setDoors(self):
+            return
+        
         def createBounds(self):
             """
             Creates boundaries on the outer edge of the map
             """
+            return
             #Left side
             for i in range(1, 5):
                 self.blocks.append(IBlock((8,i*16)))

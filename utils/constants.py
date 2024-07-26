@@ -99,7 +99,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 8,
+    "max_hp": 1,
     "shoot": True,
     "hasBombo": True,
     "fire": True,

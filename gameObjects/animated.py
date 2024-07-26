@@ -266,6 +266,8 @@ class Fade():
             self.row = integer
             self.image = SpriteManager.getInstance().getSprite(self.fileName,
                                                     (0, self.row))
+        def draw(self, drawSurface):
+            drawSurface.blit(self.image, self.position)
 
         def setFrame(self, integer=0):
             self.frame = integer

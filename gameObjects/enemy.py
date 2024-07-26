@@ -601,7 +601,7 @@ class LavaKnight(Enemy):
         self.frame %= 3
 
     def draw(self, drawSurface):
-        super().draw(drawSurface, True)
+        super().draw(drawSurface, False)
     
     def drawTop(self, drawSurface):
         self.shadow.draw(drawSurface)

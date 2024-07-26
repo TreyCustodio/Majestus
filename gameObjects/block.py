@@ -76,24 +76,23 @@ class HBlock(Block):
     
 class Trigger(IBlock):
     """
-    Colliding with this invisible trigger will
-    Cause text to be displayed
+    Triggers activate when the player collides with them
     """
     def __init__(self, position = vec(0,0), text="", door = -1, width = 16, height = 16):
         if door == 0:
             super().__init__((16*9, (16*12 + 8)))
         elif door == 3:
             super().__init__((0, 6*16))
-            
         elif door == 2:
             super().__init__((16*9, (-6)))
-
         elif door == 1:
             super().__init__((RESOLUTION[0]-16, 6*16))
         
+        #Specific pos
         elif door == 5:
             super().__init__(position, (1,0))
 
+        ##Quadrant 2
         elif door == 10:
             super().__init__((16*9 +304, (16*12 + 8)))
 
@@ -106,6 +105,7 @@ class Trigger(IBlock):
         elif door == 11:
             super().__init__((RESOLUTION[0]-16 +304, 6*16))
         
+        ##Quadrant 3
         elif door == 20:
             super().__init__((16*9 + 608, (16*12 + 8)))
         elif door == 23:
@@ -129,7 +129,7 @@ class Trigger(IBlock):
         super().draw(drawSurface)
 
     def getCollisionRect(self):
-        if self.door == 0 or self.door == 2:
+        if self.door == 0 or self.door == 2 or self.door == 10 or self.door == 12 or self.door == 20 or self.door == 22:
             return pygame.Rect((self.position[0]-8, self.position[1]), (32, 16))
         elif self.door == 1 or self.door == 3:
             return pygame.Rect((self.position[0],self.position[1]-8), (16,32))
