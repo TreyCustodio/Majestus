@@ -161,6 +161,10 @@ class Enemy(Animated):
         else:
             self.hp = self.maxHp
 
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
+        super().draw(drawSurface)
+        if self.frozen:
+            Drawable(vec(self.position[0] + self.getSize()[0] // 2 - 8, self.position[1] + self.getSize()[1] // 2 - 8), "freeze.png").draw(drawSurface)
     """
     Play the hurt sfx and set state to dead if hp < 0
     """

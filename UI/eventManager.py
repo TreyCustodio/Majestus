@@ -4,6 +4,9 @@ A module for managing events
 in the pygame event queue
 """
 
+"""
+RT -> select which attack to put on RT. Or have it set to element or arrow
+"""
 
 """
 Dictionaries
@@ -16,7 +19,10 @@ ACTIONS = {
     "element": False, #Attacking with your element
     "pause": False, #Pause / Start
     "map": False, #Map / Select
+    "special": "shoot",
     "target": False,
+    "target_left":False,
+    "target_right":False,
     "motion": False, #Movement
     "motion_axis": 0,
     "motion_value": 0,
@@ -24,6 +30,10 @@ ACTIONS = {
     "right": False,
     "up": False,
     "left": False,
+    "down_r": False,
+    "right_r": False,
+    "up_r": False,
+    "left_r": False,
 }
 
 ##  Gives the button for each GAMECUBE action
@@ -46,6 +56,8 @@ SWITCH = {
         "pause": 6, #Start
         "map": 4, #X
         "target": 4, #Axis 4, 1.0 -> down, -1.0 -> up
+        "target_left":9,
+        "target_right":10
     }
 
 ##  Gives the button for each KEYBOARD action
@@ -62,7 +74,6 @@ KEY = {
        "left":pygame.K_LEFT,
        "target": pygame.K_LSHIFT
     }
-
 
 
 
@@ -90,6 +101,7 @@ class EventManager(object):
             cls._INSTANCE = cls._EM()
         return cls._INSTANCE
     
+
     class _EM(object):
         def __init__(self):
             self.readyToFetch = True
@@ -142,14 +154,17 @@ class EventManager(object):
                 return True
             else:
                 return False
-            
+        
+        def setSpecial(self, action: str):
+            ACTIONS["special"] = action
+
         ##Handle each event
         def handleEvents(self, engine):
             if self.readyToFetch:
                 ##Handle events in the queue
                 for event in pygame.event.get():
-                    
-                    
+                    #if event.type != pygame.JOYAXISMOTION:
+                    #print(event)
                     ##Quit game
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -181,7 +196,8 @@ class EventManager(object):
                             ACTIONS["interact"] = event.button == GAMECUBE["interact"]
                             ACTIONS["run"] = event.button == GAMECUBE["run"]
                             ACTIONS["shoot"] = event.button == GAMECUBE["shoot"]
-                            ACTIONS["element"] = event.button == GAMECUBE["element"]
+                            if event.button == GAMECUBE["element"]:
+                                ACTIONS["element"] = True
                             ACTIONS["pause"] = event.button == GAMECUBE["pause"]
                             ACTIONS["map"] = event.button == GAMECUBE["map"]
                             if event.button == GAMECUBE["target"]:
@@ -256,6 +272,8 @@ class EventManager(object):
                                 else:
                                     ACTIONS["left"] = False
                                     ACTIONS["right"] = False
+
+                            
                 
                     #Switch
                     elif self.controller == "Switch":
@@ -263,10 +281,12 @@ class EventManager(object):
                             ACTIONS["interact"] = event.button == SWITCH["interact"]
                             ACTIONS["run"] = event.button == SWITCH["run"]
                             ACTIONS["shoot"] = event.button == SWITCH["shoot"]
-                            ACTIONS["element"] = event.button == SWITCH["element"]
                             ACTIONS["pause"] = event.button == SWITCH["pause"]
                             ACTIONS["map"] = event.button == SWITCH["map"]
-
+                            ACTIONS["target_left"] = event.button == SWITCH["target_left"]
+                            ACTIONS["target_right"] = event.button == SWITCH["target_right"]
+                            if event.button == SWITCH["element"]:
+                                ACTIONS["element"] = True
                         elif event.type == pygame.JOYBUTTONUP:
                             button = event.button
                             if button == SWITCH["interact"]:
@@ -281,6 +301,10 @@ class EventManager(object):
                                 ACTIONS["pause"] = False
                             elif button == SWITCH["map"]:
                                 ACTIONS["map"] = False
+                            elif button == SWITCH["target_left"]:
+                                ACTIONS["target_left"] = False
+                            elif button == SWITCH["target_right"]:
+                                ACTIONS["target_right"] = False
 
                         elif event.type == pygame.JOYAXISMOTION:
                             if event.axis == 4:
@@ -289,7 +313,12 @@ class EventManager(object):
                                     ACTIONS["target"] = True
                                 else:
                                     ACTIONS["target"] = False
-                            
+                            if event.axis == 5:
+                                #print(event)
+                                if event.value >= self.deadZone:
+                                    ACTIONS[ACTIONS["special"]] = True
+                                else:
+                                    ACTIONS[ACTIONS["special"]] = False
                             else:
                                 if event.value <= self.deadZone:
                                     ACTIONS["motion"] = False
@@ -342,6 +371,53 @@ class EventManager(object):
                                     else:
                                         ACTIONS["left"] = False
                                         ACTIONS["right"] = False
+
+                                if event.axis == 3:
+                                    ##Upwards
+                                    if event.value < 0:
+                                        if event.value < -0.65:
+                                            ACTIONS["up_r"] = True
+                                            ACTIONS["down_r"] = False
+                                        else:
+                                            ACTIONS["up_r"] = False
+                                            ACTIONS["down_r"] = False
+                                    
+                                    ##Downwards
+                                    elif event.value > 0:
+                                        if event.value > 0.65:
+                                            ACTIONS["down_r"] = True
+                                            ACTIONS["up_r"] = False
+                                        else:
+                                            ACTIONS["down_r"] = False
+                                            ACTIONS["up_r"] = False
+                                    
+                                    else:
+                                        ACTIONS["up_r"] = False
+                                        ACTIONS["down_r"] = False
+                            
+
+                                elif event.axis == 2:
+                                    ##Leftwards
+                                    if event.value < 0:
+                                        if event.value < -0.65:
+                                            ACTIONS["left_r"] = True
+                                            ACTIONS["right_r"] = False
+                                        else:
+                                            ACTIONS["left_r"] = False
+                                            ACTIONS["right_r"] = False
+                                    
+                                    ##Rightwards
+                                    elif event.value > 0:
+                                        if event.value > 0.65:
+                                            ACTIONS["right_r"] = True
+                                            ACTIONS["left_r"] = False
+                                        else:
+                                            ACTIONS["right_r"] = False
+                                            ACTIONS["left_r"] = False
+
+                                    else:
+                                        ACTIONS["left_r"] = False
+                                        ACTIONS["right_r"] = False
                     #Keyboard
                     elif self.controller == "key":
                         if event.type == pygame.KEYDOWN:

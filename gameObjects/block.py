@@ -13,6 +13,7 @@ class Block(Drawable):
         self.height = 16
         self.popProjectiles = True
         self.vanish = vanish
+        self.block = True
     
     def draw(self, drawSurface, drawBox = False):
         super().draw(drawSurface, drawBox)

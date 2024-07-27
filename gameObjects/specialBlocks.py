@@ -30,7 +30,8 @@ class PushableBlock(Animated):
     """
     def __init__(self, position=vec(0,0)):
         super().__init__(position, "blockP.png", (0,0))
-
+        
+        self.popProjectiles = True
         self.nFrames = 5
         self.vel = vec(0,0)
         self.originalPos = position

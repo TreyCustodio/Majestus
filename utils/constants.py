@@ -90,6 +90,7 @@ EQUIPPED = {
     "room":0,
     #0 -> regular, 1 -> fire, 2 -> ice, 3- -> thunder, 4-> wind, 5-> super, 6-> hyper
     "area":0,
+
 }
 
 bombos = 50
@@ -99,7 +100,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 1,
+    "max_hp": 20,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -127,7 +128,7 @@ INV = {
     "syringe":True,
     "potion": 5,
     "smoothie": 5,
-    "beer": 0,
+    "beer": 9,
     "joint":0,
     "speed":0,
     "wallet": 99,

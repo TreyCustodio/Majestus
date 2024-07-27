@@ -816,7 +816,6 @@ class AE(object):
                     n.press()
 
     def npcCollision(self):
-
         for n in self.npcs:
         #Check if it collides with the player first
             if not self.player.ignoreCollision and self.player.doesCollide(n):
@@ -825,16 +824,15 @@ class AE(object):
                         if n.id == "noStop":
                             n.freeze()
                         else:
-                            self.player.stop()
+                            self.player.stop_run(n)
                             n.freeze()
 
-                if not n.frozen:
-                    if not self.player.invincible:
-                        if n.handlePlayerCollision(self.player):
-                            self.player.handleCollision(n)
-                            #player should be invincible now
-                            if self.player.invincible and not self.healthBar.drawingHurt:
-                                self.healthBar.drawHurt(self.player.hp, n.damage)
+                if not self.player.invincible:
+                    if n.handlePlayerCollision(self.player):
+                        self.player.handleCollision(n)
+                        #player should be invincible now
+                        if self.player.invincible and not self.healthBar.drawingHurt:
+                            self.healthBar.drawHurt(self.player.hp, n.damage)
            
 
             #Enemies
@@ -1527,6 +1525,8 @@ class AE(object):
         #Npcs
         self.drawNpcs(drawSurface)
 
+        if self.player.targeting:
+            self.player.target.draw(drawSurface)
         self.drawProjectiles(drawSurface)
         
         #Player

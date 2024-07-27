@@ -49,6 +49,7 @@ class Drawable(object):
         
         self.position  = vec(*position)
         self.imageName = fileName
+        self.block = False
 
     def draw(self, drawSurface, drawHitbox = False, use_camera = True):
         if use_camera:

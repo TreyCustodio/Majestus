@@ -249,6 +249,8 @@ class Knight(AbstractEngine):
 
         def reset(self):
             super().reset()
+            self.textInt = -2
+            self.tileFrame = 0
             self.effects_behind_walls = [
                     Floor("knight")
                 ]
@@ -498,7 +500,7 @@ class Intro_1(AbstractEngine):
                 self.blocks.append(Block((i*16, 64)))
 
             for i in range(11,17):
-                self.blocks.append(Block((i*16, 64)))   
+                self.blocks.append(Block((i*16 + 8, 64)))   
 
         """
         Draw
