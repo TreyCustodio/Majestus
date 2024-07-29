@@ -301,6 +301,7 @@ class AE(object):
         if self.camera:
             if self.camera:
                 self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
+                self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
                 Drawable.updateOffset(self.camera, self.size)
        
         self.moneyImage = HudImageManager.getMoney()
@@ -613,40 +614,37 @@ class AE(object):
         """
         Display text
         """
-        if self.camera:
-            pass
+        if icon != None:
+            self.icon = icon
+            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
+            if self.boxPos[0] < 16:
+                self.boxPos[0] = 16
+            elif self.boxPos[0]+244 > self.size[0]-16:
+                self.boxPos[0] = (self.size[0] - 16) - 244
+
+            if self.boxPos[1] < 32:
+                self.boxPos[1] = 32
+            elif self.boxPos[1]+64 > self.size[1]-16:
+                self.boxPos[1] = (self.size[1] - 16)-64
+
         else:
-            if icon != None:
-                self.icon = icon
-                self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-                if self.boxPos[0] < 16:
-                    self.boxPos[0] = 16
-                elif self.boxPos[0]+244 > RESOLUTION[0]-16:
-                    self.boxPos[0] = (RESOLUTION[0] - 16) - 244
+            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
+            if self.boxPos[0] < 16:
+                self.boxPos[0] = 16
+            elif self.boxPos[0]+244 > self.size[0]-16:
+                self.boxPos[0] = (self.size[0] - 16) - 244
 
-                if self.boxPos[1] < 32:
-                    self.boxPos[1] = 32
-                elif self.boxPos[1]+64 > RESOLUTION[1]-16:
-                    self.boxPos[1] = (RESOLUTION[1] - 16)-64
+            if self.boxPos[1] < 16:
+                self.boxPos[1] = 16
+            elif self.boxPos[1]+64 > self.size[1]-16:
+                self.boxPos[1] = (self.size[1] - 16)-64
 
-            else:
-                self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-                if self.boxPos[0] < 16:
-                    self.boxPos[0] = 16
-                elif self.boxPos[0]+244 > RESOLUTION[0]-16:
-                    self.boxPos[0] = (RESOLUTION[0] - 16) - 244
-
-                if self.boxPos[1] < 16:
-                    self.boxPos[1] = 16
-                elif self.boxPos[1]+64 > RESOLUTION[1]-16:
-                    self.boxPos[1] = (RESOLUTION[1] - 16)-64
-
-            self.textBox = True
-            self.text = text
-            self.largeText = large
-            
-            if self.player != None:
-                self.player.stop()
+        self.textBox = True
+        self.text = text
+        self.largeText = large
+        
+        if self.player != None:
+            self.player.stop()
     
     
     def flash(self, num = 0):
@@ -827,7 +825,7 @@ class AE(object):
                             self.player.stop_run(n)
                             n.freeze()
 
-                if not self.player.invincible:
+                if (not self.player.invincible) or n.id == "shot":
                     if n.handlePlayerCollision(self.player):
                         self.player.handleCollision(n)
                         #player should be invincible now
@@ -1127,9 +1125,10 @@ class AE(object):
         """ 
         if self.camera.position[0] == 0:
             return
-        elif self.camera.position[0] == 912:
+        elif self.camera.position[0] == 912:m
             return """
         self.camera.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
+        self.camera.position[1] = self.player.position[1] - (self.camera.getSize()[1] // 2)
         #self.healthBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.elementIcon.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.energyBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
@@ -1398,7 +1397,7 @@ class AE(object):
         Money
         """
         self.moneyImage.draw(drawSurface)        
-        Number((14 + Drawable.CAMERA_OFFSET[0], self.moneyImage.position[1]), row = 1).draw(drawSurface)
+        Number((14 + Drawable.CAMERA_OFFSET[0], self.moneyImage.position[1] + Drawable.CAMERA_OFFSET[1]), row = 1).draw(drawSurface)
         if INV["money"] == INV["wallet"]:
             self.drawNumber(vec(34, self.moneyImage.position[1]), INV["money"], drawSurface, row = 2)
         else:
@@ -1408,7 +1407,7 @@ class AE(object):
         Keys
         """
         self.keyImage.draw(drawSurface)
-        Number((14 + Drawable.CAMERA_OFFSET[0], self.keyImage.position[1]), row = 1).draw(drawSurface)
+        Number((14 + Drawable.CAMERA_OFFSET[0], self.keyImage.position[1] + Drawable.CAMERA_OFFSET[1]), row = 1).draw(drawSurface)
         self.drawNumber(vec(34, self.keyImage.position[1]), INV["keys"], drawSurface)
         
         """
@@ -1416,12 +1415,12 @@ class AE(object):
         """
         if EQUIPPED["Arrow"] == 1:
             self.bomboImage.draw(drawSurface)
-            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), row = 1).draw(drawSurface)
+            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1] + Drawable.CAMERA_OFFSET[1]), row = 1).draw(drawSurface)
             self.drawNumber(vec(34, self.bomboImage.position[1]), INV["bombo"], drawSurface)
         elif EQUIPPED["Arrow"] == 0:
             self.bomboImage.draw(drawSurface)
-            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), row = 1).draw(drawSurface)
-            Number((30 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1]), number=1, row = 1).draw(drawSurface)
+            Number((14 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1] + Drawable.CAMERA_OFFSET[1]), row = 1).draw(drawSurface)
+            Number((30 + Drawable.CAMERA_OFFSET[0], self.bomboImage.position[1] + Drawable.CAMERA_OFFSET[1]), number=1, row = 1).draw(drawSurface)
 
         """
         Healthbar
@@ -1554,8 +1553,8 @@ class AE(object):
     
     def drawText(self, drawSurface):
         self.draw(drawSurface)
-        image = Drawable(self.boxPos, "TextBox2.png", (0,7))
-        image.draw(drawSurface)
+        #image = Drawable(self.boxPos, "TextBox2.png", (0,7))
+        #image.draw(drawSurface)
 
 class AbstractEngine(object):
 

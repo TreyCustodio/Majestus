@@ -8,7 +8,7 @@ from UI import ACTIONS, EventManager
 
 from pygame.locals import *
 
-class TextEngine(object):
+class TextEngine_old(object):
     
     _INSTANCE = None
     
@@ -477,10 +477,11 @@ class PauseEngine(object):
         drawSurf.blit(image2, (16*13 + 6, 16*10))
         drawSurf.blit(image3, (16*14 + 6, 16*10))
         drawSurf.blit(image4, (16*15 + 6, 16*10))
-        Text((16*12 + 12, 16*11), str(INV["flameShard"])).draw(drawSurf)
-        Text((16*13 + 12, 16*11), str(INV["frostShard"])).draw(drawSurf)
-        Text((16*14 + 12, 16*11), str(INV["boltShard"])).draw(drawSurf)
-        Text((16*15 + 12, 16*11), str(INV["galeShard"])).draw(drawSurf)
+        drawSurf.blit(Text.getImage(text=str(INV["flameShard"])), (16*12 + 12, 16*11))
+        drawSurf.blit(Text.getImage(text=str(INV["frostShard"])), (16*13 + 12, 16*11))
+        drawSurf.blit(Text.getImage(text=str(INV["boltShard"])), (16*14 + 12, 16*11))
+        drawSurf.blit(Text.getImage(text=str(INV["galeShard"])), (16*15 + 12, 16*11))
+
     
     def drawMap(self, drawSurf):
 
@@ -505,7 +506,8 @@ class PauseEngine(object):
         if INV["plant"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (0,0))
             drawSurf.blit(image, (COORD[3][4]))
-            Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["plant"], 4), COORD[3][4])
+            #Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
         
         if INV["chanceEmblem"]:
             image = SpriteManager.getInstance().getSprite("item.png", (4,0))
@@ -522,30 +524,29 @@ class PauseEngine(object):
         if INV["potion"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (2,0))
             drawSurf.blit(image, (COORD[4][7]))
-            Number(COORD[4][7], INV["potion"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["potion"], 4), COORD[4][7])
         
         if INV["smoothie"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (9,0))
             drawSurf.blit(image, (COORD[5][7]))
-            Number(COORD[5][7], INV["smoothie"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["smoothie"], 4), COORD[5][7])
 
         if INV["beer"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (6,0))
             drawSurf.blit(image, (COORD[6][7]))
-            #Text((16*4+12, 16*7+4), str(INV["beer"]), small = True).draw(drawSurf)
-            Number(COORD[6][7], INV["beer"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["beer"], 4), COORD[6][7])
         
         if INV["joint"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (7,0))
             drawSurf.blit(image, (COORD[7][7]))
             #Text((16*4+12, 16*7+4), str(INV["beer"]), small = True).draw(drawSurf)
-            Number(COORD[7][7], INV["joint"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["joint"], 4), COORD[7][7])
         
         if INV["speed"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (8,0))
             drawSurf.blit(image, (COORD[8][7]))
             #Text((16*4+12, 16*7+4), str(INV["beer"]), small = True).draw(drawSurf)
-            Number(COORD[8][7], INV["speed"], row = 4).draw(drawSurf)
+            drawSurf.blit(Number.getImage(INV["speed"], 4), COORD[8][7])
 
         if INV["shoot"]:
             image = SpriteManager.getInstance().getSprite("item.png", (0,3))
@@ -572,9 +573,9 @@ class PauseEngine(object):
             drawSurf.blit(image, (COORD[9][6]))
         
         if self.highlighted[1] == 4:
-            self.highlightQuit.draw(drawSurf)
+            drawSurf.blit(self.highlightQuit.image, (self.highlightQuit.position))
         else:
-            self.highlight.draw(drawSurf)
+            drawSurf.blit(self.highlight.image, (self.highlight.position))
 
 
     def equipElement(self):

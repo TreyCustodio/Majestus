@@ -15,4 +15,5 @@ from .player import *
 from .map import *
 from .engine import *
 from .subEngines import *
+from .textEngine import *
 from .mobster import *

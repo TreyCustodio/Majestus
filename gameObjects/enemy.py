@@ -1,3 +1,6 @@
+from typing import Any
+
+from Majestus.utils import vec
 from . import (Drawable, Animated, Bullet, Element, Blizzard, Heart, BigHeart, 
                 Buck, FireShard, GreenHeart, Buck_B, Buck_R, Bombodrop, LargeBombo, GiantBombo)
 from utils import SoundManager, SpriteManager, SCALE, RESOLUTION, vec
@@ -161,9 +164,9 @@ class Enemy(Animated):
         else:
             self.hp = self.maxHp
 
-    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True, drawFreeze = True):
         super().draw(drawSurface)
-        if self.frozen:
+        if drawFreeze and self.frozen:
             Drawable(vec(self.position[0] + self.getSize()[0] // 2 - 8, self.position[1] + self.getSize()[1] // 2 - 8), "freeze.png").draw(drawSurface)
     """
     Play the hurt sfx and set state to dead if hp < 0
@@ -993,9 +996,14 @@ class Shiver(Enemy):
         return
     
 
+class Gleemer(Enemy):
+    def __init__(self, position=vec(0, 0), fileName="gleemer.png", direction=1):
+        super().__init__(position, fileName, direction)
 """
-Change name to Skeller or Boner.
+Change name to Boner.
 Sticks to its square-shaped walking route.
+Throws a bone at you everytime you attack it.
+Weak to arrow.
 """
 class Mofos(Enemy):
     def __init__(self, position = vec(0,0), direction = 0):
@@ -1854,18 +1862,24 @@ class AlphaFlapper(Enemy):
 
     def getCollisionRect(self):
         return pygame.Rect((self.position[0] + 4, self.position[1] + 8), (24,20))
-    def draw(self, drawSurface):
-        super().draw(drawSurface)
+    
+
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True, drawFreeze=True):
+        if self.ignoreCollision:
+            super().draw(drawSurface, drawHitbox, use_camera, False)
+        else:
+            super().draw(drawSurface, drawHitbox, use_camera, drawFreeze)
 
     def getDrop(self):
         return GreenHeart((self.position[0]+16, self.position[1]+16))
     
+    
+
     def move(self, seconds):
         if self.moving:
             Flapper.move(self, seconds)
     
     def adjustVelocity(self):
-        print("S")
         if self.vel[0] > 0:
             self.vel[0] = self.speed
         elif self.vel[0] > 0:
@@ -1874,7 +1888,8 @@ class AlphaFlapper(Enemy):
             self.vel[1] = self.speed
         elif self.vel[1] > 0:
             self.vel[1] = -self.speed
-
+    
+ 
     def playHurtSound(self):
         if self.hp > 0: 
             SoundManager.getInstance().playLowSFX("enemyhit.wav", volume=0.5)
@@ -2112,7 +2127,12 @@ class Gremlin(Enemy):
         self.maxHp = 15
         self.hp = self.maxHp
         self.damage = 1
-        
+    
+    def getCollisionRect(self):
+        newRect = pygame.Rect(0,0,12,34)
+        newRect.left = int(self.position[0]+3)
+        newRect.top = int(self.position[1]+1)
+        return newRect
 
     def bounce(self, other):
         if not self.frozen and not self.bouncing:
@@ -2212,7 +2232,9 @@ class Dummy(Enemy):
                 self.row = 1
                 self.flashTimer = 0
                 self.hurt(other.damage)
-
+    
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True, drawFreeze=True):
+        super().draw(drawSurface, drawHitbox, use_camera, False)
     #override
     def updateFlash(self, seconds):
         if self.row > 0:

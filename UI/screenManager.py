@@ -122,7 +122,7 @@ class ScreenManager(object):
                             self.fade.setRow(1)             
                             
                     
-
+                ##Reset pause engine text states
                 self.pauseEngine.textBox = False
                 self.pauseEngine.text = ""
                 self.state.speakP()
@@ -133,6 +133,7 @@ class ScreenManager(object):
                 self.intro.icon = None
                 if self.intro.textInt == 11:
                     self.intro.fading = True
+                
                 self.state.speakI()
             ##Game, evaluate prompt
             else:
@@ -155,7 +156,7 @@ class ScreenManager(object):
                 self.drawGame(drawSurf)
                 self.drawPause(drawSurf)
                 self.textEngine.setBackgroundBool()
-            self.textEngine.draw(self.pauseEngine.boxPos, drawSurf)
+            self.textEngine.draw(self.pauseEngine.boxPos + Drawable.CAMERA_OFFSET, drawSurf)
 
         ##Intro
         elif self.inIntro:
@@ -356,30 +357,6 @@ class ScreenManager(object):
                         self.handleChoice(choice)
 
         elif self.state == "textBox":
-
-            if EventManager.getInstance().performAction("map"):
-                ##Skip textbox
-                if self.pauseEngine.paused:
-                    self.pauseEngine.textBox = False
-                    self.pauseEngine.text = ""
-                    self.state.speakP()
-                elif self.inIntro:
-                    ##Skip the intro
-                    self.intro.textBox = False
-                    self.intro.text = ""
-                    self.intro.icon = None
-                    self.intro.fading = True
-                    self.state.speakI()
-                    self.intro.fading = True
-                    self.intro.textInt = 11
-                else:
-                    self.game.textBox = False
-                    self.game.text = ""
-                    self.game.icon = None
-                    self.state.speak()
-                self.textEngine.reset()
-                return
-
             self.textEngine.handleEvent()
 
             
@@ -506,9 +483,9 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Knight.getInstance()
+                        self.game = Tutorial_2.getInstance()
                         self.game.lockHealth()
-                        self.game.initializeRoom()
+                        self.game.initializeRoom(pos=vec(146,276))
                         self.state.startGame()
                         self.fadingIn = True
                         return

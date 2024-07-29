@@ -21,7 +21,7 @@ FLAGS = [False for i in range(150)]
     #FLAGS[i] = True
 
 #FLAGS[62] = True
-#1-20 -> Pop-up messages and area names
+#1-20 -> Tutorial
 #1 -> Grand Chapel
 #2 ->
 #3
@@ -100,7 +100,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 20,
+    "max_hp": 10,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -122,7 +122,7 @@ INV = {
     "map4":False,
 
     ##Consumables and key items
-    "plant": 0,
+    "plant": 9,
     "chanceEmblem": True,
     "lavaBoots": True,
     "syringe":True,

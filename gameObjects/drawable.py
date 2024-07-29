@@ -109,8 +109,11 @@ class Number(Drawable):
     """
     def __init__(self, position = vec(0,0), number = 0, row = 0):
         super().__init__(position, "numbers.png", (number,row))
-        
+    
+    def getImage(number = 0, row = 0):
+        return SpriteManager.getInstance().getSprite("numbers.png",(number,row))
 class Text(Drawable):
+
     """
     Displays text using the font from A Link to the Past
     """
@@ -125,6 +128,14 @@ class Text(Drawable):
     SMALL = pygame.font.Font(os.path.join(FONT_FOLDER,
                                     "ReturnofGanon.ttf"), 12)
     
+    def getImage(text, color = (255,255,255), box = False, small = False):
+        if small:
+            return Text.SMALL.render(text, False, color)
+        elif box:
+            return Text.BOX.render(text, False, color)
+        else:
+            return Text.FONT.render(text, False, color)
+
     def __init__(self, position, text, color = (255,255,255), box = False, small = False):
         super().__init__(position, "")
         if small:

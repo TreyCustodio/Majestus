@@ -177,7 +177,7 @@ class Test(AbstractEngine):
             self.doors = [0]
             self.trigger1 = Trigger(door = 0)
             self.spawning = [ 
-                Geemer(vec(16*5, 16*9), mobster=True)#GreenHeart(vec(16*2, 16*10))
+                Geemer(vec(16*5, 16*9), text=SPEECH["lava_knight"],mobster=True)#GreenHeart(vec(16*2, 16*10))
                 ]
 
             self.obstacles = [
@@ -362,6 +362,191 @@ class Knight(AbstractEngine):
                     self.textInt += 1
             else:
                 super().update(seconds)
+
+class Tutorial_2(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._T2()
+      
+        return cls._INSTANCE
+    
+    class _T2(AE):
+        def __init__(self):
+            super().__init__("tut_2", True, vec(304, 308))
+            self.player = Player(vec(146, 276))
+            self.roomId = 4
+            self.bgm = "remind.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 0
+            self.enemyPlacement = 0
+
+            self.trigger1 = Trigger(door = 10)
+            self.trigger2 = Trigger(door = 13)
+            self.trigger3 = Trigger(door = 12)
+            self.trigger4 = Trigger(door = 11)
+
+            self.toLeft = Trigger(door = 1)
+            self.toFlame = Trigger(door = 0)
+            self.toIce = Trigger(door = 2)
+
+            self.toRight = Trigger(door = 23)
+            self.toThunder = Trigger(door = 20)
+            self.toGale = Trigger(door = 22)
+
+            
+
+            
+            self.portal = Portal(COORD[14][3], 3)
+
+
+            self.fire = Blessing(vec(16*7, 16*4), 0)
+            self.ice = Blessing(vec(16*11, 16*4), 1)
+            self.thunder = Blessing(vec(16*45, 16*4), 2)
+            self.wind = Blessing(vec(16*49, 16*4), 3)
+
+
+            self.geemer = Geemer((16*9 - 4 + 304, 16*6), text = SPEECH["chapel_geemer"], color = 1)
+            self.prompt = Geemer((16*11-4 + 304, 16*9), text = "Praise be to Majestus&&")
+            
+
+            self.spawning = [self.ice,
+                             self.fire,
+                             self.thunder,
+                             self.wind,
+                             self.geemer,
+                             self.prompt
+                             ]
+            
+            self.blocks.append(self.trigger1)
+            self.blocks.append(self.trigger2)
+            self.blocks.append(self.trigger3)
+            self.blocks.append(self.trigger4)
+
+            self.blocks.append(self.toLeft)
+            self.blocks.append(self.toFlame)
+            self.blocks.append(self.toIce)
+
+            self.blocks.append(self.toRight)
+            self.blocks.append(self.toThunder)
+            self.blocks.append(self.toGale)
+
+            self.doors = [0,2]
+        
+        def handlePrompt(self):
+            if self.promptResult:
+                if self.selectedItem == 0:
+                    if INV["flameShard"] >= INV["flameCost"]:
+                        INV["flameShard"] -= INV["flameCost"]
+                        if INV["flameCost"] == 1:
+                            INV["flameCost"] = 5
+                            self.fire.updateCost()
+                        self.displayText("Flames upgraded!")
+                    else:
+                        self.displayText("Not enough shards.")
+                    self.promptResult = False
+
+                elif self.selectedItem == 1:
+                    if INV["frostShard"] >= INV["frostCost"]:
+                        INV["frostShard"] -= INV["frostCost"]
+                        if INV["frostCost"] == 1:
+                            INV["frostCost"] = 5
+                            self.fire.updateCost()
+                        self.displayText("Ice upgraded!")
+                    else:
+                        self.displayText("Not enough shards.")
+                    self.promptResult = False
+
+                elif self.selectedItem == 2:
+                    if INV["boltShard"] >= INV["boltCost"]:
+                        INV["boltShard"] -= INV["boltCost"]
+                        if INV["boltCost"] == 1:
+                            INV["boltCost"] = 5
+                            self.fire.updateCost()
+                        self.displayText("Bolt upgraded!")
+                    else:
+                        self.displayText("Not enough shards.")
+                    self.promptResult = False
+
+                if self.selectedItem == 3:
+                    if INV["galeShard"] >= INV["galeCost"]:
+                        INV["galeShard"] -= INV["galeCost"]
+                        if INV["galeCost"] == 1:
+                            INV["galeCost"] = 5
+                            self.fire.updateCost()
+                        self.displayText("Gale upgraded!")
+                    else:
+                        self.displayText("Not enough shards.")
+                    self.promptResult = False
+
+            
+
+        def on_enter(self):
+            self.fire.updateCost()
+
+        #override
+        def createBlocks(self):
+            return
+
+        def setDoors(self):
+            return
+        
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            return
+            #Left side
+            for i in range(1, 5):
+                self.blocks.append(IBlock((8,i*16)))
+            for i in range(8, 12):
+                self.blocks.append(IBlock((8,i*16)))
+            #Right side
+            for i in range(1, 5):
+                self.blocks.append(IBlock((912-24,i*16)))
+            for i in range(8, 12):
+                self.blocks.append(IBlock((912-24,i*16)))
+            #Top side
+            for i in range(1,8):
+                self.blocks.append(IBlock((i*16, 0)))
+            for i in range(11, 18):
+                self.blocks.append(IBlock((i*16, 0)))
+            #Bottom side
+            for i in range(1,8):
+                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
+            for i in range(11, 18):
+                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
+            
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transport(Intro_3, 2)
+                    #elif b == self.trigger2:
+                        #self.transport(Grand_Chapel_L, 1, keepBGM=True)
+                    #elif b == self.trigger4:
+                        #self.transport(Grand_Chapel_R, 3, keepBGM=True)
+                    #elif b == self.trigger3:
+                        #self.transport(Chamber_Access, 0)
+                    elif b == self.portal:
+                        #self.transport(Gale_1, (16*9, 16*9))
+                        pass
+                    else:
+                        self.player.handleCollision(b)
+        
+        def update(self, seconds):
+            super().update(seconds)
+            if not FLAGS[88] and FLAGS[89]:
+                self.spawning.pop(self.spawning.index(self.ice))
+                self.spawning.pop(self.spawning.index(self.fire))
+                self.spawning.pop(self.spawning.index(self.thunder))
+                self.spawning.pop(self.spawning.index(self.wind))
+                FLAGS[88] = True
+            self.portal.update(seconds)
+            
 """
 Entrance Hall
 """
@@ -445,10 +630,10 @@ class Intro_1(AbstractEngine):
             #Npcs
             self.npcs = []
             for i in range(4, 5):
-                self.enemies.append(Gremlin((16*i,32), direction = 1))
+                self.enemies.append(Gremlin((16*i,26), direction = 1))
 
             for i in range(14, 15):
-                self.enemies.append(Gremlin((16*i,32), direction = 3))
+                self.enemies.append(Gremlin((16*i,26), direction = 3))
 
             #Spawnable Objects
             self.chest = Chest(COORD[2][5], SPEECH["intro_chest"], ICON["plant"])
@@ -2665,11 +2850,6 @@ class Thunder_1(AbstractEngine):
 
             #self.trigger1 = Trigger(door = 0)
         
-
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if FLAGS[4] == False:
-                self.displayText("     Alcove of the Bolt", large = False)
-                FLAGS[4] = True
             
             super().initializeRoom(player, pos, keepBGM)
         
@@ -2916,12 +3096,6 @@ class Frost_1(AbstractEngine):
             self.torches.append(self.torch1)
             self.torches.append(self.torch2)
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if FLAGS[5] == False:
-                self.displayText("      Abyss of the Frost", large = False)
-                FLAGS[5] = True
-            
-            super().initializeRoom(player, pos, keepBGM)
         #override
         def createBlocks(self):
            self.blocks.append(self.toChapel)
@@ -3002,12 +3176,7 @@ class Frost_2(AbstractEngine):
             self.torches.append(self.torch1)
             self.torches.append(self.torch2)
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if FLAGS[5] == False:
-                self.displayText("      Abyss of the Frost", large = False)
-                FLAGS[5] = True
-            
-            super().initializeRoom(player, pos, keepBGM)
+    
         #override
         def createBlocks(self):
            self.blocks.append(self.toChapel)
@@ -3084,14 +3253,6 @@ class Gale_1(AbstractEngine):
             ]
             #self.trigger1 = Trigger(door = 0)
         
-
-
-        def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if FLAGS[6] == False:
-                self.displayText("      Grove of the Gale", large = False)
-                FLAGS[6] = True
-            
-            super().initializeRoom(player, pos, keepBGM)
 
         #override
         def createBlocks(self):

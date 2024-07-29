@@ -3,12 +3,10 @@ v0.1
 
 Debug:
 - [ ] display bool
-- [ ] continue game
-- [ ] bombos
 - [ ] FLAGS
-- [ ] Alpha Flapper reset
 - [ ] Syringe putting hp at 0 when on 5 hp
 - [ ] Decrease keyCount in Flame_10
+- [ ] No ice on enemies when respawning
 
 
 Additions:
