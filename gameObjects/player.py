@@ -637,7 +637,7 @@ class Player(Animated):
 
     def enemyCollision(self, enemy, side):
         
-                
+        
         if enemy.frozen:
             if not enemy.id == "noStop":
                 if self.running:
@@ -651,13 +651,19 @@ class Player(Animated):
                     self.stop_run(enemy)
             self.knockback(side)
             
-    def preventCollision(self, object, side):
+    def preventCollision(self, object, side = None):
         #print("object", object)
         #print(object.position)
         #Prevents overlapping collision rects based on side
         #self.position = vec(self.position)
         #print("position", self.position)
 
+        if side:
+            pass
+        else:
+            self.pushing = True
+            side = self.calculateSide(object)
+                
         obj = object.getCollisionRect()
         coll = self.getCollisionRect()
         if side == "right":
@@ -792,7 +798,7 @@ class Player(Animated):
                 elif self.row == 0:
                     super().updatePlayer(seconds)
                     self.idleTimer += seconds
-                    if self.idleTimer >= 3:
+                    if self.idleTimer >= 1:
                         self.headingOut = True
                         self.row = 1
                         self.idleTimer = 0

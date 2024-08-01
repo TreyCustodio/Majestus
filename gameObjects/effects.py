@@ -145,7 +145,7 @@ class WhiteOut(Drawable):
             self.image.set_alpha(self.alpha)
 
 class AreaIntro(Drawable):
-    def __init__(self, room_dir, fileName = "", position = vec(0,0)):
+    def __init__(self, room_dir, fileName = "area_intro.png", position = vec(0,0)):
         self.position = position
         self.image = SpriteManager.getInstance().getFx(room_dir, fileName)
         self.image.set_alpha(0)

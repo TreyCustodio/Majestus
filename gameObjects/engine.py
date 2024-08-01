@@ -11,7 +11,7 @@ from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIco
 
 
 
-from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED
+from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO
 class DamageNumberManager(object):
     def __init__(self):
         self.numbers = []
@@ -211,7 +211,7 @@ class AE(object):
         ]
             
         self.dropCount = 0
-
+        self.npcs = []
         self.textInt = 0
         self.fightingBoss = False
         self.boxPos = vec(30,64)
@@ -290,7 +290,7 @@ class AE(object):
         self.healthBar.drawHurt(self.player.hp, damage)
 
 
-    def initializeRoom(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
+    def initializeRoom(self, player= None, pos = None, keepBGM = False, placeEnemies = True, on_enter = True):
         """
         Called every time you enter the room
         1. create wall boundaries
@@ -301,6 +301,7 @@ class AE(object):
         if self.camera:
             if self.camera:
                 self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
+                
                 self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
                 Drawable.updateOffset(self.camera, self.size)
        
@@ -313,7 +314,7 @@ class AE(object):
             self.player = player
             self.player.position = pos 
         else:
-            self.player = Player(vec(16*9, (16*11) - 8))
+            self.player = Player(vec(pos[0],pos[1]))
 
         self.createBounds()
         self.setDoors()
@@ -324,8 +325,8 @@ class AE(object):
             #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
                 SoundManager.getInstance().playBGM(self.bgm)
-        
-        self.on_enter()
+        if on_enter:
+            self.on_enter()
 
     def initializeArea(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
         """
@@ -335,6 +336,14 @@ class AE(object):
         3. call createBlocks
         4. place the enemies in self.enemies
         """
+        
+
+        """ if self.camera:
+            if self.camera:
+                self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
+                
+                self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
+                Drawable.updateOffset(self.camera, self.size)
         self.moneyImage = HudImageManager.getMoney()
         self.keyImage = HudImageManager.getKeys()
         self.bomboImage = HudImageManager.getBombos()
@@ -354,8 +363,10 @@ class AE(object):
         if not keepBGM:
             #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
-                SoundManager.getInstance().playBGM(self.bgm)
+                SoundManager.getInstance().playBGM(self.bgm) """
 
+        self.initializeRoom(player, pos, keepBGM, placeEnemies, on_enter=False)
+        self.player.keyLock()
         self.area_fading = True
         self.whiting = True
         self.areaIntro.fadeIn()
@@ -393,26 +404,46 @@ class AE(object):
         for i in range(11, 18):
             self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
     
+    def createVertical(self):
+        
+        ##Left, Right
+        for i in range(1,19):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*16 - 8 - 18), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*16 - 8 - 18), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
+
 
     def setDoors(self):
         """
         Adjust the boundaries to fit doors
         """
         if 0 not in self.doors:
-            self.blocks.append(IBlock((8*16, RESOLUTION[1]-16)))
-            self.blocks.append(IBlock((9*16, RESOLUTION[1]-16)))
-            self.blocks.append(IBlock((10*16, RESOLUTION[1]-16)))
+            self.blocks.append(IBlock((8*16, self.size[1]-16)))
+            self.blocks.append(IBlock((9*16, self.size[1]-16)))
+            self.blocks.append(IBlock((10*16, self.size[1]-16)))
         else:
-            self.blocks.append(IBlock((16*8-8, RESOLUTION[1]-16)))
-            self.blocks.append(IBlock((16*10+8, RESOLUTION[1]-16)))
+            self.blocks.append(IBlock((16*8-8, self.size[1]-16)))
+            self.blocks.append(IBlock((16*10+8, self.size[1]-16)))
         
         if 1 not in self.doors:        
-            self.blocks.append(IBlock((RESOLUTION[0]-24, 5*16)))
-            self.blocks.append(IBlock((RESOLUTION[0]-24, 6*16)))
-            self.blocks.append(IBlock((RESOLUTION[0]-24, 7*16)))
+            self.blocks.append(IBlock((self.size[0]-24, 5*16)))
+            self.blocks.append(IBlock((self.size[0]-24, 6*16)))
+            self.blocks.append(IBlock((self.size[0]-24, 7*16)))
         else:
-            self.blocks.append(IBlock((RESOLUTION[0]-24, 16*7+8)))
-            self.blocks.append(IBlock((RESOLUTION[0]-24, 16*5-8)))
+            self.blocks.append(IBlock((self.size[0]-24, 16*7+8)))
+            self.blocks.append(IBlock((self.size[0]-24, 16*5-8)))
         if 2 not in self.doors:   
             self.blocks.append(IBlock((8*16, 0)))
             self.blocks.append(IBlock((9*16, 0)))
@@ -429,6 +460,42 @@ class AE(object):
             self.blocks.append(IBlock((8, 16*7+8)))
             self.blocks.append(IBlock((8, 16*5-8)))
     
+    def setDoors_vertical(self):
+        """
+        Adjust the boundaries to fit doors for a vertical room
+        """
+        if 0 not in self.doors:
+            self.blocks.append(IBlock((8*16, self.size[1]-16)))
+            self.blocks.append(IBlock((9*16, self.size[1]-16)))
+            self.blocks.append(IBlock((10*16, self.size[1]-16)))
+        else:
+            self.blocks.append(IBlock((16*8 , self.size[1]-42), width=4, height=42))
+            self.blocks.append(IBlock((16*10 + 12, self.size[1]-42), width=4, height=42))
+        
+        if 1 not in self.doors:        
+            self.blocks.append(IBlock((self.size[0]-24, 5*16)))
+            self.blocks.append(IBlock((self.size[0]-24, 6*16)))
+            self.blocks.append(IBlock((self.size[0]-24, 7*16)))
+        else:
+            self.blocks.append(IBlock((self.size[0]-24, 16*7+8)))
+            self.blocks.append(IBlock((self.size[0]-24, 16*5-8)))
+
+        if 2 not in self.doors:   
+            self.blocks.append(IBlock((8*16, 0)))
+            self.blocks.append(IBlock((9*16, 0)))
+            self.blocks.append(IBlock((10*16, 0)))
+        else:
+            self.blocks.append(IBlock((8*16-8, 0)))
+            self.blocks.append(IBlock((16*10+8, 0)))
+        if 3 not in self.doors:
+            self.blocks.append(IBlock((8, 5*16)))
+            self.blocks.append(IBlock((8, 6*16)))
+            self.blocks.append(IBlock((8, 7*16)))
+            
+        else:
+            self.blocks.append(IBlock((8, 16*7+8)))
+            self.blocks.append(IBlock((8, 16*5-8)))
+
     #abstract
     def createBlocks(self):
         """
@@ -831,6 +898,7 @@ class AE(object):
                         #player should be invincible now
                         if self.player.invincible and not self.healthBar.drawingHurt:
                             self.healthBar.drawHurt(self.player.hp, n.damage)
+                  
            
 
             #Enemies
@@ -928,8 +996,9 @@ class AE(object):
                         self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage)
                     other.hit = False
                     if projectile.id == "arrow":
-                        projectile.handleOtherCollision(self)
+                        projectile.handleOtherCollision(self, other)
                         return
+                
                 projectile.handleCollision(self)
                 
                 
@@ -948,7 +1017,10 @@ class AE(object):
                 if not p.hit:
                     if p.doesCollide(block):
                     #p.handleCollision(self)
-                        p.handleCollision(self)
+                        if p.id == "arrow":
+                            p.handleCollision(self, block)
+                        else:
+                            p.handleCollision(self)
     
     def projectilesOnTorches(self, torch):
         for p in self.projectiles:
@@ -996,28 +1068,44 @@ class AE(object):
 
     def outOfBoundsSafety(self, n):
         if n.boundsSafety():
-            if n.position[0] >= RESOLUTION[0]:
-                n.position[0] = RESOLUTION[0] - 64
-                n.vel[0] = -n.speed
+            if n.position[0] >= self.size[0]:
+                if n.projectile:
+                    n.dead = True
+                else:
+                    n.position[0] = self.size[0] - 64
+                    n.vel[0] = -n.speed
             elif n.position[0] <= 0:
-                n.position[0] = 64
-                n.vel[0] = n.speed
+                if n.projectile:
+                    n.dead = True
+                else:
+                    n.position[0] = 64
+                    n.vel[0] = n.speed
 
-            if n.position[1] >= RESOLUTION[1]:
-                n.position[1] = RESOLUTION[1] - 64
-                n.vel[1] = -n.speed
+            if n.position[1] >= self.size[1]:
+                if n.projectile:
+                    n.dead = True
+                else:
+                    n.position[1] = self.size[1] - 64
+                    n.vel[1] = -n.speed
             elif n.position[1] <= 0:
-                n.position[1] = 64
-                n.vel[1] = n.speed
+                if n.projectile:
+                    n.dead = True
+                else:
+                    n.position[1] = 64
+                    n.vel[1] = n.speed
+        
+
 
     def update_Enemy(self, seconds, n):
-        n.update(seconds, self.player.position)
+        n.update(seconds, self.player.position, self.player)
         self.outOfBoundsSafety(n)
 
-        if n.id == "spawn":
+        if n.id == "spawn" or n.spawn:
             if n.spawning:
-                for i in n.getObjectsToSpawn():
-                    self.npcs.append(i)
+                objects = n.getObjectsToSpawn()
+                if objects:
+                    for i in n.getObjectsToSpawn():
+                        self.npcs.append(i)
                 n.resetObjects()
         if n.dead:
             self.disappear((n))
@@ -1217,8 +1305,19 @@ class AE(object):
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
-        
+        #print(self.npcs)
         if self.transporting or self.startingMobster or self.dead:
+            return
+        
+        if self.dying:
+            Drawable.CAMERA_OFFSET = vec(0,0)
+            self.updatePlayer(seconds)
+            if self.player.row != 1:
+                self.player.position = vec(RESOLUTION[0] // 2 - 9, RESOLUTION[1] // 2 - 13)
+            if self.player.dead:
+                self.deathTimer += seconds
+                if self.deathTimer >= 1:
+                    self.dead = True
             return
         
         if self.area_fading:
@@ -1264,13 +1363,7 @@ class AE(object):
             else:
                 self.handlePrompt()
 
-        if self.dying:
-            
-            self.updatePlayer(seconds)
-            if self.player.dead:
-                self.deathTimer += seconds
-                if self.deathTimer >= 2:
-                    self.dead = True
+        
 
             
         if self.torches:

@@ -9,6 +9,8 @@ from . import TextEntry, EventMenu
 
 from utils import vec, RESOLUTION
 
+from utils.load import LOAD
+
 from pygame import Surface
 from pygame.locals import *
 
@@ -483,9 +485,13 @@ class ScreenManager(object):
             elif self.continuingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.game = Tutorial_2.getInstance()
+                        self.game = LOAD["room"].getInstance()
                         self.game.lockHealth()
-                        self.game.initializeRoom(pos=vec(146,276))
+                        #print(LOAD["position"])
+                        if LOAD["area"]:
+                            self.game.initializeArea(pos=LOAD["position"])
+                        else:
+                            self.game.initializeRoom(pos=(LOAD["position"]))
                         self.state.startGame()
                         self.fadingIn = True
                         return

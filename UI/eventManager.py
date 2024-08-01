@@ -170,15 +170,7 @@ class EventManager(object):
                         pygame.quit()
                         return
                     
-                    ##  Window manipulation
-                    if event.type == pygame.WINDOWMOVED or event.type == pygame.WINDOWLEAVE or not pygame.mouse.get_focused():
-                        if engine.state == "game":
-                            if engine.game.player:
-                                engine.game.player.stop()
-                            
-                            engine.state.pause()
-                        pygame.event.clear()
-                        return
+                    
                         
 
                     ##  Controller plugged
@@ -187,6 +179,16 @@ class EventManager(object):
                         return
                     elif event.type == pygame.JOYDEVICEREMOVED:
                         self.removeJoystick(event.instance_id)
+                        return
+
+                    ##  Window manipulation
+                    if event.type == pygame.WINDOWMOVED or event.type == pygame.WINDOWLEAVE or not pygame.mouse.get_focused():
+                        if engine.state == "game":
+                            if engine.game.player:
+                                engine.game.player.stop()
+                            
+                            engine.state.pause()
+                        pygame.event.clear()
                         return
                     
                     ##  Controller inputs
@@ -427,6 +429,8 @@ class EventManager(object):
                             ACTIONS["element"] = key == KEY["element"]
                             ACTIONS["pause"] = key == KEY["pause"]
                             ACTIONS["map"] = key == KEY["map"]
+                            if key == KEY["target"]:
+                                ACTIONS["target"] = True
                             ##Movement
                             if key == KEY["down"]:
                                 ACTIONS["down"] = True
@@ -458,6 +462,8 @@ class EventManager(object):
                                 ACTIONS["right"] = False
                             elif key == KEY["left"]:
                                 ACTIONS["left"] = False
+                            elif key == KEY["target"]:
+                                ACTIONS["target"] = False
                     
                     
                     ##Move menu cursors

@@ -1,6 +1,6 @@
 import pygame
 from utils import SoundManager, SpriteManager, SCALE, RESOLUTION, vec, INV
-from . import Drawable, Animated, ShotParticle
+from . import Drawable, Animated, ShotParticle, Trigger
 """
 This file contains everything pertenent to dealing
 damage to enemies. Each weapon is instantiated
@@ -210,6 +210,8 @@ class Bullet(AbstractWeapon):
         self.setVelocity(self.direction, self.speed)
         self.type = 0
         self.frame = 0
+        self.collisionObj= None
+        self.collisionPoint = vec(0,0)
         SoundManager.getInstance().playSFX("shoot.wav")
 
     def setVelocity(self, direction, speed):
@@ -237,25 +239,43 @@ class Bullet(AbstractWeapon):
         
 
     
-    def handleCollision(self, engine):
+    def handleCollision(self, engine, other = None):
+        if other:
+            if issubclass(type(other), Trigger):
+                return
+        
         self.hit = True
         engine.playSound("dink.wav")
         engine.player.arrowCount += 1
         engine.player.shooting = False
     
 
-    def handleOtherCollision(self, engine):
+    def handleOtherCollision(self, engine, other = None):
+        
+        self.collisionObj = other
+        self.collisionPoint = other.position - self.position
         if not self.hit:
             self.hit = True
             engine.player.arrowCount += 1
             engine.player.shooting = False
+            
+            
 
 
     def update(self, seconds, engine):
         if self.hit:
-            """ super().updateShotParticle(seconds)
-            if self.frame == 6: """
-            engine.disappear(self)
+            self.animationTimer += seconds
+            if self.animationTimer >= 0.2:
+                engine.disappear(self)
+            else:
+                if self.collisionObj:
+                    if self.collisionObj.dead:
+                        engine.disappear(self)
+                    else:
+                        if not self.collisionObj.frozen:
+                            self.position += self.collisionObj.vel * seconds
+                            self.collisionPoint = self.position
+            
         else:
             self.vanish(seconds, engine, 16)
 

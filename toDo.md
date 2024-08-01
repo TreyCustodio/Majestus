@@ -7,6 +7,12 @@ Debug:
 - [ ] Syringe putting hp at 0 when on 5 hp
 - [ ] Decrease keyCount in Flame_10
 - [ ] No ice on enemies when respawning
+- [ ] self.npcs gets set to [] during resets
+- [ ] Arrow starting position (shooting with back to the wall causes arrow to instantly collide with wall)
+- [ ] Health bar initialization fails if mouse off-screen event is handled as the game loads in
+- [ ] Make hud transparent if you get to the left side of the screen. Set the alpha
+- [ ] Bombofaun ammo count on pause screen in rooms with camera
+- [ ] enemy damage nums in camera
 
 
 Additions:

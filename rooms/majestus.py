@@ -1,5 +1,5 @@
 from gameObjects import *
-from utils import INTRO
+
 """
 This file contains all data pertaining
 to each room's engine. Each class represents
@@ -225,8 +225,8 @@ class Knight(AbstractEngine):
             self.enemyPlacement = 0
             self.knight = LavaKnight(vec(RESOLUTION[0]//2-16, RESOLUTION[1]//2-16))
             self.knight.ignoreCollision = True
-            self.npcs = [
-                self.knight,
+            self.enemies = [
+                
                 Bopper(COORD[2][2]),
                 Bopper(COORD[16][2]),
                 Bopper(COORD[2][10]),
@@ -258,7 +258,9 @@ class Knight(AbstractEngine):
                 self.knight.reset()
                 self.vanishObstacles()
                 
-        
+        def on_enter(self):
+            if not FLAGS[111]:
+                self.npcs.append(self.knight)
         def renderObstacles(self):
             for i in range(8,11):
                 self.blocks.append(IBlock(vec(16*i, 16*12), vanish=True))
@@ -373,65 +375,33 @@ class Tutorial_2(AbstractEngine):
     
     class _T2(AE):
         def __init__(self):
-            super().__init__("tut_2", True, vec(304, 308))
-            self.player = Player(vec(146, 276))
+            super().__init__("tut_2", True, vec(304, 320))
+            #self.player = Player(vec(146, 276))
             self.roomId = 4
-            self.bgm = "remind.mp3"
+            self.bgm = "forget_me_nots.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-
-            self.trigger1 = Trigger(door = 10)
-            self.trigger2 = Trigger(door = 13)
-            self.trigger3 = Trigger(door = 12)
-            self.trigger4 = Trigger(door = 11)
-
-            self.toLeft = Trigger(door = 1)
-            self.toFlame = Trigger(door = 0)
-            self.toIce = Trigger(door = 2)
-
-            self.toRight = Trigger(door = 23)
-            self.toThunder = Trigger(door = 20)
-            self.toGale = Trigger(door = 22)
-
-            
-
-            
-            self.portal = Portal(COORD[14][3], 3)
-
+            self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
+            self.enemies = [
+                Gleemer(vec(16*3, 16*10)),
+                Mofos(vec(16*9, 16*12))
+            ]
+            self.doors = [0]
 
             self.fire = Blessing(vec(16*7, 16*4), 0)
             self.ice = Blessing(vec(16*11, 16*4), 1)
             self.thunder = Blessing(vec(16*45, 16*4), 2)
             self.wind = Blessing(vec(16*49, 16*4), 3)
 
-
-            self.geemer = Geemer((16*9 - 4 + 304, 16*6), text = SPEECH["chapel_geemer"], color = 1)
-            self.prompt = Geemer((16*11-4 + 304, 16*9), text = "Praise be to Majestus&&")
             
 
             self.spawning = [self.ice,
                              self.fire,
                              self.thunder,
                              self.wind,
-                             self.geemer,
-                             self.prompt
                              ]
-            
-            self.blocks.append(self.trigger1)
-            self.blocks.append(self.trigger2)
-            self.blocks.append(self.trigger3)
-            self.blocks.append(self.trigger4)
-
-            self.blocks.append(self.toLeft)
-            self.blocks.append(self.toFlame)
-            self.blocks.append(self.toIce)
-
-            self.blocks.append(self.toRight)
-            self.blocks.append(self.toThunder)
-            self.blocks.append(self.toGale)
-
-            self.doors = [0,2]
+        
         
         def handlePrompt(self):
             if self.promptResult:
@@ -479,73 +449,28 @@ class Tutorial_2(AbstractEngine):
                         self.displayText("Not enough shards.")
                     self.promptResult = False
 
-            
-
-        def on_enter(self):
-            self.fire.updateCost()
-
         #override
         def createBlocks(self):
             return
 
         def setDoors(self):
-            return
-        
+            self.setDoors_vertical()
+
         def createBounds(self):
             """
             Creates boundaries on the outer edge of the map
             """
-            return
-            #Left side
-            for i in range(1, 5):
-                self.blocks.append(IBlock((8,i*16)))
-            for i in range(8, 12):
-                self.blocks.append(IBlock((8,i*16)))
-            #Right side
-            for i in range(1, 5):
-                self.blocks.append(IBlock((912-24,i*16)))
-            for i in range(8, 12):
-                self.blocks.append(IBlock((912-24,i*16)))
-            #Top side
-            for i in range(1,8):
-                self.blocks.append(IBlock((i*16, 0)))
-            for i in range(11, 18):
-                self.blocks.append(IBlock((i*16, 0)))
-            #Bottom side
-            for i in range(1,8):
-                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
-            for i in range(11, 18):
-                self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
-            
+            self.createVertical()
 
         #override
         def blockCollision(self):
             for b in self.blocks:
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
-                    if b == self.trigger1:
+                    if False:
                         self.transport(Intro_3, 2)
-                    #elif b == self.trigger2:
-                        #self.transport(Grand_Chapel_L, 1, keepBGM=True)
-                    #elif b == self.trigger4:
-                        #self.transport(Grand_Chapel_R, 3, keepBGM=True)
-                    #elif b == self.trigger3:
-                        #self.transport(Chamber_Access, 0)
-                    elif b == self.portal:
-                        #self.transport(Gale_1, (16*9, 16*9))
-                        pass
                     else:
                         self.player.handleCollision(b)
-        
-        def update(self, seconds):
-            super().update(seconds)
-            if not FLAGS[88] and FLAGS[89]:
-                self.spawning.pop(self.spawning.index(self.ice))
-                self.spawning.pop(self.spawning.index(self.fire))
-                self.spawning.pop(self.spawning.index(self.thunder))
-                self.spawning.pop(self.spawning.index(self.wind))
-                FLAGS[88] = True
-            self.portal.update(seconds)
             
 """
 Entrance Hall
@@ -1100,9 +1025,10 @@ class Alpha_Flapper(AbstractEngine):
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 2)
             self.doors = [0,2]
+
             if not FLAGS[110]:
                 self.flapper = AlphaFlapper(vec(16*8 + 8, 16*3))
-                self.npcs = [self.flapper]
+                
             self.textInt = -1
             self.tileFrame = 0
             self.obstacles = [
@@ -1113,6 +1039,10 @@ class Alpha_Flapper(AbstractEngine):
                 self.obstacles.append(ForceField(COORD[8+i][11], render = False))
             if FLAGS[110]:
                 self.floor = Floor("alpha_flapper", "tiles_8")
+
+        def on_enter(self):
+            if not FLAGS[110]:
+                self.npcs.append(self.flapper)
 
         def reset(self):
             super().reset()
@@ -1252,10 +1182,11 @@ class Intro_3(AbstractEngine):
             self.trigger1 = Trigger(door = 0)
             self.trigger2 = Trigger(door = 2)
             self.torches = []
-            self.npcs = [Dummy((COORD[8][5])), 
-                         Dummy((COORD[9][5])), 
-                         Dummy((COORD[10][5]))
-                         ]
+            self.enemies = [
+                Dummy((COORD[8][5])), 
+                Dummy((COORD[9][5])), 
+                Dummy((COORD[10][5]))
+            ]
             self.doors = [0,2]
 
             

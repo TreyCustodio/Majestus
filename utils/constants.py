@@ -78,6 +78,7 @@ COORD = [[(i*16, j*16) for j in range(13)] for i in range(18)]
 
 
 
+
 """
 Indicates what C attack and what type of arrow is equipped
 """
@@ -100,7 +101,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 10,
+    "max_hp": 3,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -128,7 +129,7 @@ INV = {
     "syringe":True,
     "potion": 5,
     "smoothie": 5,
-    "beer": 9,
+    "beer": 0,
     "joint":0,
     "speed":0,
     "wallet": 99,
