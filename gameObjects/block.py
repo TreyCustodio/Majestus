@@ -55,26 +55,7 @@ class Lava(Terrain):
             pygame.draw.rect(drawSurface, (255,100,0), collision, 1)
 
 
-class HBlock(Block):
-    """
-    Half a block (8 x 16 pixels) of collision.
-    The block will be placed within a 16 x 16 space.
-    If right, the collision will appear on the right.
-    If left, the collision will appear on the left."""
-    def __init__(self, position = vec(0,0), right = False):
-        super().__init__(position, (0,0))
-        self.width = 8
-        self.right = right
-        
-    def getCollisionRect(self):
-        newRect = pygame.Rect((0,0),(8,16))
-        if self.right:
-            newRect.left = int(self.position[0]+8)
-        else:
-            newRect.left = int(self.position[0])
-        newRect.top = int(self.position[1])
-        return newRect
-    
+
 class Trigger(IBlock):
     """
     Triggers activate when the player collides with them
@@ -136,6 +117,7 @@ class Trigger(IBlock):
             return pygame.Rect((self.position[0],self.position[1]-8), (16,32))
         else:
             return pygame.Rect(self.position, (self.width, self.height))
+    
     def interact(self, player, engine):
         engine.displayText(self.text)
         player.vel = vec(0,0)

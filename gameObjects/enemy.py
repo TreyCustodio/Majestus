@@ -73,12 +73,18 @@ class Enemy(Animated):
         self.dying = False
         self.projectile = projectile
         self.damage = damage
+        self.attacking = False
+        self.attackTimer = 0.0
     
     def increaseCount(self):
         return True
     
-    def setImage(self):
-        self.image = SpriteManager.getInstance().getSprite(self.fileName, (self.frame, self.row))
+    def setImage(self, frame = None, row = None):
+        if frame == None:
+            frame = self.frame
+        if row == None:
+            row = self.row
+        self.image = SpriteManager.getInstance().getSprite(self.fileName, (frame, row))
 
     def doesCollideBlock(self, block):
         return self.doesCollide(block)
@@ -1065,41 +1071,57 @@ Weak to arrow.
 class Mofos(Enemy):
     def __init__(self, position = vec(0,0), direction = 0):
         super().__init__(position, "mofos.png", direction, spawn=True)
+        self.framesPerSecond = 20
         self.indicatorRow = 3
         self.speed = 20
-        self.maxHp = 20
+        self.maxHp = 200
         self.hp = 20
         self.damage = 1
         self.hurtRow = 4
         self.arrowWeak = True
+        self.player_row = 0
+        self.current_row = self.row
 
     
     def bounce(self, other):
-        return
+        return super().bounce(other, True)
 
     def getObjectsToSpawn(self):
-        self.spawning = False
-        if self.row == 0 + 4:
-            return [Bone(vec(self.position[0], self.position[1]), vel=vec(0,200))]
-        elif self.row == 1 + 4:
-            return [Bone(vec(self.position[0], self.position[1]), vel = vec(200,0))]
-        elif self.row == 2 + 4:
-            return [Bone(vec(self.position[0], self.position[1]), vel = vec(0, -200))]
-        elif self.row == 3 + 4:
-            return [Bone(vec(self.position[0], self.position[1]), vel = vec(-200,0))]
-    
+        
+        if not self.frozen:
+            row = self.row
+            self.setImage(0,row)
+            self.attacking = True
+            if row == 0 + 4:
+                self.row = self.current_row
+                return [Bone(vec(self.position[0], self.position[1]), vel=vec(0,200), angle=90)]
+            elif row == 1 + 4:
+                self.row = self.current_row
+                return [Bone(vec(self.position[0], self.position[1]), vel = vec(200,0))]
+            elif row == 2 + 4:
+                self.row = self.current_row
+                return [Bone(vec(self.position[0], self.position[1]), vel = vec(0, -200), angle=90)]
+            elif row == 3 + 4:
+                self.row = self.current_row
+                return [Bone(vec(self.position[0], self.position[1]), vel = vec(-200,0))]
+            
+
     def hurt(self, damage, setHit = True):
+        
         self.spawning = True
         super().hurtMult(damage, setHit)
+        self.current_row = self.row
+        self.row = self.player_row + 4
 
     #override
     def move(self, seconds):
-        if self.frame == 5:
-            self.changeDirection()
-            self.setSpeed(self.row)
-            self.frame = 0
         
-        if not self.frozen:
+        
+        if not self.frozen and not self.spawning:
+            if self.frame == 5:
+                self.changeDirection()
+                self.setSpeed(self.row)
+                self.frame = 0
             self.position += self.vel * seconds
 
     #override
@@ -1110,6 +1132,13 @@ class Mofos(Enemy):
                 self.row -= 4
 
     def update(self, seconds, position = None, player = None):
+        if self.attacking:
+            self.attackTimer += seconds
+            if self.attackTimer >= 0.2:
+                self.attacking = False
+                self.attackTimer = 0.0
+            return
+        self.player_row = player.getOppositeDirection()
         super().update(seconds)
 
 
@@ -1618,9 +1647,12 @@ class Projectile(Enemy):
             self.image = pygame.transform.rotate(self.image, self.angle)
 
 class Bone(Projectile):
-    def __init__(self, position=vec(0, 0), vel = vec(0,0)):
-        super().__init__(position, "bone.png", nFrames = 1, damage = 1, hp = 1, vel = vel, rotate=True, spf=0.2)
-    
+    def __init__(self, position=vec(0, 0), vel = vec(0,0), angle = 0):
+        super().__init__(position, "bone.png", nFrames = 1, damage = 1, hp = 1, vel = vel, spf=0.2)
+        self.angle = angle
+        if angle > 0:
+            self.image = pygame.transform.rotate(self.image, self.angle)
+
     def hurt(self, damage, setHit=True):
         self.dead = True
     
@@ -1631,8 +1663,9 @@ class Bone(Projectile):
         return
     
     def update(self, seconds, position=None, player=None):
-        super().update(seconds, position, player)
-        #self.rotate(seconds)
+        #super().update(seconds, position, player)
+        self.position += self.vel * seconds
+        #self.image = pygame.transform.rotate(self.image, self.angle)
 
 class Heater(Enemy):
     def __init__(self, position=vec(0,0)):

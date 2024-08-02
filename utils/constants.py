@@ -15,55 +15,282 @@ EPSILON = 0.01
 Global boolean values that represent flags.
 Used for a variety of special events.
 """
-FLAGS = [False for i in range(150)]
-#FLAGS[110] = True
-#for i in range (1, 10):
-    #FLAGS[i] = True
+FLAGS = [False for i in range(300)]
 
-#FLAGS[62] = True
-#1-20 -> Tutorial
-#1 -> Grand Chapel
-#2 ->
-#3
-#4
-#5
-#6
-#7
-#8
-#9
-#10
-#17 -> Flame shard first pickup
-#18 -> Ice shard first pickup
-#19 -> Bolt shard first pickup
-#20 - > Gale shard first pickup
+### Boss FLAG Control   ###
 
-##50-59 -> Respawn/Checkpoints
-#50 -> skip intro (post-death)
-#51 -> respawn in Grand Chapel
-#52 -> Flame_4
+#FLAGS[100] = True #Light Cloaker
+#FLAGS[200] = True #Light Cloaker Heart
 
-##60 - > flame fields flags
+#FLAGS[110] = True #Alpha Flapper
+#FLAGS[210] = True #Alpha Flapper Heart
+
+### Flag Descriptions   ###
+
+##  0-79 -> Keys and door locks ##
+#0 -> N/A
+#1 -> fire shard
+#2 -> ice shard
+#3 -> lava shard
+#4 -> gale shard
+#5 -> 
+#6 -> 
+#7 -> 
+#8 -> 
+#9 -> 
+
+#   Wavering Grotto
+#10 ->
+#11 ->
+#12 ->
+#13 ->
+#14 ->
+#15 ->
+#16 ->
+#17 ->
+#18 ->
+#19 ->
+
+#   Chapel Hall
+#20 ->
+#21 ->
+#22 ->
+#23 ->
+#24 ->
+#25 ->
+#26 ->
+#27 ->
+#28 ->
+#29 ->
+
+#   Stardust Quarry
+#30 ->
+#31 ->
+#32 ->
+#33 ->
+#34 ->
+#35 ->
+#36 ->
+#37 ->
+#38 ->
+#39 ->
+
+#   Scorching Fields
+#40 ->
+#41 -> Stomper mini boss cutscene watched
+#42 -> Stomper mini boss dead
+#43 ->
+#44 ->
+#45 ->
+#46 ->
+#47 ->
+#48 ->
+#49 ->
+
+#   Rumbling Tower
+#50 ->
+#51 ->
+#52 -> 
+#53 -> 
+#54 ->
+#55 ->
+#56 ->
+#57 ->
+#58 ->
+#59 ->
+
+#   Tempest Grove
+#60 ->
+#61 ->
+#62 -> 
+#63 -> 
+#64 ->
+#65 ->
+#66 ->
+#67 ->
+#68 ->
+#69 ->
+
+#   Frigid Isles
+#70 ->
+#71 ->
+#72 -> 
+#73 -> 
+#74 ->
+#75 ->
+#76 ->
+#77 ->
+#78 ->
+#79 ->
 
 
-##88-93 -> Blessings
-#88 -> Blessings are locked, way is clear
-#89 -> No blessings appear
-#90 -> Ice chosen
-#91 -> Fire chosen
-#92 -> Thunder chosen
-#93 -> Wind chosen
+##  80-99 Major Event Completion flags (sample) ##
+
+#80 -> Wavering Grotto Complete
+
+#81 -> Chapel Hall Complete
+
+#82 -> Firi Section Complete #1
+
+#83 -> Firi Section Complete #2
+
+#84 -> Scorching Fields Complete
+
+#85 -> Rumbling Tower Complete
+
+#86 -> Tempest Grove Complete
+
+#87 -> Frigid Isles Mid-game Climax complete
+
+#88 -> 2nd Half Flag #1
+
+#89 -> Melody Killed
+
+#90 -> Entrance to Chamber Opened
+
+#91 -> Ready to fight Myer
+
+#92 -> Myer dead / Firi final fight
+
+#93 -> End-game flag
+
+#94 -> Extra #1
+
+#95 -> Extra #2
+
+#96 -> Extra #3
+
+#97 -> Extra #4
+
+#98 -> Extra #5
+
+#99 -> MONSTER MOBSTER AVAILABLE
 
 
-##94-100 Completion flags
-#94 -> Ice complete
-#95 -> Fire complete
-#96 -> Thunder complete
-#97 -> Wind complete
-
-##110-150 -> Boss Flags
-#110 -> ALPHA FLAPPER DEFEATED
+##  100-149 -> Boss Flags   ##
+#100 -> Light Cloak
+#110 -> Alpha Flapper
 #111 -> LavaKnight
 
+##  200-249 -> Boss respective hearts   ##
+#200 -> Light Cloak
+#210 -> Alpha Flapper
+#211 -> LavaKnight
+
+
+##  150-199 -> Expansions Group 1   ##
+#150 -> 
+#151 -> 
+#152 -> 
+#153 -> 
+#154 -> 
+#155 -> 
+#156 -> 
+#157 -> 
+#158 -> 
+#159 -> 
+
+#160 -> 
+#161 -> 
+#162 -> 
+#163 -> 
+#164 -> 
+#165 -> 
+#166 -> 
+#167 -> 
+#168 -> 
+#169 -> 
+
+#170 ->
+#171 -> 
+#172 -> 
+#173 -> 
+#174 -> 
+#175 -> 
+#176 -> 
+#177 -> 
+#178 -> 
+#179 -> 
+
+#180 ->
+#181 -> 
+#182 -> 
+#183 -> 
+#184 -> 
+#185 -> 
+#186 -> 
+#187 -> 
+#188 -> 
+#189 -> 
+
+#190 ->
+#191 -> 
+#192 -> 
+#193 -> 
+#194 -> 
+#195 -> 
+#196 -> 
+#197 -> 
+#198 -> 
+#199 -> 
+
+
+##  250-299 -> Bombo Faun Expansions    ##
+
+#250 -> 
+#251 -> 
+#252 -> 
+#253 -> 
+#254 -> 
+#255 -> 
+#256 -> 
+#257 -> 
+#258 -> 
+#259 -> 
+
+#260 -> 
+#261 -> 
+#262 -> 
+#263 -> 
+#264 -> 
+#265 -> 
+#266 -> 
+#267 -> 
+#268 -> 
+#269 -> 
+
+#270 ->
+#271 -> 
+#272 -> 
+#273 -> 
+#274 -> 
+#275 -> 
+#276 -> 
+#277 -> 
+#278 -> 
+#279 -> 
+
+#280 ->
+#281 -> 
+#282 -> 
+#283 -> 
+#284 -> 
+#285 -> 
+#286 -> 
+#287 -> 
+#288 -> 
+#289 -> 
+
+#290 ->
+#291 -> 
+#292 -> 
+#293 -> 
+#294 -> 
+#295 -> 
+#296 -> 
+#297 -> 
+#298 -> 
+#299 -> 
 
 
 
@@ -94,19 +321,19 @@ EQUIPPED = {
 
 }
 
-bombos = 50
+bombos = 20
 """
 The Player's inventory
 """
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 3,
+    "max_hp": 7,
     "shoot": True,
-    "hasBombo": True,
-    "fire": True,
-    "clap": True,
-    "slash": True,
+    "hasBombo": False,
+    "fire": False,
+    "clap": False,
+    "slash": False,
     "cleats": True,
     "maxBombo": bombos,
     "bombo": bombos,
@@ -123,18 +350,19 @@ INV = {
     "map4":False,
 
     ##Consumables and key items
-    "plant": 9,
-    "chanceEmblem": True,
-    "lavaBoots": True,
-    "syringe":True,
-    "potion": 5,
-    "smoothie": 5,
+    "plant": 0,
+    "chanceEmblem": False,
+    "lavaBoots": False,
+    
+    "syringe": True,
+    "potion": 0,
+    "smoothie": 0,
     "beer": 0,
     "joint":0,
     "speed":0,
     "wallet": 99,
     "money": 0,
-    "keys": 1,
+    "keys": 0,
 
     ##Upgrades
     "flameCost": 20,

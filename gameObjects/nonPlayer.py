@@ -1,5 +1,5 @@
 from . import Drawable, Animated, QuestIcon, ZIcon, HudImageManager
-from utils import SpriteManager, SCALE, RESOLUTION, vec, rectAdd, SoundManager, FLAGS, SPEECH, ICON, INV
+from utils import SpriteManager, SCALE, RESOLUTION, vec, rectAdd, SoundManager, SPEECH, ICON, INV
 import pygame
 
 class NonPlayer(Animated):

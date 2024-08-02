@@ -3,7 +3,7 @@ from math import ceil
 from UI import EventManager
 from utils import SpriteManager
 from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Text, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
-               WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger, HBlock,
+               WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
                Shadow, Walls, Floor, Camera)
@@ -154,6 +154,9 @@ class AE(object):
     Getter Methods
     """
 
+    def getHorizontalRoom(self, quadrants: int = 2, gap = False):
+        if gap:
+            return [1, 2, 4, 7]
     """
     Returns:
     True if the healthbar is initialized.
@@ -279,15 +282,11 @@ class AE(object):
         self.player.zoom()
     
     def useSyringe(self):
-        #player's hp = maxHp // 3
-        #so damage is 2/3 of max_hp
+        ##  damage is 2/3 of max_hp
         if self.player.hp == 1:
             return
         damage = (ceil((2 * INV["max_hp"])/3))
-        if damage > self.player.hp:
-            damage = self.player.hp - 1
-        self.player.hurt(damage)
-        self.healthBar.drawHurt(self.player.hp, damage)
+        self.player.hurtSyringe(damage)
 
 
     def initializeRoom(self, player= None, pos = None, keepBGM = False, placeEnemies = True, on_enter = True):
@@ -369,6 +368,7 @@ class AE(object):
         self.player.keyLock()
         self.area_fading = True
         self.whiting = True
+        self.areaIntro.position = self.camera.position
         self.areaIntro.fadeIn()
         self.on_enter()
 
@@ -404,8 +404,31 @@ class AE(object):
         for i in range(11, 18):
             self.blocks.append(IBlock((i*16, RESOLUTION[1]-16)))
     
-    def createVertical(self):
+    def createSquare(self):
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+            self.blocks.append(IBlock((0, i*16 + 16*7), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
         
+        
+
+    def createVertical(self):
+        ###Quadrant 1
         ##Left, Right
         for i in range(1,19):
             #Left
@@ -425,10 +448,54 @@ class AE(object):
             self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
 
 
+    def createHorizontal(self, gap = False):
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+            self.blocks.append(IBlock((0, i*16 + 16*7), width=42))
+
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
+
+        ### Quadrant 2
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0 + 304, i*16), width=42))
+            self.blocks.append(IBlock((0 + 304, i*16 + 16*7), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18 + 304, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18 + 304, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16 + 304, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11 + 304, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16 + 304, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11 + 304, 0), height=42))
+
+
+    """
+    Adjust the boundaries to fit doors
+    """
     def setDoors(self):
-        """
-        Adjust the boundaries to fit doors
-        """
         if 0 not in self.doors:
             self.blocks.append(IBlock((8*16, self.size[1]-16)))
             self.blocks.append(IBlock((9*16, self.size[1]-16)))
@@ -460,10 +527,78 @@ class AE(object):
             self.blocks.append(IBlock((8, 16*7+8)))
             self.blocks.append(IBlock((8, 16*5-8)))
     
+    """
+    param squares -> number of quadrants to place door collision in
+    """
+    def setDoors_square(self, squares: int = 1):
+        ###  Quadrant 1
+        ##  Bottom
+        if 0 not in self.doors:
+            self.blocks.append(IBlock((16*8, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((16*9, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((16*10, 19*10 - 8 - 16), height=42))
+
+        ##  Right - Also Middle
+        if 1 not in self.doors:
+            self.blocks.append(IBlock((16*16 + 6, 5*16), width=42))
+            self.blocks.append(IBlock((16*16 + 6, 6*16), width=42))
+            self.blocks.append(IBlock((16*16 + 6, 7*16), width=42))
+
+        ##  Top
+        if 2 not in self.doors:
+            self.blocks.append(IBlock((16*8, 0), height=42))
+            self.blocks.append(IBlock((16*9, 0), height=42))
+            self.blocks.append(IBlock((16*10, 0), height=42))
+
+        ##  Left
+        if 3 not in self.doors:
+            self.blocks.append(IBlock((0, 5*16), width=42))
+            self.blocks.append(IBlock((0, 6*16), width=42))
+            self.blocks.append(IBlock((0, 7*16), width=42))
+        
+        ###  Quadrant 2
+        if squares > 1:
+            ##  Bottom
+            if 4 not in self.doors:
+                self.blocks.append(IBlock((16*8 + 304, 19*10 - 8 - 16), height=42))
+                self.blocks.append(IBlock((16*9 + 304, 19*10 - 8 - 16), height=42))
+                self.blocks.append(IBlock((16*10 + 304, 19*10 - 8 - 16), height=42))
+
+            ##  Right - Middle
+            if 5 not in self.doors:
+                self.blocks.append(IBlock((16*16 + 6 + 304, 5*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6 + 304, 6*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6 + 304, 7*16), width=42))
+
+            ##  Top
+            if 6 not in self.doors:
+                self.blocks.append(IBlock((16*8 + 304, 0), height=42))
+                self.blocks.append(IBlock((16*9 + 304, 0), height=42))
+                self.blocks.append(IBlock((16*10 + 304, 0), height=42))
+
+            ##  Left - Middle
+            if 7 not in self.doors:
+                self.blocks.append(IBlock((0+ 304, 5*16), width=42))
+                self.blocks.append(IBlock((0+ 304, 6*16), width=42))
+                self.blocks.append(IBlock((0+ 304, 7*16), width=42))
+            
+            ##  Right - End
+            if 8 not in self.doors:
+                self.blocks.append(IBlock((16*16 + 6 + 608, 5*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6 + 608, 6*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6 + 608, 7*16), width=42))
+            
+            ##  Left - End
+            if 9 not in self.doors:
+                self.blocks.append(IBlock((0 + 608, 5*16), width=42))
+                self.blocks.append(IBlock((0 + 608, 6*16), width=42))
+                self.blocks.append(IBlock((0 + 608, 7*16), width=42))
+
+    """
+    Adjust the boundaries to fit doors for a vertical room
+    """
     def setDoors_vertical(self):
-        """
-        Adjust the boundaries to fit doors for a vertical room
-        """
+        
         if 0 not in self.doors:
             self.blocks.append(IBlock((8*16, self.size[1]-16)))
             self.blocks.append(IBlock((9*16, self.size[1]-16)))
@@ -496,6 +631,9 @@ class AE(object):
             self.blocks.append(IBlock((8, 16*7+8)))
             self.blocks.append(IBlock((8, 16*5-8)))
 
+    def setDoors_horizontal(self, squares: int = 2):
+        self.setDoors_square(squares)
+    
     #abstract
     def createBlocks(self):
         """
@@ -638,23 +776,26 @@ class AE(object):
                 SoundManager.getInstance().fadeoutBGM()
             
 
-    def transportArea(self, room = None, position= None):
+    def transportArea(self, room = None, spec_pos = False, position= None):
         if not self.transporting and not self.transLock:
             self.whiteOut()
             self.transporting = True
             self.transporting_area = True
             self.tra_room = room
             
-            if position == 0:
-                self.tra_pos = vec(16*9, 16*11)
-            elif position == 1:
-                self.tra_pos = vec(16*16, 16*6 - 8)
-            elif position == 2:
-                self.tra_pos = vec(16*9, 8)
-            elif position == 3:
-                self.tra_pos = vec(16*2, 16*6-8)
-            else:
+            if spec_pos:
                 self.tra_pos = position
+            else:
+                if position == 0:
+                    self.tra_pos = vec(16*9, 16*11)
+                elif position == 1:
+                    self.tra_pos = vec(16*16, 16*6 - 8)
+                elif position == 2:
+                    self.tra_pos = vec(16*9, 8)
+                elif position == 3:
+                    self.tra_pos = vec(16*2, 16*6-8)
+                else:
+                    self.tra_pos = position
                 
             self.tra_keepBGM = False
             SoundManager.getInstance().fadeoutBGM()
@@ -677,7 +818,7 @@ class AE(object):
                 SoundManager.getInstance().fadeoutBGM()
             
 
-    def displayText(self, text = "", icon = None, large = True):
+    def displayText(self, text = "", icon = None, large = True, box = 2):
         """
         Display text
         """
@@ -709,6 +850,7 @@ class AE(object):
         self.textBox = True
         self.text = text
         self.largeText = large
+        self.boxType = box
         
         if self.player != None:
             self.player.stop()
@@ -895,9 +1037,6 @@ class AE(object):
                 if (not self.player.invincible) or n.id == "shot":
                     if n.handlePlayerCollision(self.player):
                         self.player.handleCollision(n)
-                        #player should be invincible now
-                        if self.player.invincible and not self.healthBar.drawingHurt:
-                            self.healthBar.drawHurt(self.player.hp, n.damage)
                   
            
 
@@ -1104,7 +1243,7 @@ class AE(object):
             if n.spawning:
                 objects = n.getObjectsToSpawn()
                 if objects:
-                    for i in n.getObjectsToSpawn():
+                    for i in objects:
                         self.npcs.append(i)
                 n.resetObjects()
         if n.dead:
@@ -1217,6 +1356,8 @@ class AE(object):
             return """
         self.camera.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         self.camera.position[1] = self.player.position[1] - (self.camera.getSize()[1] // 2)
+        if self.area_fading:
+            self.areaIntro.position= self.camera.position
         #self.healthBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.elementIcon.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.energyBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
@@ -1340,20 +1481,20 @@ class AE(object):
             for e in self.effects_behind_walls:
                 e.update(seconds)
         ##Pop-up messages
-        if not FLAGS[17] and INV["flameShard"] > 0:
-            FLAGS[17] = True
+        if not FLAGS[1] and INV["flameShard"] > 0:
+            FLAGS[1] = True
             self.displayText(SPEECH["flameShard"])
 
-        if not FLAGS[18] and INV["frostShard"] > 0:
-            FLAGS[18] = True
+        if not FLAGS[2] and INV["frostShard"] > 0:
+            FLAGS[2] = True
             self.displayText(SPEECH["frostShard"])
 
-        if not FLAGS[19] and INV["boltShard"] > 0:
-            FLAGS[19] = True
+        if not FLAGS[3] and INV["boltShard"] > 0:
+            FLAGS[3] = True
             self.displayText(SPEECH["boltShard"])
 
-        if not FLAGS[20] and INV["galeShard"] > 0:
-            FLAGS[20] = True
+        if not FLAGS[4] and INV["galeShard"] > 0:
+            FLAGS[4] = True
             self.displayText(SPEECH["galeShard"])
         
         ##Prompt Results

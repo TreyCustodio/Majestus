@@ -520,6 +520,7 @@ class HealthBar(object):
             Green at full, red at low.
             Draw 5 pixels of the healthbar per 1 hp
             """
+            #print("drawingHurt: ", self.drawingHurt)
             ##Full Health
             if player.hp == INV["max_hp"]:
                 if not self.drawingHeal:
@@ -562,6 +563,7 @@ class HealthBar(object):
                 if self.subtractingPixels:
                     self.damageToDraw -= 1
                     if self.damageToDraw == 0:
+                        #self.damageToDraw = 0
                         self.pixelsToDraw = 0
                         self.fillerPixels = 0
                         self.subtractingPixels = False

@@ -224,7 +224,8 @@ class ScreenManager(object):
                 if "Y/N" in self.game.text:
                     self.textEngine.setText(self.game.text, self.game.icon, prompt = True)
                 else:
-                    self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText)
+                    self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText, self.game.boxType)
+
             if self.game.whiting:
                 self.white.draw(drawSurf)
             if self.game.area_fading:
@@ -464,21 +465,10 @@ class ScreenManager(object):
             if self.startingGame:
                 if self.fade.frame == 8:
                     if not pygame.mixer.get_busy():
-                        self.intro = Intro_Cut.getInstance()
-                        self.inIntro = True
-                        self.state.toIntro()
+                        self.game = Tutorial_1.getInstance()
+                        self.game.lockHealth()
+                        self.state.startGame()
                         self.fadingIn = True
-                        """ if FLAGS[51]:
-                            self.game = Grand_Chapel.getInstance()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-
-                        elif FLAGS[50]:
-                            self.game = Entrance.getInstance()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-                            
-                        else: """
             
                     
             ##Continue
@@ -487,7 +477,6 @@ class ScreenManager(object):
                     if not pygame.mixer.get_busy():
                         self.game = LOAD["room"].getInstance()
                         self.game.lockHealth()
-                        #print(LOAD["position"])
                         if LOAD["area"]:
                             self.game.initializeArea(pos=LOAD["position"])
                         else:
@@ -495,35 +484,6 @@ class ScreenManager(object):
                         self.state.startGame()
                         self.fadingIn = True
                         return
-                        if FLAGS[52]:
-                            self.game = Flame_4.getInstance()
-                            self.game.lockHealth()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-                            self.fadingIn = True
-                        elif FLAGS[51]:
-                            self.game = Grand_Chapel.getInstance()
-                            self.game.lockHealth()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-                            self.fadingIn = True
-                        elif FLAGS[110]:
-                            self.game = Alpha_Flapper.getInstance()
-                            self.game.lockHealth()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-                            self.fadingIn = True
-                        elif FLAGS[50]:
-                            self.game = Entrance.getInstance()
-                            self.game.lockHealth()
-                            self.game.initializeRoom()
-                            self.state.startGame()
-                            self.fadingIn = True
-                        else:
-                            self.intro = Intro_Cut.getInstance()
-                            self.inIntro = True
-                            self.state.toIntro()
-                            self.fadingIn = True
                         
         elif self.state == "intro":
 

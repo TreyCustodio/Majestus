@@ -23,7 +23,6 @@ class Intro_Cut(AbstractEngine):
             """
             Does not call super().__init()
             """
-            FLAGS[50] = True
             self.fading = False
             self.player = None
             self.largeText = False
@@ -365,6 +364,50 @@ class Knight(AbstractEngine):
             else:
                 super().update(seconds)
 
+class Tutorial_1(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._T1()
+      
+        return cls._INSTANCE
+    
+    class _T1(AE):
+        def __init__(self):
+            super().__init__("tut_1")
+            #self.player = Player(vec(146, 276))
+            self.roomId = 4
+            self.bgm = None
+            self.ignoreClear = True
+            self.max_enemies = 0
+            self.enemyPlacement = 0
+            self.doors = [2]
+            self.trigger1 = Trigger(vec(16*8, -12), width=48)
+
+
+        #override
+        def createBlocks(self):
+            self.blocks.append(self.trigger1)
+
+        def setDoors(self):
+            self.setDoors_square()
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            self.createSquare()
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
+                    else:
+                        self.player.handleCollision(b)
+
 class Tutorial_2(AbstractEngine):
     @classmethod
     def getInstance(cls):
@@ -375,7 +418,7 @@ class Tutorial_2(AbstractEngine):
     
     class _T2(AE):
         def __init__(self):
-            super().__init__("tut_2", True, vec(304, 320))
+            super().__init__("tut_2", True, vec(608, 208))
             #self.player = Player(vec(146, 276))
             self.roomId = 4
             self.bgm = "forget_me_nots.mp3"
@@ -384,70 +427,74 @@ class Tutorial_2(AbstractEngine):
             self.enemyPlacement = 0
             self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
             self.enemies = [
+                Gremlin(vec(16*3, 16*6)),
+                Gremlin(vec(16*20, 16*6))
+            ]
+            
+            self.doors = self.getHorizontalRoom(2, gap = True)
+
+            self.trigger1 = Trigger(vec(16*27,208-2), width=48)
+            self.trigger2 = Trigger(vec(16*8,-14), width=48)
+
+            self.blocks = [
+                self.trigger1,
+                self.trigger2
+            ]
+        
+
+        #override
+        def createBlocks(self):
+            return
+
+        def setDoors(self):
+            self.setDoors_horizontal()
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            self.createHorizontal()
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transport(Tutorial_1, 2, keepBGM=False)
+                    elif b == self.trigger2:
+                        self.transportPos(Tutorial_3, vec(16*9, 16*18), keepBGM=True)
+                    else:
+                        self.player.handleCollision(b)
+
+
+class Tutorial_3(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._T3()
+      
+        return cls._INSTANCE
+    
+    class _T3(AE):
+        def __init__(self):
+            super().__init__("tut_3", True, vec(304, 320))
+            self.roomId = 4
+            self.bgm = "forget_me_nots.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 0
+            self.enemyPlacement = 0
+            self.enemies = [
                 Gleemer(vec(16*3, 16*10)),
                 Mofos(vec(16*9, 16*12))
             ]
+
             self.doors = [0]
-
-            self.fire = Blessing(vec(16*7, 16*4), 0)
-            self.ice = Blessing(vec(16*11, 16*4), 1)
-            self.thunder = Blessing(vec(16*45, 16*4), 2)
-            self.wind = Blessing(vec(16*49, 16*4), 3)
-
-            
-
-            self.spawning = [self.ice,
-                             self.fire,
-                             self.thunder,
-                             self.wind,
-                             ]
+            self.trigger1 = Trigger(vec(16*8, self.size[1]-2), width=48)
+            self.blocks = [
+                self.trigger1
+            ]
         
-        
-        def handlePrompt(self):
-            if self.promptResult:
-                if self.selectedItem == 0:
-                    if INV["flameShard"] >= INV["flameCost"]:
-                        INV["flameShard"] -= INV["flameCost"]
-                        if INV["flameCost"] == 1:
-                            INV["flameCost"] = 5
-                            self.fire.updateCost()
-                        self.displayText("Flames upgraded!")
-                    else:
-                        self.displayText("Not enough shards.")
-                    self.promptResult = False
-
-                elif self.selectedItem == 1:
-                    if INV["frostShard"] >= INV["frostCost"]:
-                        INV["frostShard"] -= INV["frostCost"]
-                        if INV["frostCost"] == 1:
-                            INV["frostCost"] = 5
-                            self.fire.updateCost()
-                        self.displayText("Ice upgraded!")
-                    else:
-                        self.displayText("Not enough shards.")
-                    self.promptResult = False
-
-                elif self.selectedItem == 2:
-                    if INV["boltShard"] >= INV["boltCost"]:
-                        INV["boltShard"] -= INV["boltCost"]
-                        if INV["boltCost"] == 1:
-                            INV["boltCost"] = 5
-                            self.fire.updateCost()
-                        self.displayText("Bolt upgraded!")
-                    else:
-                        self.displayText("Not enough shards.")
-                    self.promptResult = False
-
-                if self.selectedItem == 3:
-                    if INV["galeShard"] >= INV["galeCost"]:
-                        INV["galeShard"] -= INV["galeCost"]
-                        if INV["galeCost"] == 1:
-                            INV["galeCost"] = 5
-                            self.fire.updateCost()
-                        self.displayText("Gale upgraded!")
-                    else:
-                        self.displayText("Not enough shards.")
-                    self.promptResult = False
 
         #override
         def createBlocks(self):
@@ -467,11 +514,12 @@ class Tutorial_2(AbstractEngine):
             for b in self.blocks:
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
-                    if False:
-                        self.transport(Intro_3, 2)
+                    if b == self.trigger1:
+                        self.transport(Tutorial_2, 2, keepBGM=False)
                     else:
                         self.player.handleCollision(b)
-            
+
+
 """
 Entrance Hall
 """
@@ -1363,11 +1411,6 @@ class Grand_Chapel(AbstractEngine):
             self.toThunder = Trigger(door = 20)
             self.toGale = Trigger(door = 22)
 
-            
-
-            
-            self.portal = Portal(COORD[14][3], 3)
-
 
             self.fire = Blessing(vec(16*7, 16*4), 0)
             self.ice = Blessing(vec(16*11, 16*4), 1)
@@ -1494,27 +1537,11 @@ class Grand_Chapel(AbstractEngine):
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
                         self.transport(Intro_3, 2)
-                    #elif b == self.trigger2:
-                        #self.transport(Grand_Chapel_L, 1, keepBGM=True)
-                    #elif b == self.trigger4:
-                        #self.transport(Grand_Chapel_R, 3, keepBGM=True)
-                    #elif b == self.trigger3:
-                        #self.transport(Chamber_Access, 0)
-                    elif b == self.portal:
-                        #self.transport(Gale_1, (16*9, 16*9))
-                        pass
                     else:
                         self.player.handleCollision(b)
         
         def update(self, seconds):
             super().update(seconds)
-            if not FLAGS[88] and FLAGS[89]:
-                self.spawning.pop(self.spawning.index(self.ice))
-                self.spawning.pop(self.spawning.index(self.fire))
-                self.spawning.pop(self.spawning.index(self.thunder))
-                self.spawning.pop(self.spawning.index(self.wind))
-                FLAGS[88] = True
-            self.portal.update(seconds)
 
 class Chamber_Access(AbstractEngine):
     @classmethod
@@ -2200,9 +2227,6 @@ class Flame_4(AbstractEngine):
             self.barTrigger = Trigger(COORD[3][3], width=32)
             self.shopTrigger = Trigger(COORD[13][5], width = 32, height = 16)
             
-        def on_enter(self):
-            if not FLAGS[52]:
-                FLAGS[52] = True
 
            
 
@@ -2282,13 +2306,12 @@ class Flame_6(AbstractEngine):
 
             self.doors = [0,2,3]
             
-            if not FLAGS[61]:
+            if not FLAGS[41]:
                 self.spawning = [
                     Geemer(vec(16*8 - 8, 16*5 + 8))
-
                 ]
             
-            if FLAGS[62]:
+            if FLAGS[42]:
                 self.spawning = [
                     Geemer(vec(16*10, 16*5 + 8), text = SPEECH["post_stomper"])
                 ]
@@ -2319,7 +2342,7 @@ class Flame_6(AbstractEngine):
         
 
         def initializeRoom(self, player=None, pos=None, keepBGM=False):
-            if not FLAGS[62]:
+            if not FLAGS[42]:
                 
                 super().initializeRoom(player, pos, keepBGM)
                 self.stomper.setPosition(vec(16*9, 16*5))
@@ -2361,7 +2384,7 @@ class Flame_6(AbstractEngine):
             self.stomper.frozen = False
 
         def update(self, seconds):
-            if FLAGS[62]:
+            if FLAGS[42]:
                 if self.miniBoss:
                     SoundManager.getInstance().playLowSFX("enemydies.wav", volume=0.2)
                     SoundManager.getInstance().playBGM(self.bgm)
@@ -2371,14 +2394,14 @@ class Flame_6(AbstractEngine):
                 else:
                     super().update(seconds)
 
-            elif FLAGS[61]:
+            elif FLAGS[41]:
                 if self.stomper.dead:
                     if self.stomperTimer == 0.0:
                         SoundManager.getInstance().fadeoutBGM()
                         self.displayText("The goddess's ice...&&\nWhy.........&&\nDid she.......&&\nChoose........&&\nYou.......?&&\n", icon=ICON["stomper"])
                         self.stomperTimer += seconds
                     elif self.stomperTimer >= 0.3:
-                        FLAGS[62] = True
+                        FLAGS[42] = True
                         super().update(seconds)
                     else:
                         self.stomperTimer += seconds
@@ -2426,7 +2449,7 @@ class Flame_6(AbstractEngine):
                         if self.stomperTimer >= 1.0:
                             self.beginMiniBoss()                            
                             self.stomperTimer = 0.0
-                            FLAGS[61] = True
+                            FLAGS[41] = True
                             self.player.keyUnlock()
                             self.inCutscene = False
                         else:

@@ -269,7 +269,7 @@ class Bullet(AbstractWeapon):
                 engine.disappear(self)
             else:
                 if self.collisionObj:
-                    if self.collisionObj.dead:
+                    if self.collisionObj.dead or self.collisionObj.attacking:
                         engine.disappear(self)
                     else:
                         if not self.collisionObj.frozen:

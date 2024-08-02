@@ -1,4 +1,6 @@
-from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block, HBlock, LockBlock
+from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block,  LockBlock, \
+HealthBar
+
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec
 from UI import ACTIONS, EventManager
 import pygame
@@ -130,6 +132,16 @@ class Player(Animated):
                 self.hp -= integer
                 SoundManager.getInstance().playSFX("hurt.wav")
                 self.invincible = True
+            HealthBar.getInstance().drawHurt(self.hp, integer)
+    
+    def hurtSyringe(self, integer):
+        self.hp -= integer
+        if self.hp <= 0:
+            damage = integer - (self.hp * -1 + 1)
+            self.hp = 1
+            HealthBar.getInstance().drawHurt(self.hp, damage)
+        else:
+            HealthBar.getInstance().drawHurt(self.hp, integer)
     """
     Getter methods
     """
@@ -165,6 +177,17 @@ class Player(Animated):
                 return row - 16
         else:
             return row
+
+    def getOppositeDirection(self):
+        dir = self.getDirection()
+        if dir == 0:
+            return 2
+        elif dir == 1:
+            return 3
+        elif dir == 2:
+            return 0
+        elif dir == 3:
+            return 1
 
     def getHook(self):
         return self.hook
@@ -586,12 +609,9 @@ class Player(Animated):
             return
         
         
-        elif self.freezing:
-            self.freezing = False
-        
-        
         elif type(object) == PushableBlock:
-            self.stop_run()
+            if self.running:
+                self.stop_run(object)
             side = self.calculateSide(object)
             self.pushing = True
 
@@ -625,6 +645,9 @@ class Player(Animated):
         elif issubclass(type(object), Enemy) and object.id != "shot":
             if self.charging:
                 self.shootSlash()
+            if self.freezing:
+                ACTIONS["element"] = False
+                self.freezing = False
             side = self.calculateSide(object)
             self.enemyCollision(object, side)
 
@@ -691,28 +714,19 @@ class Player(Animated):
         collision1 = self.collisionRect
         collision2 = object.getCollisionRect()
         clipRect = collision1.clip(collision2)
-        #print("clip",rect)
-        #print(collision1)
-        #print(collision2)
         ##Calculate the side
         side = ""
         if clipRect.width < clipRect.height:
-            #print("x")
             #X direction
             if collision2.collidepoint(collision1.right,collision1.top) or collision2.collidepoint(collision1.right, collision1.bottom):
-                #print("RIGHT")
                 side = "right"
             else:
-                #print("Left")
                 side = "left"
         else:
-            #print("Y")
             #Y direction
             if collision2.collidepoint(collision1.right, collision1.top) or collision2.collidepoint(collision1.left,collision1.top):
-                #print("Up")
                 side = "top"
             else:
-                #print("Bottom")
                 side = "bottom"
         return side
 

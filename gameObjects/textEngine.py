@@ -68,7 +68,10 @@ class TextEngine(object):
 
         def setImage(self):
             if self.large:
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                if self.type == 2:
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                elif self.type == 3:
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
             else:
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (self.frame,0))
         
@@ -120,7 +123,7 @@ class TextEngine(object):
                 SoundManager.getInstance().playSFX(name)
 
 
-        def setText(self, text, icon = None, large = False, prompt = False):
+        def setText(self, text, icon = None, large = False, prompt = False, type = 2):
             
             
             if prompt:
@@ -130,8 +133,12 @@ class TextEngine(object):
 
             elif large:
                 self.large = large
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
-
+                if type == 2:
+                    self.type = 2
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                elif type == 3:
+                    self.type = 3
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox3.png", (self.frame,0))
             if icon != None and self.displayIcon == None:
                 self.displayIcon = icon
 
