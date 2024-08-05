@@ -60,6 +60,7 @@ class TextEngine(object):
             self.voiceInt = -1
             self.frameTimer = 0.0
             self.noBox = False
+            self.type = 0
             self.setImage()
 
 
@@ -71,6 +72,8 @@ class TextEngine(object):
                 if self.type == 2:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
                 elif self.type == 3:
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                else:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
             else:
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (self.frame,0))

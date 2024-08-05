@@ -1,4 +1,10 @@
 v0.2
+Tutorial:
+- [ ] Shop + new shop controlls
+- [ ] Key, set lock/key flags
+- [ ] Boss room
+
+
 Debug:
 - [ ] Bombofaun ammo count on pause screen in rooms with camera
 - [ ] enemy damage nums in camera

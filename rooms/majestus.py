@@ -404,7 +404,10 @@ class Tutorial_1(AbstractEngine):
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
-                        self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
+                        if SoundManager.getInstance().currentlyPlaying:
+                            self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
+                        else:
+                            self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
                     else:
                         self.player.handleCollision(b)
 
@@ -423,7 +426,7 @@ class Tutorial_2(AbstractEngine):
             self.roomId = 4
             self.bgm = "forget_me_nots.mp3"
             self.ignoreClear = True
-            self.max_enemies = 0
+            self.max_enemies = 2
             self.enemyPlacement = 0
             self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
             self.enemies = [
@@ -431,7 +434,7 @@ class Tutorial_2(AbstractEngine):
                 Gremlin(vec(16*20, 16*6))
             ]
             
-            self.doors = self.getHorizontalRoom(2, gap = True)
+            self.doors = [1,2,4,7,6]
 
             self.trigger1 = Trigger(vec(16*27,208-2), width=48)
             self.trigger2 = Trigger(vec(16*8,-14), width=48)
@@ -461,12 +464,69 @@ class Tutorial_2(AbstractEngine):
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
-                        self.transport(Tutorial_1, 2, keepBGM=False)
+                        self.transport(Tutorial_1, 2, keepBGM=True)
                     elif b == self.trigger2:
                         self.transportPos(Tutorial_3, vec(16*9, 16*18), keepBGM=True)
                     else:
                         self.player.handleCollision(b)
 
+
+class Tutorial_Shop(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._TS()
+      
+        return cls._INSTANCE
+    
+    class _TS(AE):
+        def __init__(self):
+            super().__init__("tut_2", True, vec(608, 208))
+            self.roomId = 4
+            self.bgm = "forget_me_nots.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 2
+            self.enemyPlacement = 0
+            self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
+            self.enemies = [
+
+            ]
+            
+            self.doors = [1,2,4,7,6]
+
+            self.trigger1 = Trigger(vec(16*27,208-2), width=48)
+            self.trigger2 = Trigger(vec(16*8,-14), width=48)
+
+            self.blocks = [
+                self.trigger1,
+                self.trigger2
+            ]
+        
+
+        #override
+        def createBlocks(self):
+            return
+
+        def setDoors(self):
+            self.setDoors_horizontal()
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            self.createHorizontal()
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transport(Tutorial_1, 2, keepBGM=True)
+                    elif b == self.trigger2:
+                        self.transportPos(Tutorial_3, vec(16*9, 16*18), keepBGM=True)
+                    else:
+                        self.player.handleCollision(b)
 
 class Tutorial_3(AbstractEngine):
     @classmethod
@@ -482,17 +542,25 @@ class Tutorial_3(AbstractEngine):
             self.roomId = 4
             self.bgm = "forget_me_nots.mp3"
             self.ignoreClear = True
-            self.max_enemies = 0
+            self.max_enemies = 4
             self.enemyPlacement = 0
             self.enemies = [
-                Gleemer(vec(16*3, 16*10)),
-                Mofos(vec(16*9, 16*12))
+                Gleemer(vec(16*3, 16*11)),
+                Gleemer(vec(16*3, 16*9 - 8)),
+                Gleemer(vec(16*3, 16*6)),
+                Gremlin(vec(16*9, 16*13)),
+                Gremlin(vec(16*9, 16*5), direction = 3)
+            ]
+            self.locks = [
+                Lock(vec(16*8, 0), "tut_3")
             ]
 
-            self.doors = [0]
+            self.doors = [0, 2, 1]
             self.trigger1 = Trigger(vec(16*8, self.size[1]-2), width=48)
+            self.trigger2 = Trigger(vec(16*8, -14), width=48)
+            self.trigger3 = Trigger(vec(16*18 + 14, 16*5), height=48)
             self.blocks = [
-                self.trigger1
+                self.trigger1, self.trigger2, self.trigger3
             ]
         
 
@@ -515,7 +583,7 @@ class Tutorial_3(AbstractEngine):
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
-                        self.transport(Tutorial_2, 2, keepBGM=False)
+                        self.transport(Tutorial_2, 2, keepBGM=True)
                     else:
                         self.player.handleCollision(b)
 

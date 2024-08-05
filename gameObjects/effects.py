@@ -17,7 +17,29 @@ class Camera(object):
     
     def getSize(self):
         return vec(304,208)
-        
+
+class Lock(Drawable):
+    def __init__(self, position, room_dir):
+        self.room_dir = room_dir
+        self.position = position
+        self.image = SpriteManager.getInstance().getFx(room_dir, "lock.png", (0,0))
+        self.frameTimer = 0.0
+        self.frame = 0
+        self.popProjectiles = True
+
+    def getCollisionRect(self):
+        return pygame.Rect(self.position, (48,42))
+
+    
+    def update(self, seconds):
+        self.frameTimer += seconds
+        if self.frameTimer >= 0.2:
+            self.frameTimer = 0.0
+            self.frame += 1
+            self.frame %= 3
+            self.image = SpriteManager.getInstance().getFx(self.room_dir, "lock.png", (self.frame, 0))
+
+
 class Floor(Drawable):
     """
     The bottom layer of a room that may be animated

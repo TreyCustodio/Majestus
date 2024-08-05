@@ -47,7 +47,7 @@ class Enemy(Animated):
         self.dead = False
         self.fakeDead = False
         self.flashTimer = 0
-        self.initialPos = position
+        self.initialPos = vec(*position)#position
         self.initialDir = direction
         self.walkTimer = 0
         self.walking = False
@@ -340,28 +340,19 @@ class Enemy(Animated):
         collision1 = self.getCollisionRect()
         collision2 = object.getCollisionRect()
         clipRect = collision1.clip(collision2)
-        #print("clip",rect)
-        #print(collision1)
-        #print(collision2)
         ##Calculate the side
         side = ""
         if clipRect.width < clipRect.height:
-            #print("x")
             #X direction
             if collision2.collidepoint(collision1.right,collision1.top) or collision2.collidepoint(collision1.right, collision1.bottom):
-                #print("RIGHT")
                 side = "right"
             else:
-                #print("Left")
                 side = "left"
         else:
-            #print("Y")
             #Y direction
             if collision2.collidepoint(collision1.right, collision1.top) or collision2.collidepoint(collision1.left,collision1.top):
-                #print("Up")
                 side = "top"
             else:
-                #print("Bottom")
                 side = "bottom"
         return side
     
@@ -1074,8 +1065,8 @@ class Mofos(Enemy):
         self.framesPerSecond = 20
         self.indicatorRow = 3
         self.speed = 20
-        self.maxHp = 200
-        self.hp = 20
+        self.maxHp = 30
+        self.hp = self.maxHp
         self.damage = 1
         self.hurtRow = 4
         self.arrowWeak = True
@@ -1831,7 +1822,6 @@ class Baller(Enemy):
     def bounce(self, other):
         if not self.frozen:
             side = self.calculateSide(other)
-            #print(other.position)
             if side == "right":
                 self.vel[0] = -self.speed
                 self.row = 3
@@ -2321,38 +2311,6 @@ class Gremlin(Enemy):
                 self.vel[0] = self.speed
                 self.row = 5
 
-       
-                     
-            """ side = self.calculateSide(other)
-            print(other.position)
-            print(self.position)
-            if side == "right":
-                self.vel[0] = -self.speed
-                if self.row >= 4:
-                    self.row = 7
-                else:
-                    self.row = 3
-                #self.vel[1] = 0
-            elif side == "top":
-                self.vel[1] = self.speed
-                if self.row >= 4:
-                    self.row = 4
-                else:
-                    self.row = 0
-                #self.vel[0] = 0
-            elif side == "left":
-                self.vel[0] = self.speed
-                if self.row >= 4:
-                    self.row = 5
-                else:
-                    self.row = 1
-                #self.vel[1] = 0
-            elif side == "bottom":
-                self.vel[1] = -self.speed
-                if self.row >= 4:
-                    self.row = 6
-                else:
-                    self.row = 2 """
     
     def hurt(self, damage, setHit=True):
         return super().hurtMult(damage, setHit)

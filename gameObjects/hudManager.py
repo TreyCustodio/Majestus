@@ -615,6 +615,9 @@ class HudImageManager(object):
     KEYS = None
     BOMBOS = None
     OBJECTS = []
+    dropTimer = 0.0
+    abovePlayer = vec(0,0)
+    vibrationTick = 0
 
     def initialize():
         HudImageManager.MONEY = HudImage((0, RESOLUTION[1]-50), offset= (0,1))
@@ -622,7 +625,11 @@ class HudImageManager(object):
         HudImageManager.BOMBOS = HudImage((0, RESOLUTION[1]-34), offset=(0,8))
         
     def addObject(obj):
+        HudImageManager.OBJECTS = []
+        HudImageManager.dropTimer = 0.0
+        HudImageManager.vibrationTick = 0
         HudImageManager.OBJECTS.append(obj)
+        
 
     def getHealth():
         return HealthBar.getInstance()
@@ -642,9 +649,9 @@ class HudImageManager(object):
     def draw(drawSurface):
         if HudImageManager.OBJECTS:
             for o in HudImageManager.OBJECTS:
-                o.draw(drawSurface)
+                drawSurface.blit(o, (HudImageManager.abovePlayer[0], HudImageManager.abovePlayer[1] + HudImageManager.vibrationTick))
 
-    def update(seconds):
+    def update(seconds, player):
         if HudImageManager.MONEY != None:
             HudImageManager.MONEY.update(seconds)
         if HudImageManager.KEYS != None:
@@ -653,5 +660,11 @@ class HudImageManager(object):
             HudImageManager.BOMBOS.update(seconds)
 
         if HudImageManager.OBJECTS:
-            for o in HudImageManager.OBJECTS:
-                o.update(seconds)
+            HudImageManager.dropTimer += seconds
+            if HudImageManager.dropTimer >= 0.5:
+                HudImageManager.dropTimer = 0.0
+                HudImageManager.OBJECTS = []
+                HudImageManager.vibrationTick = 0
+            
+
+        HudImageManager.abovePlayer = vec(player.position[0] + 1, player.position[1] - 16) - Drawable.CAMERA_OFFSET

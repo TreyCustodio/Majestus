@@ -21,7 +21,7 @@ class DamageNumberManager(object):
     
     def draw(self, engine, drawSurface):
         for num in self.numbers:
-            engine.drawNumber(num.damagePos, num.damage, drawSurface, row = 3)
+            engine.drawDamageNumber(num.damagePos, num.damage, drawSurface, row = 3)
     
     def updateNumbers(self, engine, seconds):
         for num in self.numbers:
@@ -118,6 +118,7 @@ class AE(object):
         self.tiles = []
         self.trash = []
         self.drops = []
+        self.locks = [] #Locked doors
         self.topObjects = [] #Objects that need to be drawn after the player
         self.indicator = DamageIndicator()
         self.moneyImage = None
@@ -209,12 +210,10 @@ class AE(object):
             n.respawn()
             if n.vanish:
                 self.disappear(n)
-        self.drops = [
-
-        ]
-            
+        self.drops = []
         self.dropCount = 0
         self.npcs = []
+        self.projectiles = []
         self.textInt = 0
         self.fightingBoss = False
         self.boxPos = vec(30,64)
@@ -430,12 +429,31 @@ class AE(object):
     def createVertical(self):
         ###Quadrant 1
         ##Left, Right
-        for i in range(1,19):
+        for i in range(1,5):
             #Left
             self.blocks.append(IBlock((0, i*16), width=42))
 
             #Right
             self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
+        ##Gap in range(5-8)
+        ##Middle section
+        for i in range(8,12):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
+        ##Gap in range(12-15)
+        ##Bottom section
+        for i in range(15,19):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
         
         ##Bottom, Top
         for i in range(8):
@@ -596,40 +614,27 @@ class AE(object):
 
     """
     Adjust the boundaries to fit doors for a vertical room
+    doors: 0 -> bottom, 1 -> top right, 2 -> top, 3 -> top left, 4 -> middle section top, 5 -> bottom right, 6 -> middle section bottom, 7 -> bottom left
     """
     def setDoors_vertical(self):
-        
         if 0 not in self.doors:
-            self.blocks.append(IBlock((8*16, self.size[1]-16)))
-            self.blocks.append(IBlock((9*16, self.size[1]-16)))
-            self.blocks.append(IBlock((10*16, self.size[1]-16)))
-        else:
-            self.blocks.append(IBlock((16*8 , self.size[1]-42), width=4, height=42))
-            self.blocks.append(IBlock((16*10 + 12, self.size[1]-42), width=4, height=42))
+            self.blocks.append(IBlock((8*16, self.size[1]-42), width = 48,height = 48))
         
         if 1 not in self.doors:        
-            self.blocks.append(IBlock((self.size[0]-24, 5*16)))
-            self.blocks.append(IBlock((self.size[0]-24, 6*16)))
-            self.blocks.append(IBlock((self.size[0]-24, 7*16)))
-        else:
-            self.blocks.append(IBlock((self.size[0]-24, 16*7+8)))
-            self.blocks.append(IBlock((self.size[0]-24, 16*5-8)))
-
-        if 2 not in self.doors:   
-            self.blocks.append(IBlock((8*16, 0)))
-            self.blocks.append(IBlock((9*16, 0)))
-            self.blocks.append(IBlock((10*16, 0)))
-        else:
-            self.blocks.append(IBlock((8*16-8, 0)))
-            self.blocks.append(IBlock((16*10+8, 0)))
+            self.blocks.append(IBlock((self.size[0]-42, 5*16), width = 42, height = 48))
+        
+        if 2 not in self.doors:
+            self.blocks.append(IBlock((8*16, 0), width = 48, height = 42))
+        
         if 3 not in self.doors:
-            self.blocks.append(IBlock((8, 5*16)))
-            self.blocks.append(IBlock((8, 6*16)))
-            self.blocks.append(IBlock((8, 7*16)))
-            
-        else:
-            self.blocks.append(IBlock((8, 16*7+8)))
-            self.blocks.append(IBlock((8, 16*5-8)))
+            self.blocks.append(IBlock((0, 5*16), width = 42, height = 48))
+        
+        if 5 not in self.doors:
+            self.blocks.append(IBlock((self.size[0]-42, 16*12), width = 42, height = 48))
+        
+        if 7 not in self.doors:
+            self.blocks.append(IBlock((0, 16*12), width = 42, height = 48))
+        
 
     def setDoors_horizontal(self, squares: int = 2):
         self.setDoors_square(squares)
@@ -665,8 +670,6 @@ class AE(object):
         self.enemyCounter = 0
         def refresh():
             for e in enemyLst:
-                """ if e not in self.npcs:
-                    if e.dead: """
                 if e not in self.npcs:
                     self.npcs.append(e)
                 e.respawn()
@@ -712,14 +715,8 @@ class AE(object):
                 refresh()
         else:
             for i in range(self.max_enemies):
-                enemyLst[i].position = enemyLst[i].initialPos
+                enemyLst[i].position = vec(*enemyLst[i].initialPos)
             refresh()
-            """ for e in enemyLst:
-                if not e.dead and e not in self.npcs:
-                    self.npcs.append(e)
-                if not e.frozen:
-                    e.freeze(playSound=False)
-                    e.freezeTimer = 4.0 """
                 
 
                     
@@ -1102,6 +1099,7 @@ class AE(object):
                     if self.player.doesCollide(n):
                         self.disappear(n)
                         self.dropCount -= 1
+                        HudImageManager.addObject(n.image)
                         n.interact(self.player)
                 
     #abstract
@@ -1155,7 +1153,6 @@ class AE(object):
             for p in self.projectiles:
                 if not p.hit:
                     if p.doesCollide(block):
-                    #p.handleCollision(self)
                         if p.id == "arrow":
                             p.handleCollision(self, block)
                         else:
@@ -1192,6 +1189,12 @@ class AE(object):
         self.obstacleCollision()
         if not self.dying:
             self.blockCollision()
+
+        if self.locks:
+            for l in self.locks:
+                self.projectilesOnBlocks(l)
+                if self.player.doesCollide(l):
+                    self.player.handleCollision(l)
         self.interactableCollision()
         self.pressSwitches()
         self.pushableBlockCollision()
@@ -1377,7 +1380,7 @@ class AE(object):
         self.healthBar.update(seconds)
 
     def updateHUD(self, seconds):
-        HudImageManager.update(seconds)
+        HudImageManager.update(seconds, self.player)
         self.indicator.update(seconds)
         self.damageNums.updateNumbers(self, seconds)
         if not self.healthBarLock:
@@ -1446,7 +1449,6 @@ class AE(object):
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
-        #print(self.npcs)
         if self.transporting or self.startingMobster or self.dead:
             return
         
@@ -1480,6 +1482,9 @@ class AE(object):
         if self.effects_behind_walls:
             for e in self.effects_behind_walls:
                 e.update(seconds)
+        if self.locks:
+            for l in self.locks:
+                l.update(seconds)
         ##Pop-up messages
         if not FLAGS[1] and INV["flameShard"] > 0:
             FLAGS[1] = True
@@ -1709,6 +1714,7 @@ class AE(object):
 
 
     def drawNumber(self, position, number, drawSurface, row = 0):
+        
         position += Drawable.CAMERA_OFFSET
         if number >= 10:
             currentPos = vec(position[0]-3, position[1])
@@ -1723,6 +1729,23 @@ class AE(object):
             num.position[0] -= num.getSize()[0] // 2
             num.draw(drawSurface)
 
+    """
+    same as the above method, but doesn't update
+    the position based on the camera offset.
+    """
+    def drawDamageNumber(self, position, number, drawSurface, row=0):
+        if number >= 10:
+            currentPos = vec(position[0]-3, position[1])
+            number = str(number)
+            for char in number:
+                num = Number(currentPos, int(char), row)
+                num.position[0] -= num.getSize()[0] // 2
+                num.draw(drawSurface)
+                currentPos[0] += 6
+        else:
+            num = Number(position, number, row)
+            num.position[0] -= num.getSize()[0] // 2
+            num.draw(drawSurface)
 
     def draw(self, drawSurface):
         """
@@ -1750,6 +1773,9 @@ class AE(object):
             for e in self.effects_behind_walls:
                 e.draw(drawSurface)
         self.walls.draw(drawSurface)
+        if self.locks:
+            for l in self.locks:
+                l.draw(drawSurface)
 
         #Blocks
         self.drawBlocks(drawSurface)
