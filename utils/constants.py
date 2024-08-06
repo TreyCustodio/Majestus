@@ -19,6 +19,7 @@ FLAGS = [False for i in range(300)]
 
 ### Boss FLAG Control   ###
 
+FLAGS[10] = True
 #FLAGS[100] = True #Light Cloaker
 #FLAGS[200] = True #Light Cloaker Heart
 
@@ -40,7 +41,7 @@ FLAGS = [False for i in range(300)]
 #9 -> 
 
 #   Wavering Grotto
-#10 ->
+#10 -> Shop first convo
 #11 ->
 #12 ->
 #13 ->
@@ -900,6 +901,55 @@ Bombofauns in great quantity.\n\
 splattered on the grass...\n\
 Please help us slay\n\
 the rest of those knights!\n",
+
+"darkcloak_1":
+"Hmmm... A young warrior?&&\n\
+Well, I know it's not much,\n\
+but make yourself cozy.\n\
+I'll also sell you my\n\
+junk if you've got a dime.\n\
+You see, I'm regrettably\n\
+a big-time hoarder.\n\
+So I really should get rid\n\
+of all of this s**t.\n\
+",
+
+"darkcloak_2":
+"Ah, before you leave...&&\n\
+You see, there's another man\n\
+who prowls 'round these parts\n\
+He's a Luminate, a man\n\
+of Light.\n\
+I've chased him off\n\
+several times.\n\
+Imaging moving here to live\n\
+in isolation, but having a\n\
+douchebag neighbor that\n\
+you can't get rid of.\n\
+I'm usually a pacifist,\n\
+but if you see this guy,\n\
+do you think you\n\
+could kill him?\n",
+
+"darkcloak_3":
+"Kill him???&&\n\
+Good lord, is that\n\
+really necessary, guy?\n",
+
+"darkcloak_4":"Hoo boy. You don't\n\
+quite understand.\n\
+He's f***ing egregious.&&\n\
+I don't think I've ever\n\
+used that word in my life.\n\
+Look, you don't have to\n\
+kill him if you want to,\n\
+but if you run into him...&&\n\
+I think he might just\n\
+convince you otherwise.\n",
+
+"darkcloak_5":
+"Huh. Well, I guess\n\
+I'll see what happens.",
 
 "null":
 "Nothing to see here."

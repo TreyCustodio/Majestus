@@ -81,10 +81,11 @@ def main():
         eventManager.handleEvents(gameEngine)
 
         ##Update
-        gameClock.tick(60)
-        seconds = gameClock.get_time() / 1000
-        eventManager.updateBuffer(seconds)   
-        gameEngine.update(seconds)
+        if gameEngine.state == "mainMenu" or eventManager.readyToUpdate():
+            gameClock.tick(60)
+            seconds = gameClock.get_time() / 1000
+            eventManager.updateBuffer(seconds)   
+            gameEngine.update(seconds)
     
     #quit if not running
     pygame.quit()

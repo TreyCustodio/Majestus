@@ -177,6 +177,7 @@ class ScreenManager(object):
             elif self.textEngine.backgroundBool:
                 self.drawGame(drawSurf, True)
                 self.textEngine.setBackgroundBool()
+            self.drawGame(drawSurf)
             self.textEngine.draw(self.game.boxPos, drawSurf)
 
     def drawGame(self, drawSurf, drawBox = False):
@@ -224,7 +225,7 @@ class ScreenManager(object):
                 if "Y/N" in self.game.text:
                     self.textEngine.setText(self.game.text, self.game.icon, prompt = True)
                 else:
-                    self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText, self.game.boxType)
+                    self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText, type = self.game.boxType)
 
             if self.game.whiting:
                 self.white.draw(drawSurf)
@@ -446,6 +447,7 @@ class ScreenManager(object):
         elif self.state == "textBox":
             #self.updateLight(seconds)
             self.textEngine.update(seconds)
+            self.game.update(seconds, updateEnemies=False)
 
         elif self.state == "paused":
             self.pauseEngine.update(seconds)

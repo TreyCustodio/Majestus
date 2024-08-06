@@ -435,13 +435,15 @@ class Tutorial_2(AbstractEngine):
             ]
             
             self.doors = [1,2,4,7,6]
-
+            
             self.trigger1 = Trigger(vec(16*27,208-2), width=48)
             self.trigger2 = Trigger(vec(16*8,-14), width=48)
+            self.trigger3 = Trigger(vec(16*27, -14), width = 48)
 
             self.blocks = [
                 self.trigger1,
-                self.trigger2
+                self.trigger2,
+                self.trigger3
             ]
         
 
@@ -467,6 +469,8 @@ class Tutorial_2(AbstractEngine):
                         self.transport(Tutorial_1, 2, keepBGM=True)
                     elif b == self.trigger2:
                         self.transportPos(Tutorial_3, vec(16*9, 16*18), keepBGM=True)
+                    elif b == self.trigger3:
+                        self.transport(Tutorial_Shop, 0, keepBGM=True)
                     else:
                         self.player.handleCollision(b)
 
@@ -481,25 +485,29 @@ class Tutorial_Shop(AbstractEngine):
     
     class _TS(AE):
         def __init__(self):
-            super().__init__("tut_2", True, vec(608, 208))
+            super().__init__("tut_shop")
             self.roomId = 4
             self.bgm = "forget_me_nots.mp3"
             self.ignoreClear = True
-            self.max_enemies = 2
+            self.max_enemies = 0
             self.enemyPlacement = 0
-            self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
             self.enemies = [
-
             ]
+            self.inCutscene = False
             
-            self.doors = [1,2,4,7,6]
+            if FLAGS[10]:
+                self.cloak = DarkCloak(vec(16*9, 16*5), text = "Y/NWelcome in, kid.&&\nAnything catch your eye?\n")
+            else:
+                self.cloak = DarkCloak(vec(16*9, 16*5), text = SPEECH["darkcloak_1"])
+            self.spawning = [
+                self.cloak
+            ]
+            self.doors = [0]
 
-            self.trigger1 = Trigger(vec(16*27,208-2), width=48)
-            self.trigger2 = Trigger(vec(16*8,-14), width=48)
+            self.trigger1 = Trigger(vec(16*8,206), width=48)
 
             self.blocks = [
                 self.trigger1,
-                self.trigger2
             ]
         
 
@@ -508,13 +516,17 @@ class Tutorial_Shop(AbstractEngine):
             return
 
         def setDoors(self):
-            self.setDoors_horizontal()
+            self.setDoors_square()
 
         def createBounds(self):
             """
             Creates boundaries on the outer edge of the map
             """
-            self.createHorizontal()
+            self.createSquare()
+        
+        def handlePrompt(self):
+            self.inShop = True
+            self.promptResult = False
 
         #override
         def blockCollision(self):
@@ -522,11 +534,49 @@ class Tutorial_Shop(AbstractEngine):
                 self.projectilesOnBlocks(b)
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
-                        self.transport(Tutorial_1, 2, keepBGM=True)
-                    elif b == self.trigger2:
-                        self.transportPos(Tutorial_3, vec(16*9, 16*18), keepBGM=True)
+                        self.transportPos(Tutorial_2, vec(16*28, 16), keepBGM=True)
                     else:
                         self.player.handleCollision(b)
+
+        def update(self, seconds, updateEnemies=True, updatePlayer=True):
+            if self.inCutscene:
+                if FLAGS[10]:
+                    self.cloak.interacted = False
+                else:
+                    if self.textInt == 0:
+                        if self.text == "":
+                            self.displayText(SPEECH["darkcloak_2"])
+                            self.textInt = 1
+                    elif self.textInt == 1:
+                        if self.text == "":
+                            self.displayText(SPEECH["darkcloak_3"])
+                            self.textInt = 2
+                    elif self.textInt == 2:
+                        if self.text == "":
+                            self.displayText(SPEECH["darkcloak_4"])
+                            self.textInt = 3
+                    elif self.textInt == 3:
+                        if self.text == "":
+                            self.displayText(SPEECH["darkcloak_5"])
+                            self.textInt = 4
+                    elif self.textInt == 4:
+                        if self.text == "":
+                            self.player.keyUnlock()
+                            self.inCutscene = False
+                            FLAGS[10] = True
+                            self.cloak.interacted = False
+                            self.textInt = 0
+                            self.cloak.text = "Y/NWelcome in, kid.&&\nAnything catch your eye?\n"
+
+
+            elif self.cloak.interacted:
+                if FLAGS[10]:
+                    pass
+                else:
+                    self.player.keyLock()
+                    self.inCutscene = True
+
+            return super().update(seconds, updateEnemies, updatePlayer)
 
 class Tutorial_3(AbstractEngine):
     @classmethod
@@ -561,6 +611,10 @@ class Tutorial_3(AbstractEngine):
             self.trigger3 = Trigger(vec(16*18 + 14, 16*5), height=48)
             self.blocks = [
                 self.trigger1, self.trigger2, self.trigger3
+            ]
+
+            self.spawning = [
+                Sign(vec(16*7, 16*15), text= "Hi there!")
             ]
         
 

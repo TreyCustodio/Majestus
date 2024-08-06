@@ -110,6 +110,10 @@ class EventManager(object):
 
             self.cursorReady = False
             self.eventBufferTimer = 0.0
+            self.updating = True
+        
+        def readyToUpdate(self):
+            return self.updating
         
         def toggleFetching(self):
             self.readyToFetch = not self.readyToFetch
@@ -183,6 +187,7 @@ class EventManager(object):
 
                     ##  Window manipulation
                     if event.type == pygame.WINDOWMOVED or event.type == pygame.WINDOWLEAVE or not pygame.mouse.get_focused():
+                        self.updating = False
                         if engine.state == "game":
                             if engine.game.player:
                                 engine.game.player.stop()
@@ -190,6 +195,8 @@ class EventManager(object):
                             engine.state.pause()
                         pygame.event.clear()
                         return
+                    elif not self.updating:
+                        self.updating = True
                     
                     ##  Controller inputs
                     #Gamecube

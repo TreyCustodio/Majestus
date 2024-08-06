@@ -72,7 +72,7 @@ class TextEngine(object):
                 if self.type == 2:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
                 elif self.type == 3:
-                    self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                    self.textBox = SpriteManager.getInstance().getSprite("TextBox3.png", (self.frame,0))
                 else:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
             else:
@@ -116,6 +116,7 @@ class TextEngine(object):
 
             self.noBox = False
             self.setImage()
+            self.type = 2
         
 
         def playSFX(self, name, checkBusy = False):
@@ -127,7 +128,6 @@ class TextEngine(object):
 
 
         def setText(self, text, icon = None, large = False, prompt = False, type = 2):
-            
             
             if prompt:
                 self.large = True
@@ -166,11 +166,11 @@ class TextEngine(object):
             self.textBox.set_alpha(220)
 
         def draw(self, position, drawSurface):
+            if self.large:
+                self.setAlpha()
+            drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
             ##Draw the box
-            if not self.box_drawn:
-                #print(self.frame)
-                pass
-                drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
+           
 
             ##Wait for closing animation
             if self.closing:
@@ -274,17 +274,16 @@ class TextEngine(object):
         """
         def displayText(self, position, drawSurface, question = False): 
             if self.lineNum == 2:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+34), self.line[self.charIndex]).draw(drawSurface)
+                Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox)
             elif "&&" in self.line:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+22), self.line[self.charIndex]).draw(drawSurface)
+                Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox)
             else:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+7), self.line[self.charIndex]).draw(drawSurface)
-            
+                Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox)
+
             self.charIndex += 1
             if self.charIndex == len(self.line):
                 SoundManager.getInstance().stopSFX("message.wav")
                 self.text = self.text[self.charIndex+1:]
-
                 if self.text == "":
                     self.end = True
                     self.ready_to_continue = True
@@ -293,31 +292,6 @@ class TextEngine(object):
 
                 elif "\n" in self.text:
                     if self.large and self.lineNum == 1 and (not "&&" in self.line):
-                        if self.voiceInt == 0:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Before.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 1:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Abyss.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 2:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Transformed.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 3:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Factions.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 4:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Foundation.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 5:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Infant.wav")
-                            self.voiceInt += 1
-
                         self.line = self.text[:self.text.index("\n")]
                         self.charIndex = 0
                         self.lineNum = 2
@@ -357,6 +331,7 @@ class TextEngine(object):
                 elif EventManager.getInstance().performAction("interact"):
                     
                     self.setClosing()
+                    self.blitBackground()
                     if self.highlighted == 0:
                         self.promptResult = False
                     elif self.highlighted == 1:
@@ -367,16 +342,27 @@ class TextEngine(object):
                 if EventManager.getInstance().performAction("interact"):
                     if self.end == True:
                         self.setClosing()
+                        self.blitBackground()
                     else:
                         self.playSFX("OOT_Dialogue_Next.wav")
+                        self.blitBackground()
                         self.box_drawn = False
                         self.ready_to_continue = False
                         self.backgroundBool = True
                 elif EventManager.getInstance().performAction("map"):
                     self.setClosing()
+                    self.blitBackground()
                     return
-                    
 
+        def blitBackground(self): 
+            if self.large:
+                if self.type == 3:
+                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,6)), (0,0))
+                else:
+                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,6)), (0,0))
+            else:
+                self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,5)), (0,0))
+        
         def setClosing(self):
             self.playSFX("WW_Textbox_Close.wav")
             self.box_drawn = False

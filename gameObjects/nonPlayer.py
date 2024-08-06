@@ -7,8 +7,10 @@ class NonPlayer(Animated):
     Non playable objects with an additional collision rect for interaction w/ player
     """
 
-    def __init__(self, position = vec(0,0), fileName="", offset=None, mobster = False):
+    def __init__(self, position = vec(0,0), fileName="", offset=None, mobster = False, nFrames = 6, fps = 8):
         super().__init__(position, fileName, offset)
+        self.nFrames = nFrames
+        self.framesPerSecond = fps
         self.interacted = False
         self.animate = False
         self.interactable = False
@@ -100,7 +102,17 @@ class Sign(NonPlayer):
         super().__init__(position, "Objects.png", (1,2))
         self.text = text
 
-    def interact(self, engine):#drawSurface
+    def interact(self, engine):
+        engine.displayText(self.text, box=3)
+
+class DarkCloak(NonPlayer):
+    def __init__(self, position = vec(0,0), text = SPEECH["null"]):
+        super().__init__(position, "npc_boner.png", (0,0),nFrames=6)
+        self.text = text
+        self.animate = True
+    
+    def interact(self, engine):
+        self.interacted = True
         engine.displayText(self.text)
 
 class Grave(NonPlayer):

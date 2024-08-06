@@ -140,7 +140,7 @@ class AE(object):
         self.effects_behind_walls = []
         self.whiting = False
         self.startingMobster = False
-
+        self.inShop = False
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -327,41 +327,6 @@ class AE(object):
             self.on_enter()
 
     def initializeArea(self, player= None, pos = None, keepBGM = False, placeEnemies = True):
-        """
-        Called every time you enter the room
-        1. create wall boundaries
-        2. adjust wall collision for doors in self.doors
-        3. call createBlocks
-        4. place the enemies in self.enemies
-        """
-        
-
-        """ if self.camera:
-            if self.camera:
-                self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
-                
-                self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
-                Drawable.updateOffset(self.camera, self.size)
-        self.moneyImage = HudImageManager.getMoney()
-        self.keyImage = HudImageManager.getKeys()
-        self.bomboImage = HudImageManager.getBombos()
-        #SoundManager.getInstance().stopAllSFX()
-        EQUIPPED["room"] = self.roomId
-        if player != None:
-            self.player = player
-            self.player.position = pos 
-        else:
-            self.player = Player(vec(16*9, (16*11) - 8))
-
-        self.createBounds()
-        self.setDoors()
-        self.createBlocks()
-        if placeEnemies:
-            self.placeEnemies(self.enemies)
-        if not keepBGM:
-            #SoundManager.getInstance().fadeoutBGM()
-            if self.bgm != None:
-                SoundManager.getInstance().playBGM(self.bgm) """
 
         self.initializeRoom(player, pos, keepBGM, placeEnemies, on_enter=False)
         self.player.keyLock()
@@ -954,6 +919,11 @@ class AE(object):
     def handleEvent(self):
         if self.startingMobster:
             return
+        elif self.inShop:
+            if EventManager.getInstance().performAction("element"):
+                self.inShop = False
+            return
+            
         self.interactableEvents()
 
     
