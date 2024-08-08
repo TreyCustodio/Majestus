@@ -62,7 +62,7 @@ class SpriteManager(object):
       _DEFAULT_SPRITE = (18,26)
       
       # A list of images that require to be loaded with transparency
-      _TRANSPARENCY = ["shop_display.png","shop_items.png","npc_boner.png","lock.png","TextBox3.png","bone.png","laser.png","gleemer.png","keys.png","freeze.png","target.png","firi.png","stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "Pause.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
+      _TRANSPARENCY = ["shop_display.png","shop_items.png","npc_boner.png","lock.png","TextBox3.png","bone.png","laser.png","gleemer.png","keys.png","freeze.png","target.png","firi.png","stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
                        "icon.png", "TextBox.png", "TextBox2.png", "geemer.png", "item.png", "fire.png", "black.png", "blessing.png",
                        "thunder.png", "energy.png", "gale.png", "indicator.png",
                        "gremlin_blue.png", "mofos.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies
@@ -70,12 +70,12 @@ class SpriteManager(object):
                        "baller.png", "stunner.png", "mage.png", "barrier.png", "pixels.png",
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
-                       "bullshot.png", "light.png", "shiver.png"
+                       "bullshot.png", "light.png", "shiver.png", "Pause.png"
                        ]
       
       # A list of images that require to be loaded with a color key
       _COLOR_KEY = ["Link.png", "Stalfos.png", "blizz.png", "slash.png", "spinner.png",
-                    "knight.png"]
+                    "knight.png", "Pause.png"]
       
       def __init__(self):
          # Stores the surfaces indexed based on file name

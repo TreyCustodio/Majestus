@@ -47,13 +47,17 @@ Additions:
   - [ ] Shoot projectiles
   - [ ] accelerates and decelerates
   - [ ] zelda 1 type bats
+  - [ ] A shield that increases the number of iframes -> Wouild have to allow you to attack during i frames
+  - [ ] Something with the commandments
 
-  Shop Revamp:
-  Move cursor on each item and give a description at the bottom
-  
-  Arrow Rotation Screen:
-  Press a button for help:
-    You can select however many arrows you want. Ideally you rotate between the 3 strongest ones available to you or the 3 best for the current enemy.
+
+
+Create seperate list for static obstacles/enemies.
+    - That way you dont have to loop thru enemies
+    to bounce an enemy off another enemy
+
+    
+
 
   Arrows (elemental arrows do +2 damage, are super effective to skeletal enemies, and yield their elemental effect):
   1. Ol' reliable
@@ -66,6 +70,24 @@ Additions:
   8. Special arrow awarded from secret boss
 
 
+
+Boss idea:
+He spams shooting you.
+If you try to shoot him, he dodges to the right or left
+after 3 dodges, he runs at you, and you can hit him.
+  
+  Arrow Rotation Screen:
+  Press a button for help:
+    You can select however many arrows you want. Ideally you rotate between the 3 strongest ones available to you or the 3 best for the current enemy.
+
+ZR:
+Shortcut
+ZR to use a shortcut item
+R and L to swap shortcut.
+No direction changing.
+You can put anything on the six boxes besides key items (element, dash, item)
+
 Majestus sales pitches:
 - No filler besides npcs with funny dialogue and world building
 - Characters interacting with each other; Characters with personality.
+

@@ -926,13 +926,17 @@ class AE(object):
     #abstract
     def buyRoutine(self):
         return
+    
+    def showInfo(self):
+        return
 
     def shopEvents(self):
         if EventManager.getInstance().performAction("element"):
             self.stopShop()
         elif EventManager.getInstance().performAction("interact"):
             self.buyRoutine()
-
+        elif EventManager.getInstance().performAction("shoot"):
+            self.showInfo()
         elif EventManager.getInstance().getCursorReady():
             if ACTIONS["right"]:
                 if self.highlight.position[0] == 16*7:

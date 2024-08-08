@@ -1,6 +1,6 @@
 import pygame
 
-from . import Drawable,  Animated, Text, Highlight, Map, Number
+from . import Drawable,  Animated, Text, Highlight, Map, Number, AmmoBar
 
 from utils import  vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED
 
@@ -611,6 +611,12 @@ class PauseEngine(object):
         else:
             SoundManager.getInstance().playSFX("bump.mp3")
 
+    def equipSpecial(self):
+        if self.highlight.position[1] == 16*5:
+            if self.highlight.position[0] == 16*3:
+                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                AmmoBar.getInstance().setShortcutImage()
+
     def showInfo(self):
         if self.highlighted[1] == 4:
             self.promptFlag = "quit"
@@ -755,6 +761,9 @@ class PauseEngine(object):
         
         elif EventManager.getInstance().performAction("shoot"):
             self.equipArrow()
+        
+        elif ACTIONS["special"]:
+            self.equipSpecial()
         
             """
             Highlight positions

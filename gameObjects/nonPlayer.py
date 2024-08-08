@@ -627,7 +627,7 @@ class Potion(ShopItem):
         if INV["money"] < 5:
             engine.displayText("Not enough cash...&&\n")
         elif INV["potion"] <= 4:
-            engine.displayText("Y/NSmall potion: 5 bucks")
+            engine.displayText("Y/NSmall potion for 5 bucks?")
             engine.selectedItem = "potion"
         
         else:
@@ -646,6 +646,7 @@ class Smoothie(ShopItem):
     def interact(self, engine):
         if self.display:
             engine.displayText("A delectable smoothie!\nStraw lickin' good!\n")
+            return
         if INV["money"] < 20:
             engine.displayText("A smoothie! Don't you\nwish you had 20 bucks?\n")
         elif INV["smoothie"] <= 4:

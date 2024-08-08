@@ -544,7 +544,16 @@ class Tutorial_Shop(AbstractEngine):
                 ShopKey().interact(self)
             elif self.highlight.position[0] == 16*14:
                 pass
-
+        
+        def showInfo(self):
+            if self.highlight.position[0] == 16*4:
+                self.potion.interact(self)
+            elif self.highlight.position[0] == 16*7:
+                self.smoothie.interact(self)
+            elif self.highlight.position[0] == 16*11:
+                self.key.interact(self)
+            elif self.highlight.position[0] == 16*14:
+                pass
 
         def handlePrompt(self):
             if self.inShop:

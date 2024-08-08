@@ -21,7 +21,12 @@ class AmmoBar(object):
             super().__init__(vec(0,15), "ammo.png", (0, EQUIPPED["Arrow"]+1))
             self.damageId = 0
             self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
-            
+            self.shortCutBackground = SpriteManager.getInstance().getSprite("element.png", (0, 0))
+            self.shortCutImage = SpriteManager.getInstance().getSprite("element.png", (0, 0))
+            self.shortcutPos = vec(272,0)
+
+        def setShortcutImage(self, fileName="", offset = (0,0)):
+            self.shortCutImage = SpriteManager.getInstance().getSprite(fileName, offset)
 
         def setArrow(self, player):
             if not player.arrowReady:
@@ -42,7 +47,8 @@ class AmmoBar(object):
             self.setArrow(player)
             drawSurface.blit(self.backImage, self.position)
             drawSurface.blit(self.image, self.position)
-            #super().draw(drawSurface)
+            drawSurface.blit(self.shortCutBackground, self.shortcutPos)
+            drawSurface.blit(self.shortCutImage, self.shortcutPos)
 
 """
 Displays the currently selected element on the HUD
@@ -604,7 +610,6 @@ class HudImage(Animated):
 
     def draw(self, drawSurface, drawHitbox=False, use_camera=True):
         drawSurface.blit(self.image, self.position)
-        #return super().draw(drawSurface, drawHitbox, use_camera)
 
 """
 Manages images in the hud in a singleton style
