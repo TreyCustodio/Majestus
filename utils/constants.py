@@ -19,7 +19,7 @@ FLAGS = [False for i in range(300)]
 
 ### Boss FLAG Control   ###
 
-FLAGS[10] = True
+#FLAGS[10] = True
 #FLAGS[100] = True #Light Cloaker
 #FLAGS[200] = True #Light Cloaker Heart
 
@@ -362,7 +362,7 @@ INV = {
     "joint":0,
     "speed":0,
     "wallet": 99,
-    "money": 0,
+    "money": 99,
     "keys": 0,
 
     ##Upgrades

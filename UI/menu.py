@@ -238,36 +238,7 @@ class EventMenu(AbstractMenu):
         else:
             self.movingUp = True
     
-    """ def handleEvent_C(self, event):
-        ##On new Game
-        if event.type == pygame.JOYAXISMOTION and event.axis == 1:
-            self.movedDown(event)
-            self.movedUp(event) """
-                
-    """     def moveCursor(self):
-        if self.eventHandle:
-            if self.pointer.choice == 0:
-                if self.movingDown:
-                    self.newGame_down()
-                
-                elif self.movingUp:
-                    self.newGame_up()
-
-            ##On continue
-            elif self.pointer.choice == 1:
-                if self.movingUp:
-                    self.continueGame_up()
-
-                elif self.movingDown:
-                    self.continueGame_down()
-
-            ##On quit
-            elif self.pointer.choice == 2:
-                if self.movingUp:
-                    self.quitGame_up()
-
-                elif self.movingDown:
-                    self.quitGame_down() """
+    
 
     def update(self, seconds):
         if not self.initialized:

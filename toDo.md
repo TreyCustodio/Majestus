@@ -3,6 +3,11 @@ Tutorial:
 - [ ] Shop + new shop controlls
 - [ ] Key, set lock/key flags
 - [ ] Boss room
+- [ ] Text in larger rooms
+- [ ] Gremlin hitboxes
+- [ ] Keep updating no matter what during healthbar initialization.
+- [ ] No pausing in between textboxes
+- [ ] Pause screen: [-] Fullscreen, [ZR] Shortcuts -> replace top of menu with six boxes. Press A to select a box, then A on the attack/item. ZR to close.
 
 
 Debug:
@@ -15,6 +20,7 @@ Debug:
 - [ ] Health bar initialization fails if mouse off-screen event is handled as the game loads in
 - [ ] Make hud transparent if you get to the left side of the screen. Set the alpha
 - [ ] Rework bounce method. If inWall then don't moving in a direction that would put you further into the wall, then don't move. As opposed to setting velocity to opposite
+- [ ] Stop updating during textbox if paused
 
 
 Fixes:

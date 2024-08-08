@@ -333,6 +333,10 @@ class Highlight(Animated):
     def update(self, seconds):
         super().update(seconds)
 
+class ShopDisplay(Animated):
+    def __init__(self, position=vec(0,0)):
+        super().__init__(position, "shop_display.png", (0,0), nFrames=4, fps=8)
+
 """
 Display flags:
 0 -> normal, 1 -> elements

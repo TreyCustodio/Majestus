@@ -1,17 +1,15 @@
 import pygame
 from math import ceil
-from UI import EventManager
+from UI import EventManager, ACTIONS
 from utils import SpriteManager
 from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Text, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
-               Shadow, Walls, Floor, Camera)
-
-
-
+               Shadow, Walls, Floor, Camera, Highlight, ShopDisplay)
 
 from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO
+
 class DamageNumberManager(object):
     def __init__(self):
         self.numbers = []
@@ -130,6 +128,9 @@ class AE(object):
         self.bossHealthbar = None
         self.fightingBoss = False
         self.drawBossHealth = False
+        self.highlighPos = vec(0,0)
+        self.highlight = Highlight(vec(0,0))
+        self.shopDisplay = ShopDisplay(vec(16*4 - 8, 16*6))
         
         
 
@@ -234,6 +235,7 @@ class AE(object):
             self.room_clear = False
         if self.camera:
             self.camera.position = vec(0,0)
+            
 
     def titleReset(self):
         self.reset()
@@ -915,15 +917,57 @@ class AE(object):
                 
         self.player.handleEvent()
 
+    def stopShop(self):
+        self.selectedItem = "quit"
+        self.displayText("Y/NDone shopping?\n")
+        
+
+
+    #abstract
+    def buyRoutine(self):
+        return
+
+    def shopEvents(self):
+        if EventManager.getInstance().performAction("element"):
+            self.stopShop()
+        elif EventManager.getInstance().performAction("interact"):
+            self.buyRoutine()
+
+        elif EventManager.getInstance().getCursorReady():
+            if ACTIONS["right"]:
+                if self.highlight.position[0] == 16*7:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*11
+                elif self.highlight.position[0] == 16*4:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*7
+                elif self.highlight.position[0] == 16*11:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*14
+                    
+            elif ACTIONS["left"]:
+                if self.highlight.position[0] == 16*11:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*7
+                elif self.highlight.position[0] == 16*14:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*11
+                elif self.highlight.position[0] == 16*7:
+                    EventManager.getInstance().buffCursor()
+                    self.playSound("pause_cursor.wav")
+                    self.highlight.position[0] = 16*4
 
     def handleEvent(self):
         if self.startingMobster:
             return
         elif self.inShop:
-            if EventManager.getInstance().performAction("element"):
-                self.inShop = False
+            self.shopEvents()
             return
-            
         self.interactableEvents()
 
     
@@ -1406,6 +1450,17 @@ class AE(object):
             INV["syringe"] = True
             self.promptResult = False
             self.selectedItem = ""
+        elif self.selectedItem == "key":
+            INV["money"] -= 30
+            self.displayText("Nice! A key!\nTime to find a lock!\n")
+            INV["keys"] += 1
+            self.promptResult = False
+            self.selectedItem = ""
+        elif self.selectedItem == "quit":
+            Drawable.resetOffset()
+            self.inShop = False
+            self.promptResult = False
+            self.selectedItem = ""
 
     def finishFade(self):
         """
@@ -1415,7 +1470,6 @@ class AE(object):
         """
         self.fading = False
         self.readyToTransition = True
-
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
@@ -1510,6 +1564,9 @@ class AE(object):
         
         if self.camera:
             self.updateCamera(seconds)
+        if self.inShop:
+            self.shopDisplay.update(seconds)
+            self.highlight.update(seconds)
         
         
     
@@ -1530,7 +1587,10 @@ class AE(object):
                     else:
                         if n.interactable:
                             n.interactable = False
-                    n.draw(drawSurface)
+                    if self.inShop:
+                        n.draw(drawSurface, drawIcon = False)
+                    else:
+                        n.draw(drawSurface)
         
         if self.obstacles:
             for o in self.obstacles:
@@ -1774,7 +1834,9 @@ class AE(object):
                 e.draw(drawSurface)
         
         
-
+        if self.inShop:
+            self.shopDisplay.draw(drawSurface)
+            self.highlight.draw(drawSurface)
         #HUD
         self.drawHud(drawSurface)
         

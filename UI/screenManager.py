@@ -319,13 +319,7 @@ class ScreenManager(object):
                         if EventManager.getInstance().performAction("pause"):
                             self.pause()
                             return
-                        
-                        
-                        elif EventManager.getInstance().performAction("map"):
-                            if INV["map0"]:
-                                self.openMap()
-                            return
-                    
+
                     self.game.handleEvent()
 
 

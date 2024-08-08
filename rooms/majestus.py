@@ -491,15 +491,23 @@ class Tutorial_Shop(AbstractEngine):
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
-            self.enemies = [
-            ]
+            self.enemies = []
             self.inCutscene = False
+            self.potion = Potion(vec(16*4, 16*4), display=True)
+            self.smoothie = Smoothie(vec(16*7, 16*4), display=True)
+            self.key = ShopKey(vec(16*11, 16*4), display= True)
+            #self.map = ShopMap(vec(16*5, 16*4), True)
+            
             
             if FLAGS[10]:
                 self.cloak = DarkCloak(vec(16*9, 16*5), text = "Y/NWelcome in, kid.&&\nAnything catch your eye?\n")
             else:
                 self.cloak = DarkCloak(vec(16*9, 16*5), text = SPEECH["darkcloak_1"])
+            
             self.spawning = [
+                self.potion,
+                self.key,
+                self.smoothie,
                 self.cloak
             ]
             self.doors = [0]
@@ -523,10 +531,30 @@ class Tutorial_Shop(AbstractEngine):
             Creates boundaries on the outer edge of the map
             """
             self.createSquare()
-        
+            for i in range(3,10):
+                self.blocks.append(IBlock(vec(16*i, 16*4)))
+                self.blocks.append(IBlock(vec(16*i + (16*7), 16*4)))
+
+        def buyRoutine(self):
+            if self.highlight.position[0] == 16*4:
+                Potion().interact(self)
+            elif self.highlight.position[0] == 16*7:
+                Smoothie().interact(self)
+            elif self.highlight.position[0] == 16*11:
+                ShopKey().interact(self)
+            elif self.highlight.position[0] == 16*14:
+                pass
+
+
         def handlePrompt(self):
-            self.inShop = True
-            self.promptResult = False
+            if self.inShop:
+                self.handleStorePrompt()
+            else:
+                self.cloak.interactable = False
+                self.inShop = True
+                #Drawable.CAMERA_OFFSET[1] -= 16
+                self.promptResult = False
+                self.highlight.position = vec(16*4, 16*4)
 
         #override
         def blockCollision(self):

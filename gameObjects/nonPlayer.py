@@ -32,14 +32,15 @@ class NonPlayer(Animated):
     
     
         
-    def draw(self, drawSurface, drawHitbox = False):
+    def draw(self, drawSurface, drawHitbox = False, drawIcon = True):
         super().draw(drawSurface, drawHitbox)
         if drawHitbox:
             interaction = rectAdd(-Drawable.CAMERA_OFFSET, self.getInteractionRect())
             pygame.draw.rect(drawSurface, (255,255,255), interaction, 1)
-        if self.interactable:
-            self.updateIconPos()
-            self.interactIcon.draw(drawSurface)
+        if drawIcon:
+            if self.interactable:
+                self.updateIconPos()
+                self.interactIcon.draw(drawSurface)
 
     def interact(self, player):
         pass
@@ -599,18 +600,32 @@ class Key(Drop):
         ##Keys dont disappear after their lifetime
         Animated.update(self, seconds)
 
-class Potion(NonPlayer):
+class ShopItem(NonPlayer):
+    def __init__(self, position=vec(0, 0), fileName="", offset=None, animate = False, row = 0, nFrames=6, fps=8, display = False):
+        super().__init__(position, fileName, offset, nFrames=nFrames, fps=fps)
+        self.display = display
+        self.animate = animate
+        self.row = row
+
+
+class Potion(ShopItem):
     """
     Potion in the shop
     """
-    def __init__(self, position):
-        super().__init__(position, "Objects.png", (6,0))
-    
+    def __init__(self, position=vec(0,0), display = False):
+        super().__init__(position, "shop_items.png", (0,0), animate=True, nFrames=4, fps=8, display=display)
+
     def getInteractionRect(self):
         return pygame.Rect((self.position[0]-2, self.position[1]), (20, 20))
+    
     def interact(self, engine):
+        ##Displays in the shop
+        if self.display:
+            engine.displayText("A small potion.&&\nSmells like cherries.\nWashington would be proud.\n")
+            return
+        
         if INV["money"] < 5:
-            engine.displayText("Damn, you're broke, man.&&")
+            engine.displayText("Not enough cash...&&\n")
         elif INV["potion"] <= 4:
             engine.displayText("Y/NSmall potion: 5 bucks")
             engine.selectedItem = "potion"
@@ -618,25 +633,51 @@ class Potion(NonPlayer):
         else:
             engine.displayText("Sorry, but you can't carry\nany more of those.\n")
 
-class Smoothie(NonPlayer):
+class Smoothie(ShopItem):
     """
     Delectable Smoothie!
     """
-    def __init__(self, position):
-        super().__init__(position, "Objects.png", (6,1))
+    def __init__(self, position=vec(0,0), display = False):
+        super().__init__(position, "shop_items.png", (0,1), animate=True, row=1, nFrames=4, fps=8, display=display)
     
     def getInteractionRect(self):
         return pygame.Rect((self.position[0]-2, self.position[1]), (20, 18))
     
     def interact(self, engine):
+        if self.display:
+            engine.displayText("A delectable smoothie!\nStraw lickin' good!\n")
         if INV["money"] < 20:
             engine.displayText("A smoothie! Don't you\nwish you had 20 bucks?\n")
         elif INV["smoothie"] <= 4:
-            engine.displayText("Y/NDelectable smoothies!\nStraw lickin' good!\nOnly 20 bucks:\n")
+            engine.displayText("Y/N20 bucks for a smoothie?\n")
             engine.selectedItem = "smoothie"
         
         else:
             engine.displayText("Sorry, but you can't carry\nany more of those.\n")
+
+
+class ShopKey(ShopItem):
+    """
+    Delectable Smoothie!
+    """
+    def __init__(self, position=vec(0,0), display = False):
+        super().__init__(position, "drops.png", (0,3), animate=True, row=3, nFrames=4, fps=8, display= display)
+
+    def getInteractionRect(self):
+        return pygame.Rect((self.position[0]-2, self.position[1]), (20, 18))
+    
+    def interact(self, engine):
+        if self.display:
+            engine.displayText("A key that'll unlock\nmany locks in Majestus.\n")
+            return
+        if INV["money"] < 30:
+            engine.displayText("Sorry. It's 30 bucks if\nyou want that key.\n")
+        elif INV["smoothie"] <= 8:
+            engine.displayText("Y/N30 bucks for that key?")
+            engine.selectedItem = "key"
+        else:
+            engine.displayText("Sorry, but you can't carry\nany more of those.\n")
+
 
 class Syringe(NonPlayer):
     """
