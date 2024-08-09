@@ -330,7 +330,7 @@ class ScreenManager(object):
             if EventManager.getInstance().performAction("map"):
                 pygame.display.toggle_fullscreen()
 
-            elif EventManager.getInstance().performAction("pause"):
+            elif not self.pauseEngine.closing and EventManager.getInstance().performAction("pause"):
                 self.pauseEngine.paused = False
                 self.pauseEngine.closing = True
                 SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")

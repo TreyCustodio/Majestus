@@ -322,7 +322,7 @@ EQUIPPED = {
 
 }
 
-bombos = 20
+bombos = 250
 """
 The Player's inventory
 """
@@ -331,10 +331,10 @@ INV = {
     ##Health, elements, arrows, currency
     "max_hp": 7,
     "shoot": True,
-    "hasBombo": False,
-    "fire": False,
-    "clap": False,
-    "slash": False,
+    "hasBombo": True,
+    "fire": True,
+    "clap": True,
+    "slash": True,
     "cleats": True,
     "maxBombo": bombos,
     "bombo": bombos,
@@ -372,6 +372,23 @@ INV = {
     "galeCost": 20,
 
 }
+
+
+#   Tuple
+#   "action", integer
+SHORTCUTS = {
+    0:[0,0],
+    1:[0,0],
+    2:[0,0],
+    3:[0,0],
+    4:[0,0],
+    5:[0,0]
+}
+
+##How come you cant change this global variable?
+##Why do you need to make it a list to mutate?
+ACTIVE_SHORTCUT = [0]
+
 
 
 """

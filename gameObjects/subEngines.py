@@ -2,392 +2,11 @@ import pygame
 
 from . import Drawable,  Animated, Text, Highlight, Map, Number, AmmoBar
 
-from utils import  vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED
+from utils import vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED, SHORTCUTS, ACTIVE_SHORTCUT
 
 from UI import ACTIONS, EventManager
 
 from pygame.locals import *
-
-class TextEngine_old(object):
-    
-    _INSTANCE = None
-    
-    @classmethod
-    def getInstance(cls):
-        if cls._INSTANCE == None:
-         cls._INSTANCE = cls._TE()
-      
-        return cls._INSTANCE
-
-    @classmethod
-    def tearDown(cls):
-        if cls._INSTANCE != None:
-            cls._INSTANCE = None
-        return None
-
-    class _TE(object):
-        def __init__(self):
-            self.backgroundBool = False
-            self.blackBool = False
-            self.black = SpriteManager.getInstance().getSprite("TextBox2.png", (0,6))
-            self.text = ""
-            self.line = ""
-            self.starting = True
-            self.displayIcon = None
-
-            self.large = False #Boolean determining if you display the large textbox or not
-
-            self.charIndex = 0
-            self.box_drawn = False
-            self.ready_to_display = True
-            self.ready_to_continue = False
-            self.end = False
-            self.closing = False
-            self.done = False
-            self.frame = 1
-            self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (0,0))
-            
-            self.displayTimer = 0.0
-
-            self.lineNum = 1 #The line the text display is currently on
-
-            self.promptHighlight = Highlight((16*6 - 8, 16*5 + 10), flag = 2)
-            self.prompt = False
-            self.highlightTimer = 0
-            self.highlighted = 0 #0 -> No, #1 -> Yes
-            self.choosing = False#The state of choosing yes or no
-            self.promptResult = False
-            self.voiceInt = -1
-
-        def setPromptHighlight(self, position):
-            self.promptHighlight.position = vec(position[0]+64-6, position[1]+32-6)
-
-        def setImage(self):
-            if self.large:
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
-            else:
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (self.frame,0))
-        
-        """
-
-        """
-        def setBackgroundBool(self):
-            self.backgroundBool = not self.backgroundBool
-
-        def reset(self):
-            self.text = ""
-            self.line = ""
-            self.displayIcon = None
-            self.starting = True
-
-            self.frame = 1
-            self.large = False #Boolean determining if you display the large textbox or not
-
-            self.charIndex = 0
-            self.box_drawn = False
-            self.ready_to_display = True
-            self.ready_to_continue = False
-            self.end = False
-            self.closing = False
-            self.done = False
-            self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (0,0))
-            
-            
-            self.displayTimer = 0.0
-
-            self.lineNum = 1 #The line the text display is currently on
-
-            self.promptHighlight = Highlight((16*6 - 8, 16*5 + 10), flag = 2)
-            self.prompt = False
-            self.highlightTimer = 0
-            self.highlighted = 0 #0 -> No, #1 -> Yes
-            self.choosing = False#The state of choosing yes or no
-            self.voiceInt = -1
-        
-
-        def playSFX(self, name, checkBusy = False):
-            if checkBusy:
-                if not pygame.mixer.get_busy():
-                    SoundManager.getInstance().playSFX(name)
-            else:
-                SoundManager.getInstance().playSFX(name)
-
-
-        def setText(self, text, icon = None, large = False, prompt = False):
-            
-            
-            if prompt:
-                self.large = True
-                self.prompt = True
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
-
-            elif large:
-                self.large = large
-                self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
-
-            if icon != None and self.displayIcon == None:
-                self.displayIcon = icon
-
-            if self.prompt:
-                self.text = text[3:]
-            else:
-                self.text = text
-
-            if len(self.text) <= 8:
-                #self.playSFX("TextBox_Short.wav")
-                pass
-            else:
-                self.playSFX("TextBox_Open.wav")
-            
-            if "\n" in self.text:
-                self.line = self.text[self.charIndex:self.text.index("\n")]
-            else:
-                #1 line
-                self.line = self.text
-        
-        def setAlpha(self):
-            self.textBox.set_alpha(220)
-
-        def draw(self, position, drawSurface):
-            ##unused
-            if self.blackBool:
-                if self.large:
-                    drawSurface.blit(self.black, position)
-                self.blackBool = False
-
-            self.setAlpha()
-            #Still drawing previous frame
-            if self.starting:
-                drawSurface.blit(self.textBox, position)
-                return
-            elif self.closing:
-                drawSurface.blit(self.textBox, position)
-                return
-            elif self.done:
-                return
-            
-            if self.end:
-                if self.prompt:
-                    self.choosing = True
-                    if self.promptHighlight.initialized:
-                        self.drawPrompt(position, drawSurface)
-                        if self.prompt:
-                            self.promptHighlight.draw(drawSurface)
-                    else:
-                        self.setPromptHighlight(position)
-                        self.promptHighlight.setInitialized()
-
-                else:
-                    self.drawEnd(position, drawSurface)
-
-            elif not self.box_drawn:
-                self.drawBox(position, drawSurface)
-                if self.displayIcon != None:
-                    self.drawIcon((position[0] + 106, position[1] - 32), drawSurface)
-                self.displayText(position, drawSurface)
-        
-            elif self.ready_to_continue:
-                self.drawContinue(position, drawSurface)
-
-            elif self.displayTimer > 0 and self.displayTimer < 0.1:
-                self.drawYellow1(position, drawSurface)
-                
-            else:
-                self.drawYellow2(position, drawSurface)
-               
-        
-        
-        def drawPrompt(self, position, drawSurface):
-            drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,5)), position)
-
-
-        def drawIcon(self, position, drawSurface):
-            box = SpriteManager.getInstance().getSprite("icon.png", (0,0))
-            icon = SpriteManager.getInstance().getSprite("icon.png", self.displayIcon)
-            drawSurface.blit(box, position)
-            drawSurface.blit(icon, position)
-
-        def drawBox(self, position, drawSurface):
-            drawSurface.blit(self.textBox, position)
-            self.box_drawn = True
-
-        def drawContinue(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,1)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,1)), position)
-
-        def drawYellow1(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,3)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,3)), position)
-            self.displayText(position, drawSurface)
-        
-        def drawYellow2(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,4)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,4)), position)
-            self.displayText(position, drawSurface)
-
-        def drawEnd(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,2)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,2)), position)
-
-        
-        """
-        Main text display method.
-        Try if not mixer busy for slower text
-        """
-        def displayText(self, position, drawSurface, question = False): 
-            if self.lineNum == 2:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+34), self.line[self.charIndex]).draw(drawSurface)
-            elif "&&" in self.line:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+22), self.line[self.charIndex]).draw(drawSurface)
-            else:
-                Text(((position[0] + 10) + (8 * self.charIndex), position[1]+7), self.line[self.charIndex]).draw(drawSurface)
-            
-            self.charIndex += 1
-            if self.charIndex == len(self.line):
-                SoundManager.getInstance().stopSFX("message.wav")
-                self.text = self.text[self.charIndex+1:]
-
-                if self.text == "":
-                    self.end = True
-                    self.ready_to_continue = True
-                    self.playSFX("OOT_Dialogue_Done.wav")
-                    self.charIndex = 0
-
-                elif "\n" in self.text:
-                    if self.large and self.lineNum == 1 and (not "&&" in self.line):
-                        if self.voiceInt == 0:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Before.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 1:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Abyss.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 2:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Transformed.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 3:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Factions.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 4:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Foundation.wav")
-                            self.voiceInt += 1
-                        elif self.voiceInt == 5:
-                            SoundManager.getInstance().stopAllSFX()
-                            SoundManager.getInstance().playVoice("Infant.wav")
-                            self.voiceInt += 1
-
-                        self.line = self.text[:self.text.index("\n")]
-                        self.charIndex = 0
-                        self.lineNum = 2
-                    else:
-                        self.ready_to_continue = True
-                        self.line = self.text[:self.text.index("\n")]
-                        self.playSFX("message-finish.wav")
-                        self.charIndex = 0
-                        if self.large:
-                            self.lineNum = 1
-                else:
-                    self.ready_to_continue = True
-                    self.line = self.text
-                    self.charIndex = 0
-                    self.playSFX("message-finish.wav")
-            else:
-                self.playSFX("message.wav")
-                    
-                
-                
-                
-
-        def handleEvent(self):
-            ##Prompt selection
-            if self.choosing:
-                if ACTIONS["right"] and self.highlighted == 0:
-                    self.highlighted = 1
-                    self.promptHighlight.position = vec(self.promptHighlight.position[0]+88, self.promptHighlight.position[1])
-                    self.playSFX("pause_cursor.wav")
-                elif ACTIONS["left"] and self.highlighted == 1:
-                    self.highlighted = 0
-                    self.promptHighlight.position = vec(self.promptHighlight.position[0]-88, self.promptHighlight.position[1])
-                    self.playSFX("pause_cursor.wav")
-
-                elif EventManager.getInstance().performAction("interact"):
-                    self.playSFX("WW_Textbox_Close.wav")
-                    self.setClosing()
-                    if self.highlighted == 0:
-                        self.promptResult = False
-                    elif self.highlighted == 1:
-                        self.promptResult = True
-                    
-            ##Progressing text
-            elif EventManager.getInstance().performAction("interact") and self.ready_to_continue:
-                if self.end == True:
-                    self.playSFX("WW_Textbox_Close.wav")
-                    self.setClosing()
-                else:
-                    self.playSFX("OOT_Dialogue_Next.wav")
-                    self.box_drawn = False
-                    self.ready_to_continue = False
-                    self.backgroundBool = True
-                    
-
-        def setClosing(self):
-            self.closing = True
-            self.frame = 5
-
-        def update(self, seconds):
-            if self.starting:
-                if self.large:
-                    self.frame += 1
-                    self.frame %= 6
-                    self.setImage()
-                    if self.frame == 0:
-                        self.starting = False
-                        self.setBackgroundBool()
-                    return
-                else:
-                    self.frame += 1
-                    self.frame %= 5
-                    self.setImage()
-                    if self.frame == 0:
-                        self.starting = False
-                        self.setBackgroundBool()
-                    return
-            
-            elif self.closing:
-                if self.large:
-                    self.frame -= 1
-                    if self.frame == 0:
-                        self.closing = False
-                        self.done = True
-                    else:
-                        self.setImage()
-                    return
-                else:
-                    self.frame -= 1
-                    if self.frame == 0:
-                        self.closing = False
-                        self.done = True
-                    else:
-                        self.setImage()
-                    return
-            if self.prompt:
-                self.promptHighlight.update(seconds)
-
-
-
-            
 
 class PauseEngine(object):
 
@@ -427,18 +46,39 @@ class PauseEngine(object):
 
         self.menu = Drawable(vec(0,100), "Pause.png")
         self.timer = 0
-        self.highlight = Highlight(COORD[3][6])
+        self.highlight = Highlight(COORD[3][4])
         self.highlightQuit = Highlight(COORD[3][8], flag = 1)
-        self.highlighted = vec(0,2)
+        self.highlighted = vec(0,0)
         self.promptResult = False
         self.promptFlag = ""
+        ##  Button Icons
+        self.scaled = False
+        self.interactIcon = SpriteManager.getInstance().getSprite("keys.png", (2,0))
+        self.elementIcon = SpriteManager.getInstance().getSprite("keys.png",(3,0))
+        self.shootIcon = SpriteManager.getInstance().getSprite("keys.png",(5,0))
+        self.triggerIcon = SpriteManager.getInstance().getSprite("keys.png", (1,0))
+
+        ##  Transition states
+        self.toShortcuts = False
+        self.toInventory = False
+        self.inShortcuts = False
+        self.placing = False
+        self.item = None
 
     def resetMenu(self):
         self.menu.position = vec(0,100)
+        self.item = None
+        self.placing = False
         self.inPosition = False
         self.closing = False
         self.closed = False
         self.paused = False
+        self.menu.position[0] = 0
+        self.inShortcuts = False
+        self.toShortcuts = False
+        self.toInventory = False
+        self.highlighted = vec(0,0)
+        self.highlight.position = vec(16*3, 16*4)
 
     def drawNumber(self, position, number, drawSurface, row = 0):
         if number >= 10:
@@ -455,17 +95,43 @@ class PauseEngine(object):
             num.draw(drawSurface)
 
     def drawEquipped(self, drawSurf):
-        #Arrow
-        arrow = EQUIPPED["Arrow"]
-        imageA = SpriteManager.getInstance().getSprite("item.png", (arrow, 3))
-        drawSurf.blit(imageA, (COORD[14][4]))
-        if arrow == 1:
-            self.drawNumber((16*15 + 2, 16*4 -2), INV["bombo"], drawSurf, row = 4)
-        #Element
-        element = EQUIPPED["C"]
-        if element != None:
-            imageE = SpriteManager.getInstance().getSprite("item.png", (element, 2))
-            drawSurf.blit(imageE, (COORD[14][7]))
+        if self.inShortcuts:
+            image = AmmoBar.getInstance().getShortcut_image(0)
+            if image != None:
+                drawSurf.blit(image, COORD[13][5])
+            
+            image = AmmoBar.getInstance().getShortcut_image(1)
+            if image != None:
+                drawSurf.blit(image, COORD[16][5])
+            
+            image = AmmoBar.getInstance().getShortcut_image(2)
+            if image != None:
+                drawSurf.blit(image, COORD[13][7])
+            
+            image = AmmoBar.getInstance().getShortcut_image(3)
+            if image != None:
+                drawSurf.blit(image, COORD[16][7])
+            
+            image = AmmoBar.getInstance().getShortcut_image(4)
+            if image != None:
+                drawSurf.blit(image, COORD[13][9])
+            
+            image = AmmoBar.getInstance().getShortcut_image(5)
+            if image != None:
+                drawSurf.blit(image, COORD[16][9])
+
+        else:
+            #Arrow
+            arrow = EQUIPPED["Arrow"]
+            imageA = SpriteManager.getInstance().getSprite("item.png", (arrow, 3))
+            drawSurf.blit(imageA, (COORD[14][4]))
+            if arrow == 1:
+                self.drawNumber((16*15 + 2, 16*4 -2), INV["bombo"], drawSurf, row = 4)
+            #Element
+            element = EQUIPPED["C"]
+            if element != None:
+                imageE = SpriteManager.getInstance().getSprite("item.png", (element, 2))
+                drawSurf.blit(imageE, (COORD[14][7]))
 
 
     def drawShards(self, drawSurf):
@@ -497,25 +163,27 @@ class PauseEngine(object):
         
         drawSurf.blit(self.menu.image, self.menu.position)
         #self.menu.draw(drawSurf)
-        if not self.inPosition or self.closing or self.closed:
+        if not self.inPosition or self.closing or self.closed or self.toInventory or self.toShortcuts:
             return
         
         self.drawEquipped(drawSurf)
 
-        self.drawShards(drawSurf)
-        if INV["plant"] >= 1:
-            image = SpriteManager.getInstance().getSprite("item.png", (0,0))
-            drawSurf.blit(image, (COORD[3][4]))
-            drawSurf.blit(Number.getImage(INV["plant"], 4), COORD[3][4])
-            #Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
-        
-        if INV["chanceEmblem"]:
-            image = SpriteManager.getInstance().getSprite("item.png", (4,0))
-            drawSurf.blit(image, (COORD[4][4]))
+        if not self.inShortcuts:
+            self.drawShards(drawSurf)
+            ##Key Items
+            if INV["plant"] >= 1:
+                image = SpriteManager.getInstance().getSprite("item.png", (0,0))
+                drawSurf.blit(image, (COORD[3][4]))
+                drawSurf.blit(Number.getImage(INV["plant"], 4), COORD[3][4])
+                #Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
+            
+            if INV["chanceEmblem"]:
+                image = SpriteManager.getInstance().getSprite("item.png", (4,0))
+                drawSurf.blit(image, (COORD[4][4]))
 
-        if INV["map0"]:
-            image = SpriteManager.getInstance().getSprite("item.png", (5,0))
-            drawSurf.blit(image, (COORD[5][4]))
+            if INV["map0"]:
+                image = SpriteManager.getInstance().getSprite("item.png", (5,0))
+                drawSurf.blit(image, (COORD[5][4]))
 
         if INV["syringe"]:
             image = SpriteManager.getInstance().getSprite("item.png", (3,0))
@@ -576,7 +244,35 @@ class PauseEngine(object):
             drawSurf.blit(self.highlightQuit.image, (self.highlightQuit.position))
         else:
             drawSurf.blit(self.highlight.image, (self.highlight.position))
+            self.drawButton(drawSurf)
+    
+    def drawButton(self, drawSurf):
+        if self.scaled:
+            if self.placing:
+                drawSurf.blit(self.interactIcon, (self.highlight.position - 24))
+            elif self.inShortcuts:
+                drawSurf.blit(self.triggerIcon, (self.highlight.position - 24))
+            else:
+                if self.highlighted[1] == 3 or self.highlighted[1] == 0:
+                    drawSurf.blit(self.interactIcon, (self.highlight.position - 24))
+                elif self.highlighted[1] == 1:
+                    drawSurf.blit(self.shootIcon, (self.highlight.position - 24))
+                if self.highlighted[1] == 2:
+                    drawSurf.blit(self.elementIcon, (self.highlight.position - 24))
 
+        else:
+            if self.placing:
+                drawSurf.blit(self.interactIcon, (self.highlight.position - 12))
+            elif self.inShortcuts:
+                drawSurf.blit(self.triggerIcon, (self.highlight.position - 12))
+            else:
+                if self.highlighted[1] == 3 or self.highlighted[1] == 0:
+                    drawSurf.blit(self.interactIcon, (self.highlight.position - 12))
+                elif self.highlighted[1] == 1:
+                    drawSurf.blit(self.shootIcon, (self.highlight.position - 12))
+                if self.highlighted[1] == 2:
+                    drawSurf.blit(self.elementIcon, (self.highlight.position - 12))
+            
 
     def equipElement(self):
         if self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*6:
@@ -612,15 +308,42 @@ class PauseEngine(object):
             SoundManager.getInstance().playSFX("bump.mp3")
 
     def equipSpecial(self):
+        return
+        ACTIONS["trigger_r"] == False
+        ##Arrow Row
         if self.highlight.position[1] == 16*5:
+            ##Ol' Reliable
             if self.highlight.position[0] == 16*3:
                 SoundManager.getInstance().playSFX("TextBox_Open.wav")
-                AmmoBar.getInstance().setShortcutImage()
+                AmmoBar.getInstance().setShortcutImage("ammo.png",(0,1))
+                EventManager.getInstance().setSpecial("shoot")
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 0
+
+            ##Bombofaun
+            if self.highlight.position[0] == 16*4:
+                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                AmmoBar.getInstance().setShortcutImage("ammo.png",(0,2), True)
+                EventManager.getInstance().setSpecial("shoot")
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 1
+
+        ##Element Row
+        elif self.highlight.position[1] == 16*6:
+            if self.highlight.position[0] == 16*3:
+                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                AmmoBar.getInstance().setShortcutImage("element.png",(1,0))
+                EventManager.getInstance().setSpecial("element")
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "element"
+                SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 0
 
     def showInfo(self):
         if self.highlighted[1] == 4:
-            self.promptFlag = "quit"
-            self.text = "Y/NReturn to title screen?"
+            if self.inShortcuts:
+                self.text = "You can select up to 6\nattacks for your shortcuts.\nPress [Right Trigger] to\nselect an attack, and place\nit on the grid to the right.\nBack in the game, you can\npress the [bumpers] to cycle\nthrough your shortcuts.\nPress [Right Trigger] to use\nyour selected attack."
+            else:
+                self.promptFlag = "quit"
+                self.text = "Y/NReturn to title screen?"
 
         ##  Key items   ##
         elif self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*4:
@@ -708,8 +431,46 @@ class PauseEngine(object):
 
         else:
             SoundManager.getInstance().playSFX("bump.mp3")
-                    
+                
+    def startPlacing(self):
+        SoundManager.getInstance().playSFX("Textbox_Open.wav")
+        self.placing = True
+        self.highlight.position = vec(16*13, 16*5)
+        self.highlighted = vec(0,0)
+    
+    def stopPlacing(self):
+        SoundManager.getInstance().playSFX("Textbox_Open.wav")
+        self.placing = False
+        self.highlight.position = vec(16*3, 16*5)
+        self.highlighted = vec(0,1)
+        self.item = None
+
+    def placeItem(self):
+        if self.highlighted[0] == 0:
+            if self.highlighted[1] == 0:
+                SHORTCUTS[0] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 0)
+
+            elif self.highlighted[1] == 1:
+                SHORTCUTS[2] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 2)
+
+            elif self.highlighted[1] == 2:
+                SHORTCUTS[4] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 4)
             
+        elif self.highlighted[0] == 1:
+            if self.highlighted[1] == 0:
+                SHORTCUTS[1] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 1)
+
+            elif self.highlighted[1] == 1:
+                SHORTCUTS[3] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 3)
+
+            elif self.highlighted[1] == 2:
+                SHORTCUTS[5] = self.item
+                AmmoBar.getInstance().setShortcutImage(self.item, 5)
 
     def handleEvent(self):
         """
@@ -726,8 +487,63 @@ class PauseEngine(object):
         min offset[1] = 0
         max offset[1] = 5
         """
-        if self.closing or not self.inPosition:
+        if self.closing or not self.inPosition or self.toShortcuts or self.toInventory:
             return
+        
+        if self.placing:
+            if EventManager.getInstance().performAction("element"):
+                self.stopPlacing()
+
+            elif EventManager.getInstance().performAction("interact"):
+                self.placeItem()
+                self.stopPlacing()
+                return
+            
+            else:
+                ##  Cursor Movement
+                if EventManager.getInstance().getCursorReady():
+                    if  ACTIONS["up"]:
+                        EventManager.getInstance().buffCursor()
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        if self.highlighted[1] == 0:
+                            self.highlighted[1] = 2
+                            self.highlight.position[1] = 16*5 + 64
+                        else:
+                            self.highlighted[1] -= 1
+                            self.highlight.position[1] -= 32
+
+                    elif ACTIONS["down"]:
+                        EventManager.getInstance().buffCursor()
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        if self.highlighted[1] == 2:
+                            self.highlighted[1] = 0
+                            self.highlight.position[1] = 16*5
+                        else:
+                            self.highlighted[1] += 1
+                            self.highlight.position[1] += 32
+
+
+                    elif ACTIONS["right"]:
+                        EventManager.getInstance().buffCursor()
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        if self.highlighted[0] == 1:
+                            self.highlighted[0] = 0
+                            self.highlight.position[0] = 16*13
+                        else:
+                            self.highlighted[0] += 1
+                            self.highlight.position[0] += 48
+
+                    elif ACTIONS["left"]:
+                        EventManager.getInstance().buffCursor()
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        if self.highlighted[0] == 0:
+                            self.highlighted[0] = 1
+                            self.highlight.position[0] = 16*16
+                        else:
+                            self.highlighted[0] -= 1
+                            self.highlight.position[0] -= 48
+            return
+        
         ##  Map Controls
         if self.mapOpen and INV["map"+str(Map.getInstance().mapNum)]:
             if ACTIONS["shoot"]:
@@ -753,17 +569,56 @@ class PauseEngine(object):
             return
         
         ##  Menu Controls
-        if EventManager.getInstance().performAction("element"):
-            self.equipElement()
+        if self.inShortcuts:
+            if EventManager.getInstance().getCursorReady() and ACTIONS["trigger_r"]:
+                EventManager.getInstance().buffCursor()
+                ##  Pickup Item for shortcut placement
+                #Ol' reliable
+                if self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*5:
+                    if INV["shoot"]:
+                        self.item = ("shoot", 0)
+                        self.startPlacing()
+                elif self.highlight.position[0] == 16*4 and self.highlight.position[1] == 16*5:
+                    if INV["hasBombo"]:
+                        self.item = ("shoot", 1)
+                        self.startPlacing()
+                return
 
-        elif EventManager.getInstance().performAction("interact"):
-            self.showInfo()
-        
-        elif EventManager.getInstance().performAction("shoot"):
-            self.equipArrow()
-        
-        elif ACTIONS["special"]:
-            self.equipSpecial()
+            elif self.inShortcuts and EventManager.getInstance().getCursorReady() and ACTIONS["target"]:
+                self.toInventory = True
+                ACTIONS["target"] = False
+                self.highlighted = vec(0,0)
+                self.highlight.position = vec(16*3, 16*4)
+                EventManager.getInstance().buffCursor()
+                SoundManager.getInstance().playSFX("menu_shift_1.wav")
+                return
+        else:
+            if EventManager.getInstance().performAction("element"):
+                self.equipElement()
+                return
+
+            elif EventManager.getInstance().performAction("interact"):
+                self.showInfo()
+                return
+            
+            elif EventManager.getInstance().performAction("shoot"):
+                self.equipArrow()
+                return
+            
+            ##  Shift Menus
+            elif EventManager.getInstance().getCursorReady() and ACTIONS["trigger_r"]:
+                self.toShortcuts = True
+                ACTIONS["trigger_r"] = False
+                self.highlighted = vec(0,1)
+                self.highlight.position = vec(16*3, 16*5)
+                EventManager.getInstance().buffCursor()
+                SoundManager.getInstance().playSFX("menu_shift.wav")
+                return
+            
+            
+
+
+
         
             """
             Highlight positions
@@ -771,29 +626,51 @@ class PauseEngine(object):
             highlighted = integer value corresponding to inv item
             highlight.position = actual value to draw at (mult. of 16)
             """
-        elif EventManager.getInstance().getCursorReady():
+        ##Move cursor
+        if EventManager.getInstance().getCursorReady():
             if  ACTIONS["up"]:
                 EventManager.getInstance().buffCursor()
-                if self.highlighted[1] == 0:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] = 4
-                    self.highlight.position[1] = 128
+                if self.inShortcuts:
+                    if self.highlighted[1] == 1:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] = 4
+                        self.highlight.position[1] = 128
 
+                    else:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] -= 1
+                        self.highlight.position[1] -= 16
                 else:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] -= 1
-                    self.highlight.position[1] -= 16
+                    if self.highlighted[1] == 0:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] = 4
+                        self.highlight.position[1] = 128
+
+                    else:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] -= 1
+                        self.highlight.position[1] -= 16
 
             elif ACTIONS["down"]:
                 EventManager.getInstance().buffCursor()
-                if self.highlighted[1] == 4:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] = 0
-                    self.highlight.position[1] = 16*4
+                if self.inShortcuts:
+                    if self.highlighted[1] == 4:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] = 1
+                        self.highlight.position[1] = 16*5
+                    else:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] += 1
+                        self.highlight.position[1] += 16
                 else:
-                    SoundManager.getInstance().playSFX("pause_cursor.wav")
-                    self.highlighted[1] += 1
-                    self.highlight.position[1] += 16
+                    if self.highlighted[1] == 4:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] = 0
+                        self.highlight.position[1] = 16*4
+                    else:
+                        SoundManager.getInstance().playSFX("pause_cursor.wav")
+                        self.highlighted[1] += 1
+                        self.highlight.position[1] += 16
 
             elif ACTIONS["right"]:
                 EventManager.getInstance().buffCursor()
@@ -822,8 +699,19 @@ class PauseEngine(object):
 
 
 
-
-
+    def toggleScale(self):
+        if not self.scaled:
+            self.interactIcon = pygame.transform.scale(self.interactIcon, (40,32))
+            self.shootIcon = pygame.transform.scale(self.shootIcon, (40,32))
+            self.elementIcon = pygame.transform.scale(self.elementIcon, (40,32))
+            self.triggerIcon = pygame.transform.scale(self.triggerIcon, (40,32))
+            self.scaled = True
+        else:
+            self.interactIcon = pygame.transform.scale(self.interactIcon, (20,16))
+            self.shootIcon = pygame.transform.scale(self.shootIcon, (20,16))
+            self.elementIcon = pygame.transform.scale(self.elementIcon, (20,16))
+            self.triggerIcon = pygame.transform.scale(self.triggerIcon, (20,16))
+            self.scaled = False
 
     def update(self, seconds):
         if self.closing:
@@ -840,13 +728,37 @@ class PauseEngine(object):
                 self.inPosition = True
             return
         
+        if self.toShortcuts:
+            self.menu.position[0] -= 8
+            if self.menu.position[0] <= -304:
+                self.menu.position[0] = -304
+                self.toShortcuts = False
+                self.inShortcuts = True
+                return
+        elif self.toInventory:
+            self.menu.position[0] += 8
+            if self.menu.position[0] >= 0:
+                self.menu.position[0] = 0
+                self.toInventory = False
+                self.inShortcuts = False
+                return
+            
         if self.mapOpen:
             Map.getInstance().update(seconds)
         
 
+        if self.placing:
+            pass
+
         self.timer += seconds
-        if self.timer >= .5:
-            self.timer = 0
+        if self.scaled:
+            if self.timer >= .2:
+                self.toggleScale()
+                self.timer = 0
+        else:
+            if self.timer >= .8:
+                self.toggleScale()
+                self.timer = 0
         
         if not self.trackAnalog:
             self.joyTimer += seconds

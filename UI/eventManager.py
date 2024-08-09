@@ -19,7 +19,8 @@ ACTIONS = {
     "element": False, #Attacking with your element
     "pause": False, #Pause / Start
     "map": False, #Map / Select
-    "special": False,
+    "trigger_r": False,
+    "special": "",
     "target": False,
     "target_left":False,
     "target_right":False,
@@ -325,9 +326,11 @@ class EventManager(object):
                             if event.axis == 5:
                                 #print(event)
                                 if event.value >= self.deadZone:
-                                    ACTIONS["special"] = True
+                                    ACTIONS["trigger_r"] = True
+                                    #ACTIONS[ACTIONS["special"]] = True
                                 else:
-                                    ACTIONS["special"] = False
+                                    ACTIONS["trigger_r"] = False
+                                    #ACTIONS[ACTIONS["special"]] = False
                             else:
                                 if event.value <= self.deadZone:
                                     ACTIONS["motion"] = False

@@ -1,7 +1,7 @@
 from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block,  LockBlock, \
 HealthBar
 
-from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec
+from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec, SHORTCUTS, ACTIVE_SHORTCUT
 from UI import ACTIONS, EventManager
 import pygame
 
@@ -325,7 +325,6 @@ class Player(Animated):
                 self.vel[0] = self.speed
 
             elif direction == 3:#Left
-                #print(self.vel)
                 if self.vel[1] == 0:
                     if not self.targeting:
                         self.row = 3
@@ -392,24 +391,43 @@ class Player(Animated):
                 self.vel[0] = 0
 
     
-    def shootArrow(self):
+    def shootArrow(self, shortcut = False):
         if self.arrowReady:
-            equipped = EQUIPPED["Arrow"]
-            if equipped == 0:
-                ACTIONS["shoot"] = False
-                self.bullet = Bullet(self.position, self.getDirection(self.row), self.hp)
-                #self.arrowCount -= 1
-                self.arrowReady = False
-                self.setWeaponDamage(self.bullet)
-
-            elif equipped == 1:
-                ACTIONS["shoot"] = False
-                if INV["bombo"] > 0:
-                    self.bullet = Bombo(self.position, self.getDirection(self.row), self.hp)
+            if shortcut:
+                equipped = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
+                if equipped == 0:
+                    ACTIONS["shoot"] = False
+                    self.bullet = Bullet(self.position, self.getDirection(self.row), self.hp)
                     #self.arrowCount -= 1
                     self.arrowReady = False
                     self.setWeaponDamage(self.bullet)
-                    INV["bombo"] -= 1
+
+                elif equipped == 1:
+                    ACTIONS["shoot"] = False
+                    if INV["bombo"] > 0:
+                        self.bullet = Bombo(self.position, self.getDirection(self.row), self.hp)
+                        #self.arrowCount -= 1
+                        self.arrowReady = False
+                        self.setWeaponDamage(self.bullet)
+                        INV["bombo"] -= 1
+            else:
+                equipped = EQUIPPED["Arrow"]
+                #equipped = Shortcut[Active_shortcut]
+                if equipped == 0:
+                    ACTIONS["shoot"] = False
+                    self.bullet = Bullet(self.position, self.getDirection(self.row), self.hp)
+                    #self.arrowCount -= 1
+                    self.arrowReady = False
+                    self.setWeaponDamage(self.bullet)
+
+                elif equipped == 1:
+                    ACTIONS["shoot"] = False
+                    if INV["bombo"] > 0:
+                        self.bullet = Bombo(self.position, self.getDirection(self.row), self.hp)
+                        #self.arrowCount -= 1
+                        self.arrowReady = False
+                        self.setWeaponDamage(self.bullet)
+                        INV["bombo"] -= 1
 
 
             
@@ -422,17 +440,17 @@ class Player(Animated):
         self.row += diff
        
     def shiftDirection(self, side = "left"):
-        direction = self.getDirection()
+        SoundManager.getInstance().playSFX("shortcut.wav")
         if side == "left":
-            if direction == 3:
-                self.row-=3
+            if ACTIVE_SHORTCUT[0] == 0:
+                ACTIVE_SHORTCUT[0] = 5
             else:
-                self.row +=1
+                ACTIVE_SHORTCUT[0] -= 1
         elif side == "right":
-            if direction == 0:
-                self.row+=3
+            if ACTIVE_SHORTCUT[0] == 5:
+                ACTIVE_SHORTCUT[0] = 0
             else:
-                self.row -=1
+                ACTIVE_SHORTCUT[0] += 1
         
 
     def handleEvent(self, interactableObject = None, engine = None):
@@ -453,12 +471,15 @@ class Player(Animated):
                 elif self.targeting:
                     self.targeting = False
 
+
+                ##  Bumpers
                 if EventManager.getInstance().performAction("target_left"):
                     self.shiftDirection("left")
                 
                 if EventManager.getInstance().performAction("target_right"):
                     self.shiftDirection("right")
 
+                
                 ##  Right analog
                 if ACTIONS["down_r"]:
                     self.setDirection(0)
@@ -501,9 +522,18 @@ class Player(Animated):
                         self.stopMoving(3)
             
             ##  Shooting
-            if INV["shoot"] and ACTIONS["shoot"] and self.arrowCount > 0 and self.arrowReady and not self.invincible: #and self.ammo > 0:
-                #Fire bullet
-                self.shootArrow()
+            #pre reqs
+            if INV["shoot"] and self.arrowCount > 0 and self.arrowReady and not self.invincible:
+                ##  Shoot Button
+                if (ACTIONS["shoot"]):
+                    #Fire bullet
+                    self.shootArrow()
+                
+                ##  Shortcut Shot
+                if (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "shoot" and ACTIONS["trigger_r"]):
+                    if ACTIONS["trigger_r"]:
+                        self.shootArrow(True)
+                
 
             ##  Element
             if not self.running:
@@ -675,12 +705,7 @@ class Player(Animated):
             self.knockback(side)
             
     def preventCollision(self, object, side = None):
-        #print("object", object)
-        #print(object.position)
-        #Prevents overlapping collision rects based on side
-        #self.position = vec(self.position)
-        #print("position", self.position)
-
+       
         if side:
             pass
         else:

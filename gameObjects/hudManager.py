@@ -1,5 +1,5 @@
 from . import Drawable, Animated, Number
-from utils import SpriteManager, SoundManager, vec, INV, RESOLUTION, EQUIPPED, INV
+from utils import SpriteManager, SoundManager, vec, INV, RESOLUTION, EQUIPPED, INV, ACTIVE_SHORTCUT, SHORTCUTS
 import pygame
 
 class AmmoBar(object):
@@ -21,12 +21,65 @@ class AmmoBar(object):
             super().__init__(vec(0,15), "ammo.png", (0, EQUIPPED["Arrow"]+1))
             self.damageId = 0
             self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
-            self.shortCutBackground = SpriteManager.getInstance().getSprite("element.png", (0, 0))
-            self.shortCutImage = SpriteManager.getInstance().getSprite("element.png", (0, 0))
+            self.shortCutBackground = SpriteManager.getInstance().getSprite("shortcut.png")
+            self.shortCutImage = None
             self.shortcutPos = vec(272,0)
 
-        def setShortcutImage(self, fileName="", offset = (0,0)):
-            self.shortCutImage = SpriteManager.getInstance().getSprite(fileName, offset)
+            self.shortcutImages = {
+                0:None,
+                1:None,
+                2:None,
+                3:None,
+                4:None,
+                5:None,
+            }
+            self.ammoImages = {
+                0:False,
+                1:False,
+                2:False,
+                3:False,
+                4:False,
+                5:False,
+            }
+
+        def getShortcut_image(self, index: int = 0):
+            if self.shortcutImages[index]:
+                return pygame.transform.scale(self.shortcutImages[index], (16,16))
+        
+        def setShortcutImage(self, item, index: int = 0):
+            image = None
+            ammo = False
+            if item[0] == "shoot":
+                if item[1] == 0:
+                    image = SpriteManager.getInstance().getSprite("ammo.png", (0,1))
+                elif item[1] == 1:
+                    image = SpriteManager.getInstance().getSprite("ammo.png", (0,2))
+                    ammo = True
+            elif item[0] == "element":
+                pass
+            
+            if image:
+                image = pygame.transform.scale(image, (32,32))
+            self.shortcutImages[index] = image
+            self.ammoImages[index] = ammo
+
+
+        def drawNumber(self, position, number, drawSurface, row = 0):
+            position += Drawable.CAMERA_OFFSET
+            if number >= 10:
+                currentPos = vec(position[0]-3, position[1])
+                number = str(number)
+                for char in number:
+                    num = Number(currentPos, int(char), row)
+                    num.position[0] -= num.getSize()[0] // 2
+                    
+                    num.draw(drawSurface)
+                    currentPos[0] += 6
+            else:
+                num = Number(position, number, row)
+                num.position[0] -= num.getSize()[0] // 2
+                num.draw(drawSurface)
+
 
         def setArrow(self, player):
             if not player.arrowReady:
@@ -35,7 +88,7 @@ class AmmoBar(object):
             else:
                 self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
                 self.image = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, EQUIPPED["Arrow"]+1))
-            
+                
         def draw(self, drawSurface, player):
             if player.hp <= INV["max_hp"]//3 or player.hp == 1:
                 self.damageId = 2
@@ -48,8 +101,12 @@ class AmmoBar(object):
             drawSurface.blit(self.backImage, self.position)
             drawSurface.blit(self.image, self.position)
             drawSurface.blit(self.shortCutBackground, self.shortcutPos)
-            drawSurface.blit(self.shortCutImage, self.shortcutPos)
 
+            if self.shortcutImages[ACTIVE_SHORTCUT[0]]:
+                drawSurface.blit(self.shortcutImages[ACTIVE_SHORTCUT[0]], (self.shortcutPos[0], self.shortcutPos[1]))
+                if self.ammoImages[ACTIVE_SHORTCUT[0]]:
+                    self.drawNumber(vec(304-32, 16), INV["bombo"], drawSurface)
+                    
 """
 Displays the currently selected element on the HUD
 """

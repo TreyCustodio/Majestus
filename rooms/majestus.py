@@ -487,7 +487,7 @@ class Tutorial_Shop(AbstractEngine):
         def __init__(self):
             super().__init__("tut_shop")
             self.roomId = 4
-            self.bgm = "forget_me_nots.mp3"
+            self.bgm = None
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
