@@ -1786,19 +1786,16 @@ Cute little walking fireball.
 Requires Ice to damage it.
 """
 class Baller(Enemy):
-    def __init__(self, position=vec(0,0), direction = 3):
-        super().__init__(position, "baller.png", direction)
+    def __init__(self, position=vec(0,0), direction = 3, hp = 5, speed = 50, type: Element = Element(1)):
+        super().__init__(position, "baller.png", direction, hp = hp, speed = speed)
         self.indicatorRow = 8
         self.row = direction
         self.hurtRow = 4
-        self.speed = 50
         self.nFrames = 4
         self.totalFrames = 4
-        self.maxHp = 5
-        self.hp = 5
         self.direction = direction
         self.damage = 1
-        self.type = Element(1)
+        self.type = type
         self.setSpeed()
 
     
@@ -1821,18 +1818,9 @@ class Baller(Enemy):
             return Buck_B((self.position[0]+3, self.position[1]+5))
     
     def bounce(self, other):
-        if not self.frozen:
-            side = self.calculateSide(other)
-            if side == "right":
-                self.vel[0] = -self.speed
-                self.row = 3
-                #self.vel[1] = 0
-            
-            elif side == "left":
-                self.vel[0] = self.speed
-                self.row = 1
-                #self.vel[1] = 0
+        Gremlin.bounce(self, other)
     
+
     def hurt(self, damage, setHit=True):
         return super().hurtMult(damage, setHit)
     
@@ -1849,8 +1837,9 @@ class Baller(Enemy):
 Cute little walking rock.
 Requires Bombofauns to damage it.
 """
-class Rocker(Enemy):
-    pass
+class Rocker(Baller):
+    def __init__(self, position=vec(0, 0), direction=3, hp = 10, speed = 35, type = Element(0)):
+        super().__init__(position, direction, hp, speed)
 
 
 """
@@ -2298,19 +2287,22 @@ class Gremlin(Enemy):
 
     def bounce(self, other):
         if not self.frozen and not self.bouncing:
-            self.bouncing = True
-            if self.row == 1:
+            side = self.calculateSide(other)
+            if side == "right":
+                self.position[0] = other.position[0] - self.getSize()[0]
                 self.vel[0] = -self.speed
-                self.row = 3
-            elif self.row == 5:
-                self.vel[0] = -self.speed
-                self.row = 7
-            elif self.row == 3:
+                if self.row == 1:
+                    self.row = 3
+                elif self.row == 5:
+                    self.row = 7
+            
+            elif side == "left":
+                self.position[0] = (other.position[0] + other.getSize()[0]) + (self.getSize()[0] * 2)
                 self.vel[0] = self.speed
-                self.row = 1
-            elif self.row == 7:
-                self.vel[0] = self.speed
-                self.row = 5
+                if self.row == 3:
+                    self.row = 1
+                elif self.row == 7:
+                    self.row = 5
 
     
     def hurt(self, damage, setHit=True):

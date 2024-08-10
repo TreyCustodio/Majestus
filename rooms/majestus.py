@@ -430,8 +430,10 @@ class Tutorial_2(AbstractEngine):
             self.enemyPlacement = 0
             self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
             self.enemies = [
-                Gremlin(vec(16*3, 16*6)),
-                Gremlin(vec(16*20, 16*6))
+                Gremlin(vec(16*7, 16*5 + 8), direction=3),
+                Gremlin(vec(16*21, 16*5 + 8)),
+                Gremlin(vec(16*14, 16*5 + 8)),
+                Rocker(vec(16*20, 16*5))
             ]
             
             self.doors = [1,2,4,7,6]
@@ -459,6 +461,7 @@ class Tutorial_2(AbstractEngine):
             Creates boundaries on the outer edge of the map
             """
             self.createHorizontal()
+            
 
         #override
         def blockCollision(self):
@@ -496,7 +499,6 @@ class Tutorial_Shop(AbstractEngine):
             self.potion = Potion(vec(16*4, 16*4), display=True)
             self.smoothie = Smoothie(vec(16*7, 16*4), display=True)
             self.key = ShopKey(vec(16*11, 16*4), display= True)
-            #self.map = ShopMap(vec(16*5, 16*4), True)
             
             
             if FLAGS[10]:

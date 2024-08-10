@@ -1052,14 +1052,13 @@ class AE(object):
                 if (not self.player.invincible) or n.id == "shot":
                     if n.handlePlayerCollision(self.player):
                         self.player.handleCollision(n)
-                  
-           
 
             #Enemies
-            if issubclass(type(n),Enemy):
-                if self.projectiles:
-                    for p in self.projectiles:
-                        self.projectilesOnEnemies(p,n)
+            if self.projectiles:
+                for p in self.projectiles:
+                    self.projectilesOnEnemies(p,n)
+            for b in self.blocks:
+                self.enemyCollision(b)
                         
     def pushableBlockCollision(self):
         if self.pushableBlocks:
@@ -1097,8 +1096,7 @@ class AE(object):
             if e.doesCollideBlock(other):
                 e.inWall = True
                 e.bounce(other)
-            elif e.inWall:
-                e.inWall = False
+            
 
     def interactableCollision(self):
         if self.spawning:
