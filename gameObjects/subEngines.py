@@ -570,20 +570,86 @@ class PauseEngine(object):
         
         ##  Menu Controls
         if self.inShortcuts:
+            ##  Pickup Item for shortcut placement
             if EventManager.getInstance().getCursorReady() and ACTIONS["trigger_r"]:
                 EventManager.getInstance().buffCursor()
-                ##  Pickup Item for shortcut placement
-                #Ol' reliable
-                if self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*5:
-                    if INV["shoot"]:
-                        self.item = ("shoot", 0)
-                        self.startPlacing()
-                elif self.highlight.position[0] == 16*4 and self.highlight.position[1] == 16*5:
-                    if INV["hasBombo"]:
-                        self.item = ("shoot", 1)
-                        self.startPlacing()
-                return
 
+                ##Arrows
+                if self.highlight.position[1] == 16*5:
+                    #Ol' reliable
+                    if self.highlight.position[0] == 16*3:
+                        if INV["shoot"]:
+                            self.item = ("shoot", 0)
+                            self.startPlacing()
+                    #Bombofaun
+                    elif self.highlight.position[0] == 16*4:
+                        if INV["hasBombo"]:
+                            self.item = ("shoot", 1)
+                            self.startPlacing()
+
+                ##Elements
+                elif self.highlight.position[1] == 16*6:
+                    #Fire Sword
+                    if self.highlight.position[0] == 16*3:
+                        if INV["fire"]:
+                            self.item = ("element", 0)
+                            self.startPlacing()
+                    #Blizzard
+                    elif self.highlight.position[0] == 16*5:
+                        if INV["cleats"]:
+                            self.item = ("element", 1)
+                            self.startPlacing()
+                    #Clap
+                    elif self.highlight.position[0] == 16*7:
+                        if INV["clap"]:
+                            self.item = ("element", 2)
+                            self.startPlacing()
+                    #Slash
+                    elif self.highlight.position[0] == 16*9:
+                        if INV["slash"]:
+                            self.item = ("element", 3)
+                            self.startPlacing()
+
+                ##Items
+                elif self.highlight.position[1] == 16*7:
+                    #Syringe
+                    if self.highlight.position[0] == 16*3:
+                        if INV["syringe"]:
+                            self.item = ("item", 0)
+                            self.startPlacing()
+                    #Potion
+                    elif self.highlight.position[0] == 16*4:
+                        if INV["potion"] >= 1:
+                            self.item = ("item", 1)
+                            self.startPlacing()
+                    #Smoothie
+                    elif self.highlight.position[0] == 16*5:
+                        if INV["smoothie"] >= 1:
+                            self.item = ("item", 2)
+                            self.startPlacing()
+                    #Beer
+                    elif self.highlight.position[0] == 16*6:
+                        if INV["beer"] >= 1:
+                            self.item = ("item", 3)
+                            self.startPlacing()
+                    
+                    #Joint
+                    elif self.highlight.position[0] == 16*7:
+                        if INV["joint"] >= 1:
+                            self.item = ("item", 4)
+                            self.startPlacing()
+
+                    #Speed
+                    elif self.highlight.position[0] == 16*8:
+                        if INV["speed"] >= 1:
+                            self.item = ("item", 5)
+                            self.startPlacing()
+                return
+            
+            elif EventManager.getInstance().performAction("interact"):
+                self.showInfo()
+                return
+            
             elif self.inShortcuts and EventManager.getInstance().getCursorReady() and ACTIONS["target"]:
                 self.toInventory = True
                 ACTIONS["target"] = False

@@ -69,6 +69,16 @@ Create seperate list for static obstacles/enemies.
   7. Laser/Plasma/Ring (Machine gun like cave story)
   8. Special arrow awarded from secret boss
 
+  Key Items
+  1. Plant
+  2. Chance Emblem
+  3. Map
+  4. Fake id
+  5. Magic Conch
+  6. Defense ring
+  7. Alpha key
+  8. ???
+
 
 
 Boss idea:
@@ -86,6 +96,7 @@ ZR to use a shortcut item
 R and L to swap shortcut.
 No direction changing.
 You can put anything on the six boxes besides key items (element, dash, item)
+
 
 Majestus sales pitches:
 - No filler besides npcs with funny dialogue and world building

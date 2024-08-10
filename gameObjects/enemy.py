@@ -5,7 +5,8 @@ from random import randint
 import pygame
 """
 The highest class in the enemy hierarchy.
-A basic enemy that moves in a sqaure.
+
+Baller, Chiller, Viber, ?
 """
 
 class Enemy(Animated):

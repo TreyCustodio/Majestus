@@ -1399,6 +1399,7 @@ class AE(object):
 
     def updateHUD(self, seconds):
         HudImageManager.update(seconds, self.player)
+        self.ammoBar.update(seconds)
         self.indicator.update(seconds)
         self.damageNums.updateNumbers(self, seconds)
         if not self.healthBarLock:

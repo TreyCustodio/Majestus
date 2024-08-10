@@ -3,6 +3,7 @@ HealthBar
 
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec, SHORTCUTS, ACTIVE_SHORTCUT
 from UI import ACTIONS, EventManager
+from math import ceil
 import pygame
 
 
@@ -105,6 +106,7 @@ class Player(Animated):
         self.high = True
     
     def heal(self, integer):
+        SoundManager.getInstance().playSFX("solve.wav")
         INV["max_hp"]
         difference = INV["max_hp"] - self.hp
         if integer > difference:
@@ -135,6 +137,7 @@ class Player(Animated):
             HealthBar.getInstance().drawHurt(self.hp, integer)
     
     def hurtSyringe(self, integer):
+        SoundManager.getInstance().playSFX("hurt.wav")
         self.hp -= integer
         if self.hp <= 0:
             damage = integer - (self.hp * -1 + 1)
@@ -520,6 +523,38 @@ class Player(Animated):
                         self.move(3)
                     else:
                         self.stopMoving(3)
+                    
+                    ##  Item
+                    if SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "item" and ACTIONS["trigger_r"]:
+                        ACTIONS["trigger_r"] = False
+                        EventManager.getInstance().buffCursor()
+                        id = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
+                        if id == 0:
+                            if self.hp > 1:
+                                damage = (ceil((2 * INV["max_hp"])/3))
+                                self.hurtSyringe(damage)
+                        elif id == 1:
+                            if INV["potion"] > 0 and self.hp < INV["max_hp"]:
+                                INV["potion"] -= 1
+                                self.heal(3)
+
+                        elif id == 2:
+                            if INV["smoothie"] > 0 and self.hp < INV["max_hp"]:
+                                INV["smoothie"] -= 1
+                                self.heal(5)
+
+                        elif id == 3:
+                            if INV["beer"] > 0:
+                                INV["beer"] -= 1
+                                self.drink()
+
+                        elif id == 4:
+                            if INV["joint"] > 0:
+                                INV["joint"] -= 1
+
+                        elif id == 5:
+                            if INV["speed"] > 0:
+                                INV["speed"] -= 1
             
             ##  Shooting
             #pre reqs
@@ -534,7 +569,6 @@ class Player(Animated):
                     if ACTIONS["trigger_r"]:
                         self.shootArrow(True)
                 
-
             ##  Element
             if not self.running:
                 if ACTIONS["element"]:

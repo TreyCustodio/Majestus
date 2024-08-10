@@ -322,7 +322,7 @@ EQUIPPED = {
 
 }
 
-bombos = 250
+bombos = 10#250
 """
 The Player's inventory
 """
@@ -351,16 +351,16 @@ INV = {
     "map4":False,
 
     ##Consumables and key items
-    "plant": 0,
-    "chanceEmblem": False,
+    "plant": 1,
+    "chanceEmblem": True,
     "lavaBoots": False,
     
     "syringe": True,
-    "potion": 0,
-    "smoothie": 0,
-    "beer": 0,
-    "joint":0,
-    "speed":0,
+    "potion": 9,
+    "smoothie": 9,
+    "beer": 9,
+    "joint":9,
+    "speed":9,
     "wallet": 99,
     "money": 99,
     "keys": 0,

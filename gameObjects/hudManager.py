@@ -56,7 +56,47 @@ class AmmoBar(object):
                     image = SpriteManager.getInstance().getSprite("ammo.png", (0,2))
                     ammo = True
             elif item[0] == "element":
-                pass
+                id = item[1]
+                if id == 0:
+                    image = SpriteManager.getInstance().getSprite("element.png",(1,0))
+                elif id == 1:
+                    image = SpriteManager.getInstance().getSprite("element.png",(2,0))
+                elif id == 2:
+                    image = SpriteManager.getInstance().getSprite("element.png",(3,0))
+                elif id == 3:
+                    image = SpriteManager.getInstance().getSprite("element.png",(4,0))
+                elif id == 4:
+                    pass
+                elif id == 5:
+                    pass
+                elif id == 6:
+                    pass
+                elif id == 7:
+                    pass
+
+            elif item[0] == "item":
+                id = item[1]
+                if id == 0:
+                    image = SpriteManager.getInstance().getSprite("item.png",(3,0))
+                elif id == 1:
+                    image = SpriteManager.getInstance().getSprite("item.png",(2,0))
+                    ammo = True
+                elif id == 2:
+                    ammo = True
+                    image = SpriteManager.getInstance().getSprite("item.png",(9,0))
+                elif id == 3:
+                    ammo = True
+                    image = SpriteManager.getInstance().getSprite("item.png",(6,0))
+                elif id == 4:
+                    ammo = True
+                    image = SpriteManager.getInstance().getSprite("item.png",(7,0))
+                elif id == 5:
+                    ammo = True
+                    image = SpriteManager.getInstance().getSprite("item.png",(8,0))
+                elif id == 6:
+                    pass
+                elif id == 7:
+                    pass
             
             if image:
                 image = pygame.transform.scale(image, (32,32))
@@ -76,8 +116,11 @@ class AmmoBar(object):
                     num.draw(drawSurface)
                     currentPos[0] += 6
             else:
+                ##Items
                 num = Number(position, number, row)
-                num.position[0] -= num.getSize()[0] // 2
+                num.image = pygame.transform.scale(num.image, (32,32))
+                num.position[0] -= num.getSize()[0] // 2 + 6
+                num.position[1] -= 12
                 num.draw(drawSurface)
 
 
@@ -105,7 +148,27 @@ class AmmoBar(object):
             if self.shortcutImages[ACTIVE_SHORTCUT[0]]:
                 drawSurface.blit(self.shortcutImages[ACTIVE_SHORTCUT[0]], (self.shortcutPos[0], self.shortcutPos[1]))
                 if self.ammoImages[ACTIVE_SHORTCUT[0]]:
-                    self.drawNumber(vec(304-32, 16), INV["bombo"], drawSurface)
+                    if SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "item":
+                        id = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
+                        if id == 1:
+                            self.drawNumber(vec(304-32, 16), INV["potion"], drawSurface)
+                        elif id == 2:
+                            self.drawNumber(vec(304-32, 16), INV["smoothie"], drawSurface)
+                        elif id == 3:
+                            self.drawNumber(vec(304-32, 16), INV["beer"], drawSurface)
+                        elif id == 4:
+                            self.drawNumber(vec(304-32, 16), INV["joint"], drawSurface)
+                        elif id == 5:
+                            self.drawNumber(vec(304-32, 16), INV["speed"], drawSurface)
+
+                    else:
+                        self.drawNumber(vec(304-32, 16), INV["bombo"], drawSurface)
+
+        def update(self, seconds):
+            self.shortCutBackground.set_alpha(200)
+            if self.shortcutImages[ACTIVE_SHORTCUT[0]]:
+                pass
+                #self.shortcutImages[ACTIVE_SHORTCUT[0]].set_alpha(50)
                     
 """
 Displays the currently selected element on the HUD
