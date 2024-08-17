@@ -8,7 +8,7 @@ from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIco
                Tile, Portal, Buck, Boulder, Map, BossHealth,
                Shadow, Walls, Floor, Camera, Highlight, ShopDisplay)
 
-from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO
+from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO, SHORTCUTS, ACTIVE_SHORTCUT
 
 class DamageNumberManager(object):
     def __init__(self):
@@ -1057,6 +1057,7 @@ class AE(object):
             if self.projectiles:
                 for p in self.projectiles:
                     self.projectilesOnEnemies(p,n)
+                    
             for b in self.blocks:
                 self.enemyCollision(b)
                         
@@ -1723,12 +1724,11 @@ class AE(object):
         HudImageManager.draw(drawSurface)
 
         
-
-        if EQUIPPED["C"] == 2:
+        if self.player.charging:
+            self.energyBar.drawWind(self.player.chargeTimer, drawSurface)
+        elif EQUIPPED["C"] == 2 or (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "element" and SHORTCUTS[ACTIVE_SHORTCUT[0]][1] == 2):
             self.energyBar.drawThunder(self.player.clapTimer, drawSurface)
-
-        elif EQUIPPED["C"] == 3:
-            
+        elif EQUIPPED["C"] == 3 or (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "element" and SHORTCUTS[ACTIVE_SHORTCUT[0]][1] == 3):
             self.energyBar.drawWind(self.player.chargeTimer, drawSurface)
         else:
             self.energyBar.draw(drawSurface)

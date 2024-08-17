@@ -40,7 +40,7 @@ class SpriteManager(object):
       
 
       # Static information about the sprite sizes of particular image sheets.
-      _SPRITE_SIZES = {"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),"mofos.png":(18,28),"npc_boner.png":(18,28),"laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
+      _SPRITE_SIZES = {"rocker.png":(16,16),"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),"mofos.png":(18,28),"npc_boner.png":(18,28),"laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
                        "TextBox2.png": (244,64), "indicator.png":(58,32),
                        "icon.png": (32,32), "blockP.png":(16,16), "fire.png":(18,18), "black.png": (304, 208), 
                        "bar.png":(16,16), "ammo.png": (16,16), "torch.png": (16,16), 
@@ -62,7 +62,7 @@ class SpriteManager(object):
       _DEFAULT_SPRITE = (18,26)
       
       # A list of images that require to be loaded with transparency
-      _TRANSPARENCY = ["shop_display.png","shop_items.png","npc_boner.png","lock.png","TextBox3.png","bone.png","laser.png","gleemer.png","keys.png","freeze.png","target.png","firi.png","stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
+      _TRANSPARENCY = ["rocker.png", "shop_display.png","shop_items.png","npc_boner.png","lock.png","TextBox3.png","bone.png","laser.png","gleemer.png","keys.png","freeze.png","target.png","firi.png","stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
                        "icon.png", "TextBox.png", "TextBox2.png", "geemer.png", "item.png", "fire.png", "black.png", "blessing.png",
                        "thunder.png", "energy.png", "gale.png", "indicator.png",
                        "gremlin_blue.png", "mofos.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies

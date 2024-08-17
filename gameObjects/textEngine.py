@@ -274,11 +274,11 @@ class TextEngine(object):
         """
         def displayText(self, position, drawSurface, question = False): 
             if self.lineNum == 2:
-                Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox)
+                Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
             elif "&&" in self.line:
-                Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox)
+                Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
             else:
-                Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox)
+                Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
 
             self.charIndex += 1
             if self.charIndex == len(self.line):
@@ -357,7 +357,7 @@ class TextEngine(object):
         def blitBackground(self): 
             if self.large:
                 if self.type == 3:
-                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,6)), (0,0))
+                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,0)), (0,0))
                 else:
                     self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,6)), (0,0))
             else:

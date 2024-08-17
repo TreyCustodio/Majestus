@@ -3,7 +3,7 @@ HealthBar
 
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec, SHORTCUTS, ACTIVE_SHORTCUT
 from UI import ACTIONS, EventManager
-from math import ceil
+from math import ceil, sqrt
 import pygame
 
 
@@ -565,16 +565,23 @@ class Player(Animated):
                     self.shootArrow()
                 
                 ##  Shortcut Shot
-                if (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "shoot" and ACTIONS["trigger_r"]):
-                    if ACTIONS["trigger_r"]:
-                        self.shootArrow(True)
-                
+                elif EventManager.getInstance().getAttackReady() and (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "shoot" and ACTIONS["trigger_r"]):
+                    self.shootArrow(True)
+                    EventManager.getInstance().buffAttack()
+            
             ##  Element
             if not self.running:
                 if ACTIONS["element"]:
                     if not self.invincible:
                         equippedC = EQUIPPED["C"]
                         if equippedC != None:
+                            if self.charging and equippedC != 3:
+                                self.shootSlash()
+                                ACTIONS["trigger_r"] = False
+                            if self.freezing and equippedC != 1:
+                                self.freezing = False
+                                ACTIONS["trigger_r"] = False
+
                             if equippedC == 0 and self.swordReady:
                                 ACTIONS["element"] = False
                                 self.sword = Sword(self.position, self.getDirection(self.row))
@@ -605,12 +612,61 @@ class Player(Animated):
 
                             elif not self.charging and equippedC == 3:
                                 self.charge()
+                
+
+                elif ACTIONS["trigger_r"]:
+                    if (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "element") and EventManager.getInstance().getAttackReady():
+                        EventManager.getInstance().buffAttack()
+                        if not self.invincible:
+                            equippedC = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
+                            if self.freezing and equippedC != 1:
+                                self.freezing = False
+                            if self.charging and equippedC != 3:
+                                self.shootSlash()
+                                
+                            if equippedC != None:
+                                if equippedC == 0 and self.swordReady:
+                                    self.sword = Sword(self.position, self.getDirection(self.row))
+                                    self.frame = -1
+                                    self.swordReady = False
+                                    self.vel = vec(0,0)
+                                    self.positionLock = True
+                                    self.directionLock = True
+                                    self.increaseSwordCounter()
+                                    self.setWeaponDamage(self.sword)
+
+                                elif equippedC == 1 and self.freezing == False:
+                                    if not self.freezing:
+                                        self.frame = 0
+                                        if self.blizzard == None:
+                                            self.blizzard = Blizzard(self.position, self.getDirection(self.row))
+                                            self.setWeaponDamage(self.blizzard)
+                                        self.stop()
+                                        self.attacking = True
+                                        self.freezing = True
+                                        return
+                                    else:
+                                        return
+
+                                elif equippedC == 2 and self.clapReady:
+                                    self.clap = Clap(self.position)
+                                    self.setWeaponDamage(self.clap)
+                                    self.clapReady = False
+                                    self.vel = vec(0,0)
+                                    self.positionLock = True
+
+                                elif not self.charging and equippedC == 3:
+                                    self.charge()
+                                    return
+                                
                 else:
                     if self.freezing:
                         self.freezing = False
                     if self.charging:
                         self.shootSlash()
                     self.attacking = False
+
+                
 
             ##  Movement Modifier
             if ACTIONS["interact"]:
@@ -943,13 +999,18 @@ class Player(Animated):
                 self.image = SpriteManager.getInstance().getSprite("null.png")
         
         #Update clap cooldown
-        if EQUIPPED["C"] == 2 and self.clapReady == False:
+        if self.clapReady == False:
             self.clapTimer += seconds
             if self.clapTimer >= 5.0:
                 self.clapTimer = 0
                 self.clapReady = True
         
-        self.position += self.vel * seconds
+        if self.movingDiagonal():
+            self.position += self.vel * seconds
+
+        else:
+            self.position += self.vel * seconds
+
         super().updatePlayer(seconds)
         
         

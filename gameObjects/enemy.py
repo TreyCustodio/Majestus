@@ -6,7 +6,7 @@ import pygame
 """
 The highest class in the enemy hierarchy.
 
-Baller, Chiller, Viber, ?
+Baller, Chiller, Viber, Rocker, Flower
 """
 
 class Enemy(Animated):
@@ -76,6 +76,7 @@ class Enemy(Animated):
         self.damage = damage
         self.attacking = False
         self.attackTimer = 0.0
+        self.rot = 0 #Rotation angle
     
     def increaseCount(self):
         return True
@@ -373,7 +374,7 @@ class Enemy(Animated):
                 self.row -= self.hurtRow
 
     
-    def update(self, seconds, position = None, player = None):
+    def update(self, seconds, position = None, player = None, rotate = False, scale = False):
         if self.dead:
         #Add death animation here if self.hp = 0
             pass
@@ -383,10 +384,14 @@ class Enemy(Animated):
                 self.bouncing = False
         
         self.unfreeze(seconds)
-
-        super().updateEnemy(seconds)
+        if rotate:
+            super().rotateEnemy(seconds)
+        else:
+            super().updateEnemy(seconds)
         self.updateFlash(seconds)
 
+        if scale:
+            self.image = pygame.transform.scale(self.image, (32,32))
         ##Move
         self.move(seconds)
 
@@ -1614,6 +1619,9 @@ class Laser(Enemy):
     def getDrop(self):
         return None
     
+    def bounce(self, other, setRow=True):
+        self.dead = True
+
     def hurt(self, damage, setHit=True):
         return
     
@@ -1786,8 +1794,8 @@ Cute little walking fireball.
 Requires Ice to damage it.
 """
 class Baller(Enemy):
-    def __init__(self, position=vec(0,0), direction = 3, hp = 5, speed = 50, type: Element = Element(1)):
-        super().__init__(position, "baller.png", direction, hp = hp, speed = speed)
+    def __init__(self, position=vec(0,0), direction = 3, hp = 10, speed = 50, type: Element = Element(1), fileName: str = "baller.png"):
+        super().__init__(position, fileName, direction, hp = hp, speed = speed)
         self.indicatorRow = 8
         self.row = direction
         self.hurtRow = 4
@@ -1830,17 +1838,40 @@ class Baller(Enemy):
         elif self.direction == 1:
             self.vel[0] = self.speed
 
+
     def update(self, seconds, position = None, player = None):
-        super().update(seconds)
+        super().update(seconds, rotate=True)
 
 """
 Cute little walking rock.
 Requires Bombofauns to damage it.
 """
 class Rocker(Baller):
-    def __init__(self, position=vec(0, 0), direction=3, hp = 10, speed = 35, type = Element(0)):
-        super().__init__(position, direction, hp, speed)
+    def __init__(self, position=vec(0, 0), direction=3, hp = 20, speed = 35, type = Element(0)):
+        super().__init__(position, direction, hp, speed, fileName="rocker.png")
+        self.row = 1
+        self.rot = 0
+        self.rotTimer = 0.0
 
+    def getCollisionRect(self):
+        return pygame.Rect(self.position[0], self.position[1], 32,32)
+    
+    def bounce(self, other):
+        if not self.frozen and not self.bouncing:
+            side = self.calculateSide(other)
+            if side == "right":
+                self.position[0] = other.position[0] - self.getSize()[0] * 2
+                self.vel[0] = -self.speed
+                
+            
+            elif side == "left":
+                self.position[0] = (other.position[0] + other.getSize()[0]) + (self.getSize()[0] * 2)
+                self.vel[0] = self.speed
+                
+
+    def update(self, seconds, position=None, player=None):
+        Enemy.update(self, seconds, position, player, rotate=True, scale=True)
+        
 
 """
 Sharp, spinning enemy that can't be damaged.
@@ -2285,6 +2316,7 @@ class Gremlin(Enemy):
         newRect.top = int(self.position[1]+1)
         return newRect
 
+    
     def bounce(self, other):
         if not self.frozen and not self.bouncing:
             side = self.calculateSide(other)

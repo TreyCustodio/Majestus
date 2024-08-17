@@ -383,6 +383,9 @@ class Tutorial_1(AbstractEngine):
             self.enemyPlacement = 0
             self.doors = [2]
             self.trigger1 = Trigger(vec(16*8, -12), width=48)
+            self.npcs = [
+                #Rocker(vec(16*9, 16*7))
+            ]
 
 
         #override
@@ -433,7 +436,6 @@ class Tutorial_2(AbstractEngine):
                 Gremlin(vec(16*7, 16*5 + 8), direction=3),
                 Gremlin(vec(16*21, 16*5 + 8)),
                 Gremlin(vec(16*14, 16*5 + 8)),
-                Rocker(vec(16*20, 16*5))
             ]
             
             self.doors = [1,2,4,7,6]

@@ -1,6 +1,6 @@
 from . import Drawable
 import pygame
-from utils import SpriteManager, SoundManager, EQUIPPED, vec, RESOLUTION, INV, EQUIPPED
+from utils import SpriteManager, SoundManager, EQUIPPED, vec, RESOLUTION, INV, EQUIPPED, SHORTCUTS, ACTIVE_SHORTCUT
 
 class Animated(Drawable):
     
@@ -152,7 +152,7 @@ class Animated(Drawable):
                                             (self.frame, self.row+12))
             
             elif self.walking:
-                if EQUIPPED["C"] == 2 and self.clapReady:
+                if (EQUIPPED["C"] == 2 or (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "element" and SHORTCUTS[ACTIVE_SHORTCUT[0]][1] == 2)) and self.clapReady:
 
                     if self.pushing:##Clapready Pushing
                         self.image = SpriteManager.getInstance().getSprite(self.fileName,
@@ -175,7 +175,7 @@ class Animated(Drawable):
            
             else:##Idle
                 
-                if EQUIPPED["C"] == 2 and self.clapReady:##Clapready Idle
+                if (EQUIPPED["C"] == 2 or (SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "element" and SHORTCUTS[ACTIVE_SHORTCUT[0]][1] == 2)) and self.clapReady:##Clapready Idle
                     self.image = SpriteManager.getInstance().getSprite(self.fileName,
                                                 (0, self.row+16))
         
@@ -237,7 +237,18 @@ class Animated(Drawable):
             self.image = SpriteManager.getInstance().getSprite(self.fileName,
                                                 (self.frame, self.row))
 
-
+    def rotateEnemy(self, seconds):
+        self.animationTimer += seconds
+        
+        if self.animationTimer > 1 / self.framesPerSecond:
+            self.frame += 1
+            self.frame %= self.nFrames
+            self.animationTimer -= 1 / self.framesPerSecond
+            self.image = SpriteManager.getInstance().getSprite(self.fileName,
+                                                (self.frame, self.row))
+            self.rot += 90
+            self.rot %= 360
+            self.image = pygame.transform.rotate(self.image, self.rot)
 
 class Fade():
     """

@@ -110,7 +110,9 @@ class EventManager(object):
             self.deadZone = 0.5
 
             self.cursorReady = False
+            self.attackReady = False
             self.eventBufferTimer = 0.0
+            self.attackBufferTimer = 0.0
             self.updating = True
         
         def readyToUpdate(self):
@@ -127,10 +129,16 @@ class EventManager(object):
         
         def buffCursor(self):
             self.cursorReady = False
+        
+        def buffAttack(self):
+            self.attackReady = False
 
         def getCursorReady(self):
             return self.cursorReady
-         
+        
+        def getAttackReady(self):
+            return self.attackReady
+        
         def setJoystick(self):
             ##Set up joystick
             joysticks = pygame.joystick.get_count()
@@ -493,3 +501,9 @@ class EventManager(object):
                 if self.eventBufferTimer >= 0.15:
                     self.cursorReady = True
                     self.eventBufferTimer = 0.0
+            
+            if not self.attackReady:
+                self.attackBufferTimer += seconds
+                if self.attackBufferTimer >= 0.15:
+                    self.attackReady = True
+                    self.attackBufferTimer = 0.0

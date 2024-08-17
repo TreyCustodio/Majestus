@@ -626,7 +626,7 @@ class Potion(ShopItem):
         
         if INV["money"] < 5:
             engine.displayText("Not enough cash...&&\n")
-        elif INV["potion"] <= 4:
+        elif INV["potion"] <= 8:
             engine.displayText("Y/NSmall potion for 5 bucks?")
             engine.selectedItem = "potion"
         
@@ -649,7 +649,7 @@ class Smoothie(ShopItem):
             return
         if INV["money"] < 20:
             engine.displayText("A smoothie! Don't you\nwish you had 20 bucks?\n")
-        elif INV["smoothie"] <= 4:
+        elif INV["smoothie"] <= 8:
             engine.displayText("Y/N20 bucks for a smoothie?\n")
             engine.selectedItem = "smoothie"
         
@@ -673,7 +673,7 @@ class ShopKey(ShopItem):
             return
         if INV["money"] < 30:
             engine.displayText("Sorry. It's 30 bucks if\nyou want that key.\n")
-        elif INV["smoothie"] <= 8:
+        elif INV["keys"] <= 8:
             engine.displayText("Y/N30 bucks for that key?")
             engine.selectedItem = "key"
         else:

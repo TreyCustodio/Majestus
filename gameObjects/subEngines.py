@@ -87,12 +87,12 @@ class PauseEngine(object):
             for char in number:
                 num = Number(currentPos, int(char), row)
                 num.position[0] -= num.getSize()[0] // 2
-                num.draw(drawSurface)
+                num.draw(drawSurface, use_camera=False)
                 currentPos[0] += 6
         else:
             num = Number(position, number, row)
             num.position[0] -= num.getSize()[0] // 2
-            num.draw(drawSurface)
+            num.draw(drawSurface, use_camera=False)
 
     def drawEquipped(self, drawSurf):
         if self.inShortcuts:
@@ -154,6 +154,7 @@ class PauseEngine(object):
         Map.getInstance().draw(drawSurf)
 
     def draw(self, drawSurf):
+        AmmoBar.getInstance().shortCutBackground.set_alpha(255)
         if not self.paused:
             self.paused = True
 
