@@ -42,8 +42,8 @@ FLAGS = [False for i in range(300)]
 
 #   Wavering Grotto
 #10 -> Shop first convo
-#11 ->
-#12 ->
+#11 -> Key in room 4
+#12 -> Lock in room 3
 #13 ->
 #14 ->
 #15 ->
@@ -169,12 +169,12 @@ FLAGS = [False for i in range(300)]
 
 
 ##  100-149 -> Boss Flags   ##
-#100 -> Light Cloak
+#100 -> Light Cloaker
 #110 -> Alpha Flapper
 #111 -> LavaKnight
 
 ##  200-249 -> Boss respective hearts   ##
-#200 -> Light Cloak
+#200 -> Light Cloaker
 #210 -> Alpha Flapper
 #211 -> LavaKnight
 
@@ -355,7 +355,7 @@ INV = {
     "chanceEmblem": True,
     "lavaBoots": False,
     
-    "syringe": True,
+    "syringe": False,
     "potion": 9,
     "smoothie": 9,
     "beer": 9,
@@ -966,7 +966,22 @@ convince you otherwise.\n",
 
 "darkcloak_5":
 "Huh. Well, I guess\n\
-I'll see what happens.",
+I'll see what happens.\n",
+
+"tutorial_1":
+"Press Y to shoot arrows.",
+
+"tutorial_2":
+"Gleemers will shoot you\n\
+unless you stare at them.\n\
+Hold the target button\n\
+to stare into their eyes.\n",
+
+"tutorial_4":
+"Many rooms will reward you\n\
+for slaying every enemy.\n\
+It's never a bad idea\n\
+to bash some heads in.\n",
 
 "null":
 "Nothing to see here."

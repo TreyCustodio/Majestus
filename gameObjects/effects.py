@@ -26,6 +26,7 @@ class Lock(Drawable):
         self.frameTimer = 0.0
         self.frame = 0
         self.popProjectiles = True
+        self.displayReady = True
 
     def getCollisionRect(self):
         return pygame.Rect(self.position, (48,42))
@@ -37,7 +38,11 @@ class Lock(Drawable):
             self.frameTimer = 0.0
             self.frame += 1
             self.frame %= 3
+            if not self.displayReady and self.frame == 0:
+                self.displayReady = True
             self.image = SpriteManager.getInstance().getFx(self.room_dir, "lock.png", (self.frame, 0))
+
+
 
 
 class Floor(Drawable):

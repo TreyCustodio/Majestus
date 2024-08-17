@@ -112,6 +112,7 @@ class Number(Drawable):
     
     def getImage(number = 0, row = 0):
         return SpriteManager.getInstance().getSprite("numbers.png",(number,row))
+    
 class Text(Drawable):
 
     """

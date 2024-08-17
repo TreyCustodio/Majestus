@@ -1,42 +1,94 @@
+This file contains information relevant to version history,
+as well as ideas and everything on my to-do list.
+~Trey Custodio~
+
+v0.1
+Scorching Fields first version. Lava Knight Boss.
+
 v0.2
 Tutorial:
-- [ ] Shop + new shop controlls
+- [ ] Tutorial Shop
+  - [ ] Convo
+  - [ ] Shopkeeper npc
 - [ ] Key, set lock/key flags
-- [ ] Boss room
-- [ ] Text in larger rooms
-- [ ] Gremlin hitboxes
+  - [ ] One flag for the door,
+  - [ ] One flag for the puzzle to get key
+- [ ] Boss Light Cloaker
+- [ ] Gremlin/Larger enemy hitboxes
 - [ ] Keep updating no matter what during healthbar initialization.
 - [ ] No pausing in between textboxes
-- [ ] Pause screen: [-] Fullscreen, [ZR] Shortcuts -> replace top of menu with six boxes. Press A to select a box, then A on the attack/item. ZR to close.
+- [ ] Shortcut screen
+- [ ] Show next and previous shortcuts
+- [ ] New textboxes + tutorial text signs
+
+v0.25
+Saving:
+- [ ] Read in flags and load data from a text file
+- [ ] Write flag, save room, inventory, equipped, and shortcut values to a file
+- [ ] Nicodemus boss fight
+- [ ] Nicodemus saving dialogue
+- [ ] New game gives warning that progress will be lost
+- [ ] Title Screen lets you choose New Game, Continue, or Firi Mode
+  - [ ] Firi Mode lets you play as Firi starting from the beginning
+
+v0.3
+Intro
+
+v0.4
+Firi Segment + Stardust Quarry
+- [ ] Firi Mode gives you a timed challenge to complete
+
+v0.5
+Scorching Fields, Some of Frigid Isles
+
+v0.6
+Thunder Tower
+
+v0.7
+Gale Grove
+
+v0.8
+Myer Segment
+- [ ] Myer Mode lets you play as Myer in the same segment.
+- [ ] Talk to your brother to restart the segment like New Game +
+- [ ] Keeps track of a percentage
+- [ ] In the future, I might make another campaign mode where you play as Myer. Replace his boss fights with new ones.
+
+v0.9
+Mid-game Climax + Frigid Isles
+
+v0.10
+Connecting Routes, Maintaining Flags
+
+v0.11
+Post Frigid Isles Segment
+
+v0.12
+Final level + final boss
+
+v0.13-20
+Extra Content, Monster Mobster, Stardust Quarry, Item Placement, Side quests, secret bosses, boss gauntlet
 
 
-Debug:
-- [ ] Bombofaun ammo count on pause screen in rooms with camera
-- [ ] enemy damage nums in camera
+
+To Debug:
 - [ ] Decrease keyCount in Flame_10
 - [ ] No ice on enemies when respawning
-- [ ] self.npcs gets set to [] during resets
 - [ ] Arrow starting position (shooting with back to the wall causes arrow to instantly collide with wall)
 - [ ] Health bar initialization fails if mouse off-screen event is handled as the game loads in
 - [ ] Make hud transparent if you get to the left side of the screen. Set the alpha
 - [ ] Rework bounce method. If inWall then don't moving in a direction that would put you further into the wall, then don't move. As opposed to setting velocity to opposite
 - [ ] Stop updating during textbox if paused
+- [ ] Heater replaying animation every time you freeze it
 
 
-Fixes:
+To add:
+- [ ] Monster Mobster
+- [ ] Boss Gauntlet in stardust quarry. You can choose between Kylo, Firi (after his segment), or Myer (after his segment)
 - [ ] Fireball movement
 - [ ] Make stompers bounce off each other
-- [ ] placeEnemies doesn't reset position on enemyplacement 0
-- [ ] Heater replaying animation every time you freeze it
 - [ ] Healthbar heal
-- [ ] Certain enemies get stuck in walls when damaged (rework bounce())
-- [ ] NOTE THAT THE HEALTHBAR WILL GLITCH OUT AND INFINITELY DRAWHURT IF YOU CALL HEALTHBAR.DRAWHURT(0), ALTHOUGH I WILL LEAVE IT IN TO HELP DETECT ERRORS. HEALTHBAR.DRAWHURT(0) SHOULD NEVER BE CALLED.
-
-
-Additions:
-- [ ] Flame backstep
-- [ ] Thunder hook
-- [ ] Wind shield
+- [ ] Alternate weapons
 - [ ] Boss healthbar Name
 - [ ] maps
 - [ ] indicators
@@ -52,22 +104,10 @@ Additions:
 
 
 
-Create seperate list for static obstacles/enemies.
-    - That way you dont have to loop thru enemies
-    to bounce an enemy off another enemy
 
     
 
-
-  Arrows (elemental arrows do +2 damage, are super effective to skeletal enemies, and yield their elemental effect):
-  1. Ol' reliable
-  2. Bombofaun
-  3. Fire
-  4. Ice
-  5. Thunder
-  6. Wind
-  7. Laser/Plasma/Ring (Machine gun like cave story)
-  8. Special arrow awarded from secret boss
+Equipment:
 
   Key Items
   1. Plant
@@ -79,23 +119,54 @@ Create seperate list for static obstacles/enemies.
   7. Alpha key
   8. ???
 
+  Arrows (elemental arrows do +2 damage. All arrows are super effective to skeletal enemies):
+  1. Ol' reliable
+  2. Bombofaun
+  3. Fire
+  4. Ice
+  5. Thunder
+  6. Wind
+  7. Laser/Plasma/Ring (Machine gun like cave story)
+  8. Special arrow awarded from secret boss
+
+  Elements
+  1. Flame Sword
+  2. Flare Step
+  3. Blizzard
+  4. Ice Cleats
+  5. Thunder Clap
+  6. Thunder Grapple
+  7. Gale Slash
+  8. Air Shield
+
+  Items
+  1. Syringe
+  2. Cherry Potion
+  3. Smoothie
+  4. Beer
+  5. Joint
+  6. Speed
+  7. ???
+  8. ???
 
 
-Boss idea:
-He spams shooting you.
-If you try to shoot him, he dodges to the right or left
-after 3 dodges, he runs at you, and you can hit him.
-  
+
+
+Ideas:
   Arrow Rotation Screen:
-  Press a button for help:
-    You can select however many arrows you want. Ideally you rotate between the 3 strongest ones available to you or the 3 best for the current enemy.
+  - Hold Arrow button to open up an arrow selection screen. 
+  - Hover over an arrow to select it. 
+  - Release to exit the screen.
 
-ZR:
-Shortcut
-ZR to use a shortcut item
-R and L to swap shortcut.
-No direction changing.
-You can put anything on the six boxes besides key items (element, dash, item)
+  Boss idea:
+  - He spams shooting you. 
+  - If you try to shoot him, he dodges to the right or left 
+  - after 3 dodges, he runs at you, and you can hit him.
+  
+  Create seperate list for static obstacles/enemies.
+  - That way you dont have to loop thru enemies
+  to bounce an enemy off another enemy
+
 
 
 Majestus sales pitches:

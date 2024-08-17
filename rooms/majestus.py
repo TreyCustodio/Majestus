@@ -501,6 +501,7 @@ class Tutorial_Shop(AbstractEngine):
             self.potion = Potion(vec(16*4, 16*4), display=True)
             self.smoothie = Smoothie(vec(16*7, 16*4), display=True)
             self.key = ShopKey(vec(16*11, 16*4), display= True)
+            self.syringe = Syringe(vec(16*14, 16*4), display = True)
             
             
             if FLAGS[10]:
@@ -508,12 +509,22 @@ class Tutorial_Shop(AbstractEngine):
             else:
                 self.cloak = DarkCloak(vec(16*9, 16*5), text = SPEECH["darkcloak_1"])
             
-            self.spawning = [
+            if INV["syringe"]:
+                self.spawning = [
+                    self.potion,
+                    self.key,
+                    self.smoothie,
+                    self.cloak
+                ]
+            else:
+                self.spawning = [
                 self.potion,
                 self.key,
                 self.smoothie,
-                self.cloak
-            ]
+                self.cloak,
+                self.syringe
+                ]
+
             self.doors = [0]
 
             self.trigger1 = Trigger(vec(16*8,206), width=48)
@@ -547,7 +558,7 @@ class Tutorial_Shop(AbstractEngine):
             elif self.highlight.position[0] == 16*11:
                 ShopKey().interact(self)
             elif self.highlight.position[0] == 16*14:
-                pass
+                Syringe().interact(self)
         
         def showInfo(self):
             if self.highlight.position[0] == 16*4:
@@ -557,7 +568,7 @@ class Tutorial_Shop(AbstractEngine):
             elif self.highlight.position[0] == 16*11:
                 self.key.interact(self)
             elif self.highlight.position[0] == 16*14:
-                pass
+                self.syringe.interact(self)
 
         def handlePrompt(self):
             if self.inShop:
@@ -642,26 +653,37 @@ class Tutorial_3(AbstractEngine):
                 Gremlin(vec(16*9, 16*13)),
                 Gremlin(vec(16*9, 16*5), direction = 3)
             ]
-            self.locks = [
-                Lock(vec(16*8, 0), "tut_3")
-            ]
+
+            if FLAGS[12]:
+                self.locks = []
+            else:
+                self.locks = [
+                    Lock(vec(16*8, 0), "tut_3")
+                ]
 
             self.doors = [0, 2, 1]
             self.trigger1 = Trigger(vec(16*8, self.size[1]-2), width=48)
             self.trigger2 = Trigger(vec(16*8, -14), width=48)
             self.trigger3 = Trigger(vec(16*18 + 14, 16*5), height=48)
+
             self.blocks = [
                 self.trigger1, self.trigger2, self.trigger3
             ]
 
             self.spawning = [
-                Sign(vec(16*7, 16*15), text= "Hi there!")
+                Sign(vec(16*7, 16*15), text= SPEECH["tutorial_2"], icon = (7,0))
             ]
         
 
         #override
         def createBlocks(self):
             return
+
+        #override
+        def unlockDoor(self, lock):
+            super().unlockDoor(lock)
+            FLAGS[12] = True
+
 
         def setDoors(self):
             self.setDoors_vertical()
@@ -679,12 +701,151 @@ class Tutorial_3(AbstractEngine):
                 if self.player.doesCollide(b):
                     if b == self.trigger1:
                         self.transport(Tutorial_2, 2, keepBGM=True)
+                    elif b == self.trigger2:
+                        self.transportPos(Light_Cloak, vec(0,0), keepBGM=False)
+                    elif b == self.trigger3:
+                        self.transport(Tutorial_4, 3, True)
                     else:
                         self.player.handleCollision(b)
 
+class Tutorial_4(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._T4()
+      
+        return cls._INSTANCE
+    
+    class _T4(AE):
+        def __init__(self):
+            super().__init__("tut_4")
+            self.roomId = 4
+            self.bgm = "forget_me_nots.mp3"
+            self.ignoreClear = False
+            self.max_enemies = 1
+            self.enemyPlacement = 1
+            self.key = Key(vec(16*9, 16*6))
+            self.enemies = [
+                Flapper(direction=3), Flapper(direction=3), Flapper(),Flapper()
+            ]
+            self.locks = [
+            ]
 
+            self.doors = [3]
+            self.trigger1 = Trigger(vec(-14, 16*5), height=48)
+
+            self.blocks = [
+                self.trigger1
+            ]
+
+            self.spawning = [
+                Sign(vec(16*3, 16*4 + 8), text= SPEECH["tutorial_4"])
+            ]
+
+        def handleClear(self):
+            if not FLAGS[11]:
+                self.playSound("room_clear.mp3")
+                self.spawning.append(self.key)
+
+        #override
+        def createBlocks(self):
+            return
+
+        def setDoors(self):
+            self.setDoors_square()
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            self.createSquare()
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transportPos(Tutorial_3, vec(16*17, 16*6), keepBGM=True)
+                    else:
+                        self.player.handleCollision(b)
+
+        def update(self, seconds, updateEnemies=True, updatePlayer=True):
+            if not FLAGS[11] and self.key.interacted:
+                FLAGS[11] = True
+
+            return super().update(seconds, updateEnemies, updatePlayer)
+
+class Light_Cloak(AbstractEngine):
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+         cls._INSTANCE = cls._LC()
+      
+        return cls._INSTANCE
+    
+    class _LC(AE):
+        def __init__(self):
+            super().__init__("light_cloak", True, vec(304, 320))
+            self.roomId = 4
+            self.bgm = "tension.mp3"
+            self.ignoreClear = True
+            self.max_enemies = 4
+            self.enemyPlacement = 0
+            self.enemies = [
+            ]
+
+            self.doors = [0, 3]
+            self.trigger1 = Trigger(vec(16*8, self.size[1]-2), width=48)
+            self.trigger2 = Trigger(vec(16*8, -14), width=48)
+
+            self.blocks = [
+                self.trigger1, self.trigger2
+            ]
+            self.heart = GreenHeart(vec(16*9,16*8))
+
+            ##Initialize boss and heart
+            if FLAGS[100]:
+                if not FLAGS[200]:
+                    self.spawning.append(self.heart)
+            else:
+                self.cloaker = Enemy()
+                self.cloaker.ignoreCollision = True
+                self.npcs.append(self.cloaker)
+        
+
+        #override
+        def createBlocks(self):
+            return
+
+
+        def setDoors(self):
+            self.setDoors_vertical()
+
+        def createBounds(self):
+            """
+            Creates boundaries on the outer edge of the map
+            """
+            self.createVertical()
+
+        #override
+        def blockCollision(self):
+            for b in self.blocks:
+                self.projectilesOnBlocks(b)
+                if self.player.doesCollide(b):
+                    if b == self.trigger1:
+                        self.transportPos(Tutorial_3, vec(0,0), keepBGM=True)
+                    elif b == self.trigger2:
+                        self.transportPos(Tutorial_5, vec(0,0), keepBGM=False)
+                    else:
+                        self.player.handleCollision(b)
+
+        def update(self, seconds, updateEnemies=True, updatePlayer=True):
+            if self.heart.interacted:
+                FLAGS[200] = True
+            super().update(seconds, updateEnemies, updatePlayer)
 """
-Entrance Hall
+Chapel Hall
 """
 
 class Intro_1(AbstractEngine):

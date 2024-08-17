@@ -193,6 +193,8 @@ class TextEngine(object):
             ##  Text routines
             ##End of dialogue
             if self.end:
+                if self.displayIcon != None:
+                    self.drawIcon((position[0] + 106, position[1] - 32) - Drawable.CAMERA_OFFSET, drawSurface)
                 if self.prompt:
                     self.choosing = True
                     if self.promptHighlight.initialized:
@@ -210,6 +212,8 @@ class TextEngine(object):
 
             ##Continue to next line
             elif self.ready_to_continue:
+                if self.displayIcon != None:
+                    self.drawIcon((position[0] + 106, position[1] - 32) - Drawable.CAMERA_OFFSET, drawSurface)
                 return
                 #self.drawContinue(position, drawSurface)
             
@@ -268,18 +272,34 @@ class TextEngine(object):
                 drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,2)), position)
 
         
+        def drawChars(self):
+            ##Sign boxes
+            if self.type == 3:
+                ##Line 2
+                if self.lineNum == 2:
+                    Text(((16 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex], color=(0,0,0)).draw(self.textBox, use_camera=False)
+                ##Focus line
+                elif "&&" in self.line:
+                    Text(((16 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex], color=(0,0,0)).draw(self.textBox, use_camera=False)
+                ##Line 1
+                else:
+                    Text(((16 + 10) + (8 * self.charIndex), 7 + 8), self.line[self.charIndex], color=(0,0,0)).draw(self.textBox, use_camera=False)
+           
+            ##Other boxes
+            else:
+                if self.lineNum == 2:
+                    Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+                elif "&&" in self.line:
+                    Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+                else:
+                    Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+
         """
         Main text display method.
         Try if not mixer busy for slower text
         """
         def displayText(self, position, drawSurface, question = False): 
-            if self.lineNum == 2:
-                Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
-            elif "&&" in self.line:
-                Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
-            else:
-                Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
-
+            self.drawChars()
             self.charIndex += 1
             if self.charIndex == len(self.line):
                 SoundManager.getInstance().stopSFX("message.wav")
@@ -357,12 +377,13 @@ class TextEngine(object):
         def blitBackground(self): 
             if self.large:
                 if self.type == 3:
-                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,0)), (0,0))
+                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,1)), (0,0))
                 else:
                     self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,6)), (0,0))
             else:
                 self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,5)), (0,0))
-        
+
+            
         def setClosing(self):
             self.playSFX("WW_Textbox_Close.wav")
             self.box_drawn = False

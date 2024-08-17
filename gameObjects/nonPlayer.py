@@ -99,12 +99,16 @@ class Chest(NonPlayer):
 
 
 class Sign(NonPlayer):
-    def __init__(self, position = vec(0,0), text = SPEECH["null"]):
+    def __init__(self, position = vec(0,0), text = SPEECH["null"], icon = None):
         super().__init__(position, "Objects.png", (1,2))
         self.text = text
+        self.icon = icon
 
     def interact(self, engine):
-        engine.displayText(self.text, box=3)
+        if self.icon:
+            engine.displayText(self.text, icon = self.icon, box=3)
+        else:
+            engine.displayText(self.text, box=3)
 
 class DarkCloak(NonPlayer):
     def __init__(self, position = vec(0,0), text = SPEECH["null"]):
@@ -658,9 +662,6 @@ class Smoothie(ShopItem):
 
 
 class ShopKey(ShopItem):
-    """
-    Delectable Smoothie!
-    """
     def __init__(self, position=vec(0,0), display = False):
         super().__init__(position, "drops.png", (0,3), animate=True, row=3, nFrames=4, fps=8, display= display)
 
@@ -680,23 +681,26 @@ class ShopKey(ShopItem):
             engine.displayText("Sorry, but you can't carry\nany more of those.\n")
 
 
-class Syringe(NonPlayer):
+class Syringe(ShopItem):
     """
-    Delectable Smoothie!
+    Syringe for display
     """
-    def __init__(self, position):
-        super().__init__(position, "Objects.png", (6,2))
+    def __init__(self, position = vec(0,0), display = False):
+        super().__init__(position, "Objects.png", (6,2), animate = False, display=display)
     
     def getInteractionRect(self):
         return pygame.Rect((self.position[0]-2, self.position[1]), (20, 18))
     
     def interact(self, engine):
+        if self.display:
+            engine.displayText("It appears to be an\nextensively used syringe.\nYou could probably use it\nto drain your own blood.\nFortune does indeed favor\nthe brave after all...\n")
+            return
         if INV["syringe"]:
-            engine.displayText("Sorry, but you already\nown a syringe.\n")
-        elif INV["money"] < 30:
-            engine.displayText("30 bucks for a syringe?&&\nIt's gotta be useful...&&\n")
+            engine.displayText("I already sold you\nmy special syringe.\n")
+        elif INV["money"] < 50:
+            engine.displayText("Not enough for my syringe.&&\n")
         else:
-            engine.displayText("Y/NIt appears to be some\nsort of syringe.\nYou could probably use it\nto drain your own blood.\nFortune does indeed favor\nthe brave after all...\nHow about it? 30 bucks:\n")
+            engine.displayText("Y/NThat's my special syringe.&&\nI'll sell it for 50 bucks.\n")
             engine.selectedItem = "syringe"
 
 class ChanceEmblem(NonPlayer):

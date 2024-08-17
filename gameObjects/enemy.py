@@ -1937,7 +1937,7 @@ class Flapper(Enemy):
         self.direction = direction
         self.hurtRow = 5
         ##Set velocity based on direction
-        self.setSpeed(direction)
+        self.setSpeed()
 
 
     def getCollisionRect(self):
@@ -1949,25 +1949,24 @@ class Flapper(Enemy):
             self.position += self.vel * seconds
 
 
-    def setSpeed(self, direction):
-        if not self.bouncing:
-            if direction == 0:
-                self.vel[0] = self.speed
-                self.vel[1] = self.speed
-            elif direction == 1:
-                self.vel[0] = self.speed
-                self.vel[1] = -self.speed
-            elif direction == 2:
-                self.vel[0] = -self.speed
-                self.vel[1] = -self.speed
-            elif direction == 3:
-                self.vel[0] = -self.speed
-                self.vel[1] = self.speed
-            else:
-                return
+    def setSpeed(self, direction=None):
+        if self.direction == 0:
+            self.vel[0] = self.speed
+            self.vel[1] = self.speed
+        elif self.direction == 1:
+            self.vel[0] = self.speed
+            self.vel[1] = -self.speed
+        elif self.direction == 2:
+            self.vel[0] = -self.speed
+            self.vel[1] = -self.speed
+        elif self.direction == 3:
+            self.vel[0] = -self.speed
+            self.vel[1] = self.speed
+        else:
+            return
 
     def bounce(self, other):
-        if not self.frozen and not self.bouncing:
+        if not self.frozen:
             self.bouncing = True
             side = self.calculateSide(other)
             if side == "right":

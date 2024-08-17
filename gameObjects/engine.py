@@ -786,6 +786,8 @@ class AE(object):
         """
         Display text
         """
+        if self.player:
+            self.player.stop()
         if icon != None:
             self.icon = icon
             self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
@@ -914,8 +916,8 @@ class AE(object):
                 if not n.drop and self.player.interactable(n):
                     self.player.handleEvent(n, self)
                     return 
-                
-        self.player.handleEvent()
+        if not self.textBox:       
+            self.player.handleEvent()
 
     def stopShop(self):
         self.selectedItem = "quit"
@@ -1200,18 +1202,31 @@ class AE(object):
                         if not INV["lavaBoots"]:
                             self.player.hurt(2)
 
+    #abstract
+    def unlockDoor(self, lock):
+        self.playSound("bump.mp3")
+
+    def lockCollision(self):
+        if self.locks:
+            for l in self.locks:
+                self.projectilesOnBlocks(l)
+                if self.player.doesCollide(l):
+                    if INV["keys"] >= 1:
+                        INV["keys"] -= 1
+                        self.locks.remove(l)
+                        self.unlockDoor(l)
+                    else:
+                        if l.displayReady:
+                            self.displayText("The path is locked.&&\nAre there any keys around?&&\n")
+                            self.player.handleCollision(l)
+
     def handleCollision(self):
         self.terrainCollision()
         self.npcCollision()
         self.obstacleCollision()
         if not self.dying:
             self.blockCollision()
-
-        if self.locks:
-            for l in self.locks:
-                self.projectilesOnBlocks(l)
-                if self.player.doesCollide(l):
-                    self.player.handleCollision(l)
+            self.lockCollision()
         self.interactableCollision()
         self.pressSwitches()
         self.pushableBlockCollision()
@@ -1293,7 +1308,6 @@ class AE(object):
         
         
         if not self.ignoreClear and not self.room_clear and self.enemyCounter == self.max_enemies:
-            self.playSound("room_clear.mp3")
             self.room_clear = True
     
 
@@ -1449,8 +1463,9 @@ class AE(object):
             self.promptResult = False
             self.selectedItem = ""
         elif self.selectedItem == "syringe":
-            INV["money"] -= 30
-            self.displayText("      You bought the\n         [Syringe]!\nSap your health away in\nthe pause menu's [ITM] row.\n")
+            self.spawning.remove(self.syringe)
+            INV["money"] -= 50
+            self.displayText("      You bought the\n         [Syringe]!\nSap your health away in\nthe pause menu's [ITM] row.\nTake good care of this\nman's special syringe.\n")
             INV["syringe"] = True
             self.promptResult = False
             self.selectedItem = ""
@@ -1478,6 +1493,12 @@ class AE(object):
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
         if self.transporting or self.startingMobster or self.dead:
+            return
+        
+        if not self.healthBar.drawn:
+            if self.camera:
+                self.updateCamera(seconds)
+            self.updateHealthBar(seconds)
             return
         
         if self.dying:
@@ -1591,8 +1612,9 @@ class AE(object):
                     else:
                         if n.interactable:
                             n.interactable = False
-                    if self.inShop:
+                    if self.inShop or self.textBox:
                         n.draw(drawSurface, drawIcon = False)
+
                     else:
                         n.draw(drawSurface)
         
