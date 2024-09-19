@@ -113,42 +113,6 @@ class Number(Drawable):
     def getImage(number = 0, row = 0):
         return SpriteManager.getInstance().getSprite("numbers.png",(number,row))
     
-class Text(Drawable):
-
-    """
-    Displays text using the font from A Link to the Past
-    """
-    import os
-    if not pygame.font.get_init():
-        pygame.font.init()
-    FONT_FOLDER = "fonts"
-    FONT = pygame.font.Font(os.path.join(FONT_FOLDER,
-                                    "ReturnofGanon.ttf"), 16)
-    BOX = pygame.font.Font(os.path.join(FONT_FOLDER,
-                                    "ReturnofGanon.ttf"), 14)
-    SMALL = pygame.font.Font(os.path.join(FONT_FOLDER,
-                                    "ReturnofGanon.ttf"), 12)
-    
-    def getImage(text, color = (255,255,255), box = False, small = False):
-        if small:
-            return Text.SMALL.render(text, False, color)
-        elif box:
-            return Text.BOX.render(text, False, color)
-        else:
-            return Text.FONT.render(text, False, color)
-
-    def __init__(self, position, text, color = (255,255,255), box = False, small = False):
-        super().__init__(position, "")
-        if small:
-            self.image = Text.SMALL.render(text, False, color)
-        elif box:
-            self.image = Text.BOX.render(text, False, color)
-        else:
-            self.image = Text.FONT.render(text, False, color)
-
-
-
-
 
 class DamageIndicator(Drawable):
     """

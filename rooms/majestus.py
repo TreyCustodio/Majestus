@@ -164,7 +164,7 @@ class Test(AbstractEngine):
     class _T(AE):
         def __init__(self):
             super().__init__("test")
-            self.bgm = "MSM_Castle.mp3"
+            self.bgm = None#"MSM_Castle.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
@@ -305,7 +305,7 @@ class Knight(AbstractEngine):
             super().bse()
             FLAGS[111] = True
 
-        def update(self, seconds):
+        def update(self, seconds, updateEnemies=False):
             if FLAGS[111]:
                 if self.textInt == 3:
                     if self.timer >= 0.1:
@@ -336,11 +336,14 @@ class Knight(AbstractEngine):
                     self.textInt += 1
                 super().update(seconds)
             elif self.knight.starting:
+
                 if self.textInt == 1:
-                    if self.knight.moving:
-                        self.bsl(self.knight, "megalomania.mp3")
-                    else:
-                        super().update(seconds)
+                    if self.textBox == False:
+                        if self.knight.moving:
+                            self.bsl(self.knight, "megalomania.mp3")
+                        else:
+                            super().update(seconds)
+
                 elif self.textInt == 0:
                     self.knight.ignoreCollision = False
                     self.displayText(SPEECH["lava_knight"], icon=ICON["knight"])
@@ -433,7 +436,8 @@ class Tutorial_2(AbstractEngine):
             self.enemyPlacement = 0
             self.areaIntro = AreaIntro("tut_2", position=self.camera.position)
             self.enemies = [
-                Gremlin(vec(16*7, 16*5 + 8), direction=3),
+                #Gremlin(vec(16*7, 16*5 + 8), direction=3),
+                Gremlin(vec(16*7, 16*5 + 8), direction=2),
                 Gremlin(vec(16*21, 16*5 + 8)),
                 Gremlin(vec(16*14, 16*5 + 8)),
             ]
@@ -597,19 +601,19 @@ class Tutorial_Shop(AbstractEngine):
                 else:
                     if self.textInt == 0:
                         if self.text == "":
-                            self.displayText(SPEECH["darkcloak_2"])
+                            self.displayText(SPEECH["darkcloak_2"], icon=(0,1))
                             self.textInt = 1
                     elif self.textInt == 1:
                         if self.text == "":
-                            self.displayText(SPEECH["darkcloak_3"])
+                            self.displayText(SPEECH["darkcloak_3"], icon = (1,1))
                             self.textInt = 2
                     elif self.textInt == 2:
                         if self.text == "":
-                            self.displayText(SPEECH["darkcloak_4"])
+                            self.displayText(SPEECH["darkcloak_4"], icon = (0,1))
                             self.textInt = 3
                     elif self.textInt == 3:
                         if self.text == "":
-                            self.displayText(SPEECH["darkcloak_5"])
+                            self.displayText(SPEECH["darkcloak_5"], icon = (1,1))
                             self.textInt = 4
                     elif self.textInt == 4:
                         if self.text == "":
@@ -741,6 +745,7 @@ class Tutorial_4(AbstractEngine):
             self.spawning = [
                 Sign(vec(16*3, 16*4 + 8), text= SPEECH["tutorial_4"])
             ]
+            self.name.position[1] = 32
 
         def handleClear(self):
             if not FLAGS[11]:
@@ -865,7 +870,7 @@ class Intro_1(AbstractEngine):
             """
             Initial conditions
             """
-            super().__init__()
+            super().__init__("intro_1")
             self.itemsToCollect = 1
             self.roomId = 1
             #Music
@@ -964,6 +969,7 @@ class Intro_1(AbstractEngine):
             self.effects_behind_walls = [
                 Shadow(room_dir="intro_1", alpha=64, animate=True, nFrames=1)
             ]
+
 
 
         def drawText(self, drawSurface):
@@ -1087,13 +1093,10 @@ class Intro_1(AbstractEngine):
                 elif _type == TimedSwitch:
                     s.update(seconds)
 
-        def update(self, seconds):
-            
-            """
-            Update the objects that need to be updated
-            """
-            super().update(seconds)
+        def update(self, seconds, updateEnemies=True, updatePlayer=True):
+            super().update(seconds, updateEnemies, updatePlayer)
             self.effects[0].position = vec(self.blockP.position[0]-(16*6), self.blockP.position[1]-(16*8))
+
             
                 
 
@@ -1115,7 +1118,7 @@ class Intro_2(AbstractEngine):
             """
             Initial conditions
             """
-            super().__init__()
+            super().__init__("intro_2")
             self.roomId = 2
             self.ignoreClear = True
             self.trigger1 = Trigger(door = 0)
@@ -1164,12 +1167,11 @@ class Intro_2(AbstractEngine):
             Display elements
             """
             #Background/room
+            self.areaIntro = AreaIntro("intro_2", "area_intro.png")
             self.floor = Floor("intro_2")
             self.walls = Walls("intro_2")
-            self.areaIntro = AreaIntro("intro_2", "area_intro.png")
             self.effects = [
                 Shadow(room_dir="intro_2", alpha= 54, animate=False),
-                
             
             ]
             self.effects_behind_walls = [
@@ -1236,7 +1238,7 @@ class Intro_2(AbstractEngine):
                         elif b == self.trigger2:
                             self.transport(Alpha_Flapper, 0)
                         elif b == self.trigger3:
-                            self.transportArea(Stardust_1, 1)
+                            self.transportArea(Stardust_1, True, position=vec(280,190))
                     else:
                         self.player.handleCollision(b)
 
@@ -1317,7 +1319,6 @@ class Stardust_1(AbstractEngine):
             super().draw(drawSurface)
         
         def update(self, seconds, updateEnemies=True, updatePlayer=True):
-            #print(self.readyToTransition)
             return super().update(seconds, updateEnemies, updatePlayer)
 
 class Shop(AbstractEngine):
@@ -1398,9 +1399,14 @@ class Alpha_Flapper(AbstractEngine):
             self.trigger2 = Trigger(door = 2)
             self.doors = [0,2]
 
+            self.heart = GreenHeart(vec(16*9,16*6))
+
             if not FLAGS[110]:
                 self.flapper = AlphaFlapper(vec(16*8 + 8, 16*3))
-                
+            else:
+                if not FLAGS[210]:
+                    self.spawning.append(self.heart)
+
             self.textInt = -1
             self.tileFrame = 0
             self.obstacles = [
@@ -1446,6 +1452,10 @@ class Alpha_Flapper(AbstractEngine):
         def createBlocks(self):
             self.blocks.append(self.trigger1)
             self.blocks.append(self.trigger2)
+            self.blocks.append(IBlock(vec(16*7, 16*11)))
+            self.blocks.append(IBlock(vec(16*7, 16)))
+            self.blocks.append(IBlock(vec(16*11, 16*11)))
+            self.blocks.append(IBlock(vec(16*11, 16)))
             for i in range(3,8):
                 self.blocks.append(IBlock(vec(16*i, 16*10), popProjectiles=False))
             for i in range(11,16):
@@ -1472,15 +1482,20 @@ class Alpha_Flapper(AbstractEngine):
                     else:
                         self.player.handleCollision(b)
 
-        def update(self, seconds):
+        def update(self, seconds, updateEnemies = False):
             if FLAGS[110]:
+                if not FLAGS[210] and self.heart.interacted:
+                    FLAGS[210] = True
                 super().update(seconds)
                 return
             if self.fightingBoss:
                 if self.flapper.dying and self.textInt == 1:
                     self.displayText(SPEECH["alpha_flapper"])
+                    self.projectiles = []
                     self.textInt += 1
-                super().update(seconds)
+                if not self.textBox:
+                    super().update(seconds)
+                
             elif self.textInt == 2:
                 if self.timer >= 0.1:
                     self.timer = 0.0
@@ -1492,6 +1507,8 @@ class Alpha_Flapper(AbstractEngine):
                         self.tileFrame = 4
                 else:
                     self.timer += seconds
+
+            ##Floor reappears
             elif self.textInt == 3:
                 if self.timer >= 0.1:
                     self.timer = 0.0
@@ -1504,13 +1521,17 @@ class Alpha_Flapper(AbstractEngine):
                         self.tileFrame += 1
                 else:
                     self.timer += seconds
+
             elif self.textInt == 4:
                 super().update(seconds)
                 if self.flapper.dead:
                     self.vanishObstacles()
                     FLAGS[110] = True
+                    self.heart.position = self.flapper.position + 16
+                    self.spawning.append(self.heart)
+
             elif self.player.position[1] <= 16*6:
-                if self.textInt == 1:
+                if self.textInt == 1 and not self.textBox:
                     self.bsl(self.flapper, "ing.mp3")
                 elif self.textInt == 0:
                     self.player.stop()
@@ -1608,8 +1629,7 @@ class Intro_3(AbstractEngine):
 
         
 
-        def update(self, seconds):
-            super().update(seconds)
+
             
 
 """ class Grand_Chapel_L(AbstractEngine):
@@ -1864,8 +1884,7 @@ class Grand_Chapel(AbstractEngine):
                     else:
                         self.player.handleCollision(b)
         
-        def update(self, seconds):
-            super().update(seconds)
+
 
 class Chamber_Access(AbstractEngine):
     @classmethod
@@ -1950,8 +1969,7 @@ class Freeplay(AbstractEngine):
                     self.player.handleCollision(b)
                 self.enemyCollision(b)
         
-        def update(self, seconds):
-            super().update(seconds)
+     
 
 
 

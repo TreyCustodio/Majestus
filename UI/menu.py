@@ -4,7 +4,10 @@ from UI import ACTIONS
 from . import TextEntry
 
 import pygame
-
+"""
+Author - Doctor Liz Matthews
+Modified by Trey Custodio
+"""
 class AbstractMenu(Drawable):
     def __init__(self, background, fontName="default",
                  color=(255,255,255)):
@@ -40,6 +43,10 @@ class AbstractMenu(Drawable):
 
 
 class EventMenu(AbstractMenu):
+    """
+    This Class represents the Title Screen.
+    Describes Title Screen Buttons and Animations
+    """
     def __init__(self, background, fontName="default",
                 color=(255,255,255)):
         super().__init__(background, fontName, color)

@@ -34,7 +34,7 @@ FLAGS = [False for i in range(300)]
 #2 -> ice shard
 #3 -> lava shard
 #4 -> gale shard
-#5 -> 
+#5 -> first heart
 #6 -> 
 #7 -> 
 #8 -> 
@@ -322,7 +322,7 @@ EQUIPPED = {
 
 }
 
-bombos = 10#250
+bombos = 250
 """
 The Player's inventory
 """
@@ -353,14 +353,14 @@ INV = {
     ##Consumables and key items
     "plant": 1,
     "chanceEmblem": True,
-    "lavaBoots": False,
+    "lavaBoots": True,
     
-    "syringe": False,
+    "syringe": True,
     "potion": 9,
     "smoothie": 9,
-    "beer": 9,
-    "joint":9,
-    "speed":9,
+    "beer": 0,
+    "joint":0,
+    "speed":0,
     "wallet": 99,
     "money": 99,
     "keys": 0,
@@ -377,7 +377,7 @@ INV = {
 #   Tuple
 #   "action", integer
 SHORTCUTS = {
-    0:[0,0],
+    0:["item",0],
     1:[0,0],
     2:[0,0],
     3:[0,0],
@@ -939,10 +939,11 @@ He's a Luminate, a man\n\
 of Light.\n\
 I've chased him off\n\
 several times.\n\
-Imaging moving here to live\n\
+Imagine moving here to live\n\
 in isolation, but having a\n\
 douchebag neighbor that\n\
 you can't get rid of.\n\
+You'd be in my shoes.&&\n\
 I'm usually a pacifist,\n\
 but if you see this guy,\n\
 do you think you\n\

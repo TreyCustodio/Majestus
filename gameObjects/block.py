@@ -15,6 +15,9 @@ class Block(Drawable):
         self.vanish = vanish
         self.block = True
     
+    def getSize(self):
+        return vec(self.width, self.height)
+    
     def draw(self, drawSurface, drawBox = False):
         super().draw(drawSurface, drawBox)
         
@@ -37,6 +40,7 @@ class IBlock(Block):
     
     def draw(self, drawSurface, drawBox = False):
         super().draw(drawSurface, False)
+    
 
 class Terrain(IBlock):
     def __init__(self, position=vec(0, 0), width=16, height=16, popProjectiles=True, vanish=False, id = ""):

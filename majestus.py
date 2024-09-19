@@ -64,6 +64,7 @@ def main():
                                screen)
             pygame.display.flip()
             gameEngine.drawText(textSurface)
+            gameEngine.drawWipe(textSurface)
 
         elif gameEngine.state == "mainMenu":
             pygame.transform.scale(transparentSurface,
@@ -71,10 +72,12 @@ def main():
                                screen)
             pygame.display.flip()
             gameEngine.drawTitle(transparentSurface)
+            gameEngine.drawWipe(drawSurface)
             
         else:
             pygame.display.flip()
             gameEngine.draw(drawSurface)
+            gameEngine.drawWipe(drawSurface)
         
 
         ##Handle events

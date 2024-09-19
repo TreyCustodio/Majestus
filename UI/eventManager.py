@@ -73,7 +73,9 @@ KEY = {
         "right":pygame.K_RIGHT,
         "up":pygame.K_UP,
        "left":pygame.K_LEFT,
-       "target": pygame.K_LSHIFT
+       "target": pygame.K_LSHIFT,
+       "target_left":pygame.K_a,
+        "target_right":pygame.K_s
     }
 
 
@@ -114,6 +116,9 @@ class EventManager(object):
             self.eventBufferTimer = 0.0
             self.attackBufferTimer = 0.0
             self.updating = True
+        
+        def getController(self):
+            return self.controller
         
         def readyToUpdate(self):
             return self.updating

@@ -569,10 +569,7 @@ class QuestIcon(Animated):
         super().__init__(position, "exclamation.png", (0,0))
         self.nFrames = 4
 
-class ZIcon(Animated):
-    def __init__(self, position):
-        super().__init__(position, "z.png", (0,0))
-        self.nFrames = 4
+
 
 class FireIcon(Animated):
     def __init__(self, position):

@@ -71,7 +71,7 @@ class Enemy(Animated):
         #4 -> Wind
         self.shield = 0
         self.type = type
-        self.dying = False
+        self.dying = False #For death animations
         self.projectile = projectile
         self.damage = damage
         self.attacking = False
@@ -284,9 +284,38 @@ class Enemy(Animated):
     def move(self, seconds):
         if not self.frozen:
             self.position += self.vel * seconds
-            
+    
+    #abstract
+    def adjustRow(self, side: str):
+        pass
+
     def bounce(self, other, setRow = True):
         if not self.frozen and not self.bouncing:
+            side = self.calculateSide(other)
+            if side == "right":
+                self.position[0] = other.position[0] - self.getSize()[0]
+                self.vel[0] = -self.speed
+                self.adjustRow("right")
+                
+            elif side == "left":
+                if self.getSize()[0] >= other.getSize()[0]:
+                    self.position[0] = other.position[0] + self.getSize()[0]
+                elif self.getSize()[0] < other.getSize()[0]:
+                    self.position[0] = other.position[0] + other.getSize()[0]
+                self.vel[0] = self.speed
+                self.adjustRow("left")
+            
+            elif side == "top":
+                self.position[1] = other.position[1] + other.getSize()[1]
+                self.vel[1] = self.speed
+                self.adjustRow("top")
+            
+            elif side == "bottom":
+                self.position[1] = other.position[1] - self.getSize()[1]
+                self.vel[1] = -self.speed
+                self.adjustRow("bottom")
+
+        """ if not self.frozen and not self.bouncing:
             self.bouncing = True
             side = self.calculateSide(other)
             if side == "right":
@@ -316,7 +345,7 @@ class Enemy(Animated):
                     if self.row >= 4:
                         self.row = 6
                     else:
-                        self.row = 2
+                        self.row = 2 """
 
     def changeDirection(self):
         #Square code: 0 (down), 3 (left), 2 (up), 1 (right)
@@ -632,7 +661,7 @@ class LavaKnight(Enemy):
     Only damage player when on the ground
     """
     def handlePlayerCollision(self, player):
-        if self.ignoreCollision:
+        if self.ignoreCollision or self.dying:
             return False
         else:
             return True
@@ -1965,18 +1994,6 @@ class Flapper(Enemy):
         else:
             return
 
-    def bounce(self, other):
-        if not self.frozen:
-            self.bouncing = True
-            side = self.calculateSide(other)
-            if side == "right":
-                self.vel[0] = -self.speed
-            elif side == "top":
-                self.vel[1] = self.speed
-            elif side == "left":
-                self.vel[0] = self.speed
-            elif side == "bottom":
-                self.vel[1] = -self.speed
 
     def updateFlash(self, seconds):
         if self.row == self.hurtRow:
@@ -2025,7 +2042,7 @@ class AlphaFlapper(Enemy):
         self.speed = 20
         self.initial_speed = 20
         self.hurtRow = 1
-        self.maxHp = 60
+        self.maxHp = 6
         self.hp = self.maxHp
         self.boss = boss
         self.damage = 1
@@ -2033,6 +2050,7 @@ class AlphaFlapper(Enemy):
         self.ignoreCollision = True
         self.secondsPerFrame = 0.1
         self.fading = False
+        self.direction = 0
 
     def reset(self, position):
         self.position = position
@@ -2052,7 +2070,7 @@ class AlphaFlapper(Enemy):
             super().draw(drawSurface, drawHitbox, use_camera, drawFreeze)
 
     def getDrop(self):
-        return GreenHeart((self.position[0]+16, self.position[1]+16))
+        return
     
     
 
@@ -2082,6 +2100,11 @@ class AlphaFlapper(Enemy):
             self.setImage()
             
 
+    def handlePlayerCollision(self, player):
+        if self.dying:
+            return False
+        else:
+            return super().handlePlayerCollision(player)
     def hurt(self, damage, setHit=True):
         super().hurt(damage, setHit)
         self.speed += (self.injury * 2)
@@ -2089,9 +2112,6 @@ class AlphaFlapper(Enemy):
 
     def setSpeed(self, direction):
         Flapper.setSpeed(self, direction)
-    
-    def bounce(self, other):
-        Flapper.bounce(self, other)
 
     def update(self, seconds, position=None, player = None):
         if self.dying:
@@ -2302,7 +2322,12 @@ Come in a few different flavors.
 """
 class Gremlin(Enemy):
     def __init__(self, position = vec(0,0), direction = 1, fileName = "gremlin.png"):
-        super().__init__(position, fileName, direction)
+        if direction == 0 or direction == 2:
+            super().__init__(position, fileName, 1)
+        else:
+            super().__init__(position, fileName, direction)
+        
+        self.direction = direction
         self.indicatorRow = 4
         self.speed = 50
         self.maxHp = 15
@@ -2315,25 +2340,46 @@ class Gremlin(Enemy):
         newRect.top = int(self.position[1]+1)
         return newRect
 
-    
-    def bounce(self, other):
-        if not self.frozen and not self.bouncing:
-            side = self.calculateSide(other)
-            if side == "right":
-                self.position[0] = other.position[0] - self.getSize()[0]
-                self.vel[0] = -self.speed
-                if self.row == 1:
-                    self.row = 3
-                elif self.row == 5:
-                    self.row = 7
+    def setSpeed(self, row=1):
+        if self.direction == 0 or self.direction == 2:
+            self.vel[1] = -self.speed
+            self.vel[0] = 0
+            return
+        
+        if row == 0 or row == 4:
+            self.vel[1] = self.speed
+            self.vel[0] = 0
             
-            elif side == "left":
-                self.position[0] = (other.position[0] + other.getSize()[0]) + (self.getSize()[0] * 2)
-                self.vel[0] = self.speed
-                if self.row == 3:
-                    self.row = 1
-                elif self.row == 7:
-                    self.row = 5
+        elif row == 1 or row == 5:
+            self.vel[0] = self.speed
+            self.vel[1] = 0
+            
+        elif row == 2 or row == 6:
+            self.vel[1] = -self.speed
+            self.vel[0] = 0
+        
+        elif row == 3 or row == 7:
+            self.vel[0] = -self.speed
+            self.vel[1] = 0
+    
+    def adjustRow(self, side: str):
+        if side == "right":
+            if self.row == 1:
+                self.row = 3
+            elif self.row == 5:
+                self.row = 7
+
+        elif side == "left":
+            if self.row == 3:
+                self.row = 1
+            elif self.row == 7:
+                self.row = 5
+        
+        elif side == "top":
+            return
+
+        elif side == "bottom":
+            return
 
     
     def hurt(self, damage, setHit=True):

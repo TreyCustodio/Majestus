@@ -51,6 +51,8 @@ class PauseEngine(object):
         self.highlighted = vec(0,0)
         self.promptResult = False
         self.promptFlag = ""
+
+        
         ##  Button Icons
         self.scaled = False
         self.interactIcon = SpriteManager.getInstance().getSprite("keys.png", (2,0))
@@ -63,6 +65,13 @@ class PauseEngine(object):
         self.toInventory = False
         self.inShortcuts = False
         self.placing = False
+        self.toSettings = False
+        self.inSettings = False
+
+        ##  Fading
+        self.alpha = 255
+        self.fading_in = False
+        self.fading_out = False
         self.item = None
 
     def resetMenu(self):
@@ -79,6 +88,8 @@ class PauseEngine(object):
         self.toInventory = False
         self.highlighted = vec(0,0)
         self.highlight.position = vec(16*3, 16*4)
+        self.fading_in = False
+        self.fading_out = False
 
     def drawNumber(self, position, number, drawSurface, row = 0):
         if number >= 10:
@@ -132,7 +143,7 @@ class PauseEngine(object):
             if element != None:
                 imageE = SpriteManager.getInstance().getSprite("item.png", (element, 2))
                 drawSurf.blit(imageE, (COORD[14][7]))
-
+    
 
     def drawShards(self, drawSurf):
         image1 = SpriteManager.getInstance().getSprite("item.png", (0, 2))
@@ -158,6 +169,10 @@ class PauseEngine(object):
         if not self.paused:
             self.paused = True
 
+        if self.inSettings:
+            drawSurf.blit(self.menu.image, (self.menu.position[0], self.menu.position[1] - 208))
+            return
+        
         if self.mapOpen:
             self.drawMap(drawSurf)
             return
@@ -343,8 +358,9 @@ class PauseEngine(object):
             if self.inShortcuts:
                 self.text = "You can select up to 6\nattacks for your shortcuts.\nPress [Right Trigger] to\nselect an attack, and place\nit on the grid to the right.\nBack in the game, you can\npress the [bumpers] to cycle\nthrough your shortcuts.\nPress [Right Trigger] to use\nyour selected attack."
             else:
-                self.promptFlag = "quit"
-                self.text = "Y/NReturn to title screen?"
+                self.toSettings = True
+                ##self.promptFlag = "quit"
+                ##self.text = "Y/NReturn to title screen?"
 
         ##  Key items   ##
         elif self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*4:
@@ -488,7 +504,7 @@ class PauseEngine(object):
         min offset[1] = 0
         max offset[1] = 5
         """
-        if self.closing or not self.inPosition or self.toShortcuts or self.toInventory:
+        if self.closing or not self.inPosition or self.toSettings or self.toShortcuts or self.toInventory:
             return
         
         if self.placing:
@@ -570,6 +586,7 @@ class PauseEngine(object):
             return
         
         ##  Menu Controls
+        ##  Shortcuts
         if self.inShortcuts:
             ##  Pickup Item for shortcut placement
             if EventManager.getInstance().getCursorReady() and ACTIONS["trigger_r"]:
@@ -659,6 +676,12 @@ class PauseEngine(object):
                 EventManager.getInstance().buffCursor()
                 SoundManager.getInstance().playSFX("menu_shift_1.wav")
                 return
+            
+        ##  Settings
+        elif self.inSettings:
+            return
+
+        ##  Inventory
         else:
             if EventManager.getInstance().performAction("element"):
                 self.equipElement()
@@ -780,6 +803,35 @@ class PauseEngine(object):
             self.triggerIcon = pygame.transform.scale(self.triggerIcon, (20,16))
             self.scaled = False
 
+    def updateButtons(self):
+        controller = EventManager.getInstance().getController()
+        if controller == "key":
+            self.interactIcon = SpriteManager.getInstance().getSprite("keys.png", (2,4))
+            self.elementIcon = SpriteManager.getInstance().getSprite("keys.png",(3,0))
+            self.shootIcon = SpriteManager.getInstance().getSprite("keys.png",(5,0))
+            self.triggerIcon = SpriteManager.getInstance().getSprite("keys.png", (1,0))
+        elif controller == "Switch":
+            self.interactIcon = SpriteManager.getInstance().getSprite("keys.png", (2,0))
+            self.elementIcon = SpriteManager.getInstance().getSprite("keys.png",(3,0))
+            self.shootIcon = SpriteManager.getInstance().getSprite("keys.png",(5,0))
+            self.triggerIcon = SpriteManager.getInstance().getSprite("keys.png", (1,0))
+
+    def fadeOut(self):
+        """
+        Begins fade out process.
+        Surface Alpha value will decrement by 20
+        """
+        self.alpha = 255
+        self.fading_out = True
+
+    def fadeIn(self):
+        """
+        Begins fade in process.
+        Surface Alpha value will increment by 20
+        """
+        self.alpha = 0
+        self.fading_in = True
+
     def update(self, seconds):
         if self.closing:
             self.menu.position[1] += 1000 * seconds
@@ -803,12 +855,32 @@ class PauseEngine(object):
                 self.inShortcuts = True
                 return
         elif self.toInventory:
-            self.menu.position[0] += 8
-            if self.menu.position[0] >= 0:
-                self.menu.position[0] = 0
-                self.toInventory = False
-                self.inShortcuts = False
+            if self.inSettings:
                 return
+            else:
+                self.menu.position[0] += 8
+                if self.menu.position[0] >= 0:
+                    self.menu.position[0] = 0
+                    self.toInventory = False
+                    self.inShortcuts = False
+                    return
+        
+        elif self.inSettings:
+            if self.fading_in:
+                self.alpha += 20
+                self.alpha %= 255
+                if self.alpha == 0: 
+                    self.alpha = 255
+                    self.fading_in = False
+                self.menu.image.set_alpha(self.alpha)
+            else:
+                self.alpha -= 20
+                if self.alpha <= 0:
+                    self.alpha = 0
+                    self.fading_out = False
+                self.menu.image.set_alpha(self.alpha)
+        
+
             
         if self.mapOpen:
             Map.getInstance().update(seconds)

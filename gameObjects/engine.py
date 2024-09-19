@@ -2,11 +2,11 @@ import pygame
 from math import ceil
 from UI import EventManager, ACTIONS
 from utils import SpriteManager
-from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Text, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
+from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
-               Shadow, Walls, Floor, Camera, Highlight, ShopDisplay)
+               Shadow, Walls, Floor, Camera, Highlight, ShopDisplay, Name)
 
 from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO, SHORTCUTS, ACTIVE_SHORTCUT
 
@@ -40,10 +40,12 @@ class AE(object):
         """
         __init__ is only ever called once
         """
+        self.name = None
         if room_dir != "":
             self.room_dir = room_dir
             self.walls = Walls(room_dir)
             self.floor = Floor(room_dir)
+            self.name = Name(room_dir)
         
         if camera:
             self.camera = Camera()
@@ -147,6 +149,7 @@ class AE(object):
         self.ammoBar = AmmoBar.getInstance()
         self.elementIcon = ElementIcon.getInstance()
         self.energyBar = EnergyBar()
+
         #Unique room elements:
         #self.max_enemies
         #self.enemyPlacement
@@ -207,6 +210,8 @@ class AE(object):
 
     def reset(self):
         Drawable.resetOffset()
+        if self.name:
+            self.name.reset()
         for n in self.npcs:
             n.respawn()
             if n.vanish:
@@ -299,11 +304,12 @@ class AE(object):
         4. place the enemies in self.enemies
         """
         if self.camera:
-            if self.camera:
-                self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
-                
-                self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
-                Drawable.updateOffset(self.camera, self.size)
+            self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
+            
+            self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
+            if self.name:
+                self.name.position = (self.camera.position[0] + (RESOLUTION[0]//2 - self.name.width // 2), self.camera.position[1]+200)
+            Drawable.updateOffset(self.camera, self.size)
        
         self.moneyImage = HudImageManager.getMoney()
         self.keyImage = HudImageManager.getKeys()
@@ -334,7 +340,8 @@ class AE(object):
         self.player.keyLock()
         self.area_fading = True
         self.whiting = True
-        self.areaIntro.position = self.camera.position
+        if self.camera:
+            self.areaIntro.position = self.camera.position
         self.areaIntro.fadeIn()
         self.on_enter()
 
@@ -710,7 +717,6 @@ class AE(object):
         intro -> special properties for transport because no player yet
         """
         if not self.transporting and not self.transLock:
-            
             if intro:
                 self.transporting = True
                 self.tra_room = room.getInstance()
@@ -1204,7 +1210,7 @@ class AE(object):
 
     #abstract
     def unlockDoor(self, lock):
-        self.playSound("bump.mp3")
+        self.playSound("unlock.wav")
 
     def lockCollision(self):
         if self.locks:
@@ -1392,6 +1398,8 @@ class AE(object):
         self.camera.position[1] = self.player.position[1] - (self.camera.getSize()[1] // 2)
         if self.area_fading:
             self.areaIntro.position= self.camera.position
+        
+        
         #self.healthBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.elementIcon.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
         #self.energyBar.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
@@ -1525,6 +1533,8 @@ class AE(object):
                 Map.getInstance().rooms[self.area][self.roomId].clearRoom()
         
         ##Visual effects
+        if self.name:
+            self.name.update(seconds)
         if self.effects:
             for e in self.effects:
                 e.update(seconds)
@@ -1865,6 +1875,8 @@ class AE(object):
         #HUD
         self.drawHud(drawSurface)
         
+        if self.name:
+            self.name.draw(drawSurface)
         #Weapons
         self.weaponControl()
     

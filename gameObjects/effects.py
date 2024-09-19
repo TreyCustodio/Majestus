@@ -18,6 +18,47 @@ class Camera(object):
     def getSize(self):
         return vec(304,208)
 
+class Name(Drawable):
+    def __init__(self, room_dir: str):
+        self.image = SpriteManager.getInstance().getFx(room_dir, "name.png")
+        self.frameTimer = 0.0
+        self.alpha = 230
+        self.position = vec(304 // 2 - self.image.get_width() // 2, 48)
+        self.invis = False
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.setAlpha()
+
+    def setAlpha(self):
+        self.image.set_alpha(self.alpha)
+
+    """
+    @param value -> vector to scale to. Default is (128, 64)
+    """
+    def scale(self, value: tuple = (128,64)):
+        self.image = pygame.transform.scale(self.image, value)
+
+    def update(self, seconds):
+        if not self.invis:
+            if self.frameTimer >= 0.8:
+                self.alpha -= 6
+                if self.alpha <= 0:
+                    self.alpha = 0
+                    self.invis = True
+                    self.setAlpha()
+                else:
+                    self.setAlpha()
+            else:
+                self.frameTimer += seconds
+    
+    def reset(self):
+        self.frameTimer = 0.0
+        self.alpha = 230
+        self.setAlpha()
+        self.invis = False
+
+
+
 class Lock(Drawable):
     def __init__(self, position, room_dir):
         self.room_dir = room_dir

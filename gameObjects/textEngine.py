@@ -1,12 +1,114 @@
 import pygame
 
-from . import Drawable,  Animated, Text, Highlight, Map, Number
+from . import Drawable,  Animated, Highlight, Map, Number, IconManager
 
 from utils import  vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED
 
 from UI import ACTIONS, EventManager
 
 from pygame.locals import *
+
+
+class Text(Drawable):
+
+    """
+    Displays text using the font from A Link to the Past
+    """
+    import os
+    if not pygame.font.get_init():
+        pygame.font.init()
+    FONT_FOLDER = "fonts"
+    FONT = pygame.font.Font(os.path.join(FONT_FOLDER,
+                                    "ReturnofGanon.ttf"), 16)
+    BOX = pygame.font.Font(os.path.join(FONT_FOLDER,
+                                    "ReturnofGanon.ttf"), 14)
+    SMALL = pygame.font.Font(os.path.join(FONT_FOLDER,
+                                    "ReturnofGanon.ttf"), 12)
+    
+    def getImage(text, color = (255,255,255), box = False, small = False):
+        if small:
+            return Text.SMALL.render(text, False, color)
+        elif box:
+            return Text.BOX.render(text, False, color)
+        else:
+            return Text.FONT.render(text, False, color)
+
+    def __init__(self, position, text, color = (255,255,255), box = False, small = False):
+        super().__init__(position, "")
+        if small:
+            self.image = Text.SMALL.render(text, False, color)
+        elif box:
+            self.image = Text.BOX.render(text, False, color)
+        else:
+            self.image = Text.FONT.render(text, False, color)
+    
+
+    """
+    Static Method drawChar
+    Draws a char that appears in textboxes.
+    @param char is the char that is drawn
+    @param alpha is the alpha value
+    @param flag specifies different text styles
+
+    Information for sprite file chars.png:
+    row 0 = upper case alphabetical chars, for frames 0-25
+    row 1 = lower case alphabetical chars, for frames 0-25
+    row 2 = numerical chars, for frames 0-9
+    row 3 = special chars, from frames 0-31
+
+    Alphabetical and special chars use ASCII values to print.
+    Alphabetical char frame = ascii value - 65
+    Special char frame = ascii value - 33
+    ! = 33
+    @ = 64
+    Ex: "A"
+    value = 65
+    frame = 65-65 = 0
+    
+    flags:
+    0 -> default, 1 -> shake, 2 -> black, 3 -> white
+    """
+    def drawChar(drawSurface, position = vec(0,0), char: str ="", alpha: int = 255, flag=0):
+        ##  Safety Return   ##
+        if char == " " or char == "" or len(char) > 1:
+            return
+        
+        ##  Black Text in EB Garamond  ##
+        if flag == 2:
+            image = Text.getImage(char, (0,0,0))
+            drawSurface.blit(image, position)
+            return
+
+        ##  Numeric chars   ##
+        if char.isnumeric():
+            image = SpriteManager.getInstance().getSprite("chars.png", (int(char),3))
+        
+        ##  Alphabetical chars  ##
+        else:
+            if char.isupper():
+                value = ord(char)
+                image = SpriteManager.getInstance().getSprite("chars.png", (value-65,0))
+
+            elif char.islower():
+                value = ord(char)
+                image = SpriteManager.getInstance().getSprite("chars.png", (value-97,1))
+            else:
+                ##  Special chars   ##
+                value = ord(char)
+                
+                image = SpriteManager.getInstance().getSprite("chars.png", (value-33,2))
+
+        ##  Adjust surface alpha and display    ##
+        image.set_alpha(alpha)
+        if flag == 1:
+            image = pygame.transform.scale(image, (16,16))
+        drawSurface.blit(image, position)
+
+    """
+    Draw the cursor at the end of the textBox
+    """
+    def drawCursor(drawSurface, position = vec(0,0), frame = 0):
+        drawSurface.blit(IconManager.getIcon("interact"), position)
 
 class TextEngine(object):
     
@@ -61,6 +163,9 @@ class TextEngine(object):
             self.frameTimer = 0.0
             self.noBox = False
             self.type = 0
+            self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (0,1)) #Animated cube at bottom
+            self.cubeTick = 0
+            #self.a_icon = SpriteManager.getInstance().getSprite()
             self.setImage()
 
 
@@ -71,6 +176,7 @@ class TextEngine(object):
             if self.large:
                 if self.type == 2:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
+                    #self.textBox = pygame.transform.scale(SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0)), (248,64))
                 elif self.type == 3:
                     self.textBox = SpriteManager.getInstance().getSprite("TextBox3.png", (self.frame,0))
                 else:
@@ -168,10 +274,11 @@ class TextEngine(object):
         def draw(self, position, drawSurface):
             if self.large:
                 self.setAlpha()
-            drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
-            ##Draw the box
-           
 
+            ##Draw the box
+            drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
+            drawSurface.blit(self.cube, position - Drawable.CAMERA_OFFSET)
+            
             ##Wait for closing animation
             if self.closing:
                 return
@@ -288,11 +395,19 @@ class TextEngine(object):
             ##Other boxes
             else:
                 if self.lineNum == 2:
-                    Text(((0 + 10) + (8 * self.charIndex), 34), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+                    Text.drawChar(self.textBox, ((12) + (8 * self.charIndex), 34), char= self.line[self.charIndex], flag=2)
                 elif "&&" in self.line:
-                    Text(((0 + 10) + (8 * self.charIndex), 22), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+                    Text.drawChar(self.textBox, ((12) + (8 * self.charIndex), 22), char= self.line[self.charIndex], flag=2)
                 else:
-                    Text(((0 + 10) + (8 * self.charIndex), 7), self.line[self.charIndex]).draw(self.textBox, use_camera=False)
+                    Text.drawChar(self.textBox, ((12) + (8 * self.charIndex), 7), char= self.line[self.charIndex], flag=2)
+
+                ##  Code for original font that includes spacing
+                """ if self.lineNum == 2:
+                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 34), char= self.line[self.charIndex])
+                elif "&&" in self.line:
+                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 22), char= self.line[self.charIndex])
+                else:
+                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 7), char= self.line[self.charIndex]) """
 
         """
         Main text display method.
@@ -306,6 +421,7 @@ class TextEngine(object):
                 self.text = self.text[self.charIndex+1:]
                 if self.text == "":
                     self.end = True
+                    self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
                     self.ready_to_continue = True
                     self.playSFX("OOT_Dialogue_Done.wav")
                     self.charIndex = 0
@@ -317,6 +433,8 @@ class TextEngine(object):
                         self.lineNum = 2
                     else:
                         self.ready_to_continue = True
+                        self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
+                        self.cubeTick = 0
                         self.line = self.text[:self.text.index("\n")]
                         self.playSFX("message-finish.wav")
                         self.charIndex = 0
@@ -324,6 +442,8 @@ class TextEngine(object):
                             self.lineNum = 1
                 else:
                     self.ready_to_continue = True
+                    self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
+                    self.cubeTick = 0
                     self.line = self.text
                     self.charIndex = 0
                     self.playSFX("message-finish.wav")
@@ -359,6 +479,7 @@ class TextEngine(object):
 
             elif self.ready_to_continue:       
                 ##Progressing text
+                Text.drawCursor(self.textBox, (216, 40))
                 if EventManager.getInstance().performAction("interact"):
                     if self.end == True:
                         self.setClosing()
@@ -369,6 +490,9 @@ class TextEngine(object):
                         self.box_drawn = False
                         self.ready_to_continue = False
                         self.backgroundBool = True
+                    
+                    
+
                 elif EventManager.getInstance().performAction("map"):
                     self.setClosing()
                     self.blitBackground()
@@ -379,7 +503,8 @@ class TextEngine(object):
                 if self.type == 3:
                     self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox3.png", (0,1)), (0,0))
                 else:
-                    self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,6)), (0,0))
+                    surf = SpriteManager.getInstance().getSprite("TextBox2.png", (0,6))
+                    self.textBox.blit(surf, (0,0))
             else:
                 self.textBox.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,5)), (0,0))
 
@@ -439,3 +564,15 @@ class TextEngine(object):
 
             if self.prompt:
                 self.promptHighlight.update(seconds)
+            else:
+                if self.ready_to_continue:
+                    pass
+                elif self.done:
+                    pass
+                else:
+                    self.frameTimer += seconds
+                    if self.frameTimer >= 0.05:
+                        self.frameTimer = 0.0
+                        self.cubeTick += 1
+                        self.cubeTick %= 4
+                        self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (self.cubeTick, 1))

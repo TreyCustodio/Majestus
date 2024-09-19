@@ -2,18 +2,19 @@ from .pixel import *
 from .drawable import *
 from .animated import *
 from .hudManager import *
+from .icons import *
 from .effects import *
 from .nonPlayer import *
 from .switch import *
 from .specialSwitch import *
 from .block import *
-from.specialBlocks import *
+from .specialBlocks import *
 from .weapons import *
 from .obstacles import *
 from .enemy import *
 from .player import *
 from .map import *
 from .engine import *
-from .subEngines import *
 from .textEngine import *
+from .subEngines import *
 from .mobster import *

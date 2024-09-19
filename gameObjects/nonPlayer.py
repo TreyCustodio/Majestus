@@ -1,5 +1,5 @@
-from . import Drawable, Animated, QuestIcon, ZIcon, HudImageManager
-from utils import SpriteManager, SCALE, RESOLUTION, vec, rectAdd, SoundManager, SPEECH, ICON, INV
+from . import Drawable, Animated, QuestIcon, IconManager, InteractIcon, HudImageManager
+from utils import SpriteManager, SCALE, RESOLUTION, vec, rectAdd, SoundManager, SPEECH, ICON, INV, FLAGS
 import pygame
 
 class NonPlayer(Animated):
@@ -14,7 +14,7 @@ class NonPlayer(Animated):
         self.interacted = False
         self.animate = False
         self.interactable = False
-        self.interactIcon = ZIcon((self.position[0],self.position[1]-16))
+        self.interactIcon = InteractIcon((self.position[0],self.position[1]-16))
         self.drop = False
         self.disappear = False
         self.id = ""
@@ -59,7 +59,7 @@ class NonPlayer(Animated):
     def update(self, seconds):
         super().update(seconds)
         if self.interactable:
-            self.interactIcon.update(seconds)
+            IconManager.update(self.interactIcon, seconds)
 
 class Chest(NonPlayer):
     """
@@ -115,10 +115,11 @@ class DarkCloak(NonPlayer):
         super().__init__(position, "npc_boner.png", (0,0),nFrames=6)
         self.text = text
         self.animate = True
+        self.icon = (0,1)
     
     def interact(self, engine):
         self.interacted = True
-        engine.displayText(self.text)
+        engine.displayText(self.text, self.icon)
 
 class Grave(NonPlayer):
     def __init__(self, position = vec(0,0), text = SPEECH["null"]):
@@ -507,20 +508,25 @@ class GreenHeart(NonPlayer):
     def getCollisionRect(self):
         return pygame.Rect((self.position[0], self.position[1]+1), (16,14))
     
-    def draw(self, drawSurface, drawHitbox = False):
-        NonPlayer.draw(self, drawSurface, drawHitbox)
+    def draw(self, drawSurface, drawHitbox = False, drawIcon = True):
+        NonPlayer.draw(self, drawSurface, drawHitbox, drawIcon)
 
     def getInteractionRect(self):
         oldRect = self.getCollisionRect()
         newRect = pygame.Rect((oldRect.bottomleft),(oldRect.width,5))
         return pygame.Rect((self.position[0]-2, self.position[1]-2), (20,20))
+    
     def interact(self, engine):
         if not self.interacted:
             SoundManager.getInstance().playSFX("solve.wav")
             self.interacted = True
             INV["max_hp"] += 1
             engine.healPlayer(INV["max_hp"])
-            engine.displayText("You got a Green Heart!&&\n  Your maximum HP has\n   increased by 1!\n")
+            if not FLAGS[5]:
+                FLAGS[5] = True
+                engine.displayText("This is an [Emerald Heart]!&&\nYour maximum HP will go\n    up by 1 point!\nEach boss in Majestus will\ndrop a heart upon defeat.\nCan you defeat them all?&&\n")
+            else:
+                engine.displayText("Got an Emerald Heart!&&\n  Your maximum HP has\n   increased by 1!\n")
             engine.disappear(self)
     
 

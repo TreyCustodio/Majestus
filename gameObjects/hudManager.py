@@ -224,7 +224,6 @@ class EnergyBar(Drawable):
         else:
             convertedTimer = 25
 
-        #print(convertedTimer)
         #28 pixels to fill
         #1 pixel on top and 1 on bottom 
         drawSurface.blit(SpriteManager.getInstance().getSprite("energy.png", (2, 0)), list(map(int, self.position)))
@@ -646,7 +645,6 @@ class HealthBar(object):
             Green at full, red at low.
             Draw 5 pixels of the healthbar per 1 hp
             """
-            #print("drawingHurt: ", self.drawingHurt)
             ##Full Health
             if player.hp == INV["max_hp"]:
                 if not self.drawingHeal:
@@ -793,3 +791,111 @@ class HudImageManager(object):
             
 
         HudImageManager.abovePlayer = vec(player.position[0] + 1, player.position[1] - 16) - Drawable.CAMERA_OFFSET
+
+
+class Wipe(object):
+    def __init__(self) -> None:
+        self.image = pygame.transform.scale(SpriteManager.getInstance().getSprite("fade.png"), (304, 208))
+        self.alpha = 0
+        self.image.set_alpha(0)
+        self.circle = SpriteManager.getInstance().getSprite("black.png", (0,1))
+        self.increasing = False
+        self.decreasing = False
+        self.alpha_delta = 1
+        
+        ##Values for Animations##
+        self.nFrames = 9
+        self.framesPerSecond = 20
+        self.frameTimer = 0.0
+        self.animate = True
+        self.frame = 0
+        self.row = 0
+        self.animate = True
+        self.mode = "fade"
+    
+    def draw(self, drawSurface):
+        drawSurface.blit(self.image, vec(0,0))
+        if self.mode == "circle":
+            drawSurface.blit(self.circle, vec(0,0))
+
+    def setColor(self, color: tuple):
+        self.image.fill(color)
+        
+    def setMode(self, name: str = "fade"):
+        self.mode = name
+
+    def setAlpha(self, value: int):
+        if value <= 255 and value >= 0:
+            self.alpha = value
+            self.image.set_alpha(value)
+
+    def increase(self, speed: int = 1):
+        self.alpha_delta = speed
+        self.setAlpha(0)
+        self.increasing = True
+        self.circle.set_alpha(255)
+        if self.mode == "circle":
+            self.animate = True
+            self.reverse = False
+    
+    def decrease(self, speed: int = 1):
+        self.alpha_delta = speed
+        self.setAlpha(255)
+        self.decreasing = True
+        if self.mode == "circle":
+            self.animate = True
+            self.reverse = True
+
+    def updateFade(self):
+        if self.increasing:
+            self.alpha += self.alpha_delta
+            if self.alpha > 255:
+                self.alpha = 255
+                self.increasing = False
+                self.image.set_alpha(self.alpha)
+            else:
+                self.image.set_alpha(self.alpha)
+        
+        elif self.decreasing:
+            self.alpha -= self.alpha_delta
+            if self.alpha < 0:
+                self.alpha = 0
+                self.decreasing = False
+                self.image.set_alpha(self.alpha)
+            else:
+                self.image.set_alpha(self.alpha)
+
+    def updateCircle(self, seconds):
+        if self.animate:
+            self.frameTimer += seconds
+            if self.frameTimer > 1 / self.framesPerSecond:
+                
+                if self.reverse:
+                    self.frame -= 1
+                    if self.frame == -1:
+                        self.animate = False
+                        self.circle.set_alpha(0)
+                        return
+                    self.frameTimer -= 1/self.framesPerSecond
+                    self.circle = SpriteManager.getInstance().getSprite("black.png",
+                                                        (self.frame, 1))
+
+                else:
+                    self.frame += 1
+                    if self.frame == 9:
+                        self.animate = False
+                        return
+                    self.frameTimer -= 1/self.framesPerSecond
+                    self.circle = SpriteManager.getInstance().getSprite("black.png",
+                                                        (self.frame, 1))
+
+    def update(self, seconds):
+        if self.mode == "fade":
+            self.updateFade()
+        
+        elif self.mode == "circle":
+            self.updateFade()
+            self.updateCircle(seconds)
+
+        elif self.mode == "triangle":
+            pass
