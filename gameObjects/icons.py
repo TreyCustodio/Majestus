@@ -101,13 +101,11 @@ class StickIcon(AbstractIcon):
 
 ### Icon Manager Class  ###
 
-#Static class
 class IconManager(object):
 
     """
-    Returns the Surface object representing the icon image.
+    Returns the Surface object representing the icon image (in white box).
 
-    Controllers (in string form):
     key (not capitalized), Switch, Gamecube, Xbox, Ps5
     """
     #Static
@@ -116,9 +114,41 @@ class IconManager(object):
         if controller == "Switch":
             if button == "interact":
                 return SpriteManager.getInstance().getSprite("z.png", (0,0))
+            elif button == "shoot":
+                return SpriteManager.getInstance().getSprite("z.png", (0,0))
+            if button == "element":
+                return SpriteManager.getInstance().getSprite("z.png", (0,0))
         else:
             return SpriteManager.getInstance().getSprite("z.png", (0,1))
     
+    def getButton(button : str = ""):
+        """
+        Returns the surface object representing the button image.
+        """
+        ##  Get Y (Row)
+        controller = EventManager.getInstance().getController()
+        if controller == "Switch":
+            y = 4
+        else:
+            y = 5
+
+        ##  Get X (Column)
+        if button == "interact":
+            x = 0
+        elif button == "element":
+            x = 1
+        elif button == "shoot":
+            x = 2
+        elif button == "shortcut_left":
+            x = 6
+        elif button == "shortcut_right":
+            x = 7
+        elif button == "shortcut_trigger":
+            x = 5
+
+        
+        return SpriteManager.getInstance().getSprite("buttons.png", (x,y))
+
 
     """
     Animate Icon images.

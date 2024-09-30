@@ -314,8 +314,13 @@ EQUIPPED = {
 
     "C": -1,
     #0 -> fire sword, 1 -> blizzard, 2 -> clap, 3 -> slash
+    
     "Arrow": 0,
     #0 -> regular, 1 -> bombo, 
+
+    "Dodge":-1,
+    #0 -> Flash step, #1 -> Ice Cleats, #2 -> Thunder Hook, #3 -> Wind Shield
+    
     "room":0,
     #0 -> regular, 1 -> fire, 2 -> ice, 3- -> thunder, 4-> wind, 5-> super, 6-> hyper
     "area":0,
@@ -377,7 +382,7 @@ INV = {
 #   Tuple
 #   "action", integer
 SHORTCUTS = {
-    0:["item",0],
+    0:[0,0],
     1:[0,0],
     2:[0,0],
     3:[0,0],

@@ -2,6 +2,7 @@ import pygame
 from UI import ScreenManager, Xbox, EventManager
 from utils import RESOLUTION, UPSCALED
 from random import randint
+from tqdm import tqdm
 
 
 

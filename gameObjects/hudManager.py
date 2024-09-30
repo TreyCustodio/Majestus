@@ -1,10 +1,29 @@
-from . import Drawable, Animated, Number
+from . import Drawable, Animated, Number, IconManager
 from utils import SpriteManager, SoundManager, vec, INV, RESOLUTION, EQUIPPED, INV, ACTIVE_SHORTCUT, SHORTCUTS
 import pygame
+
+class HudButtons(object):
+    """
+    Controls button images on the HUD.
+    Draws the correct button based on the controller.
+    """
+
+    def draw(drawSurface):
+        ##  Shoot, Element, Dodge
+        drawSurface.blit(IconManager.getButton("shoot"), vec(0, 24))
+        drawSurface.blit(IconManager.getButton("element"), vec(19, 24))
+        drawSurface.blit(IconManager.getButton("interact"), vec(19*2, 24))
+
+        ##  Shortcuts
+        pos = AmmoBar.getInstance().getShortcutPos()
+        drawSurface.blit(IconManager.getButton("shortcut_left"), (pos[0] - 19, pos[1] + 17))
+        drawSurface.blit(IconManager.getButton("shortcut_right"), (pos[0] + 31, pos[1] + 17))
+        drawSurface.blit(IconManager.getButton("shortcut_trigger"), (pos[0] + 6, pos[1] + 24))
 
 class AmmoBar(object):
     """
     Displays the currently selected arrow on the HUD
+    Naming conventions are off in this class. Try to keep to to camelCaseJavaStyle or c_case_style
     """
     _INSTANCE = None
     
@@ -21,10 +40,13 @@ class AmmoBar(object):
             super().__init__(vec(0,15), "ammo.png", (0, EQUIPPED["Arrow"]+1))
             self.damageId = 0
             self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
-            self.shortCutBackground = SpriteManager.getInstance().getSprite("shortcut.png")
+            self.shortCutBackground = SpriteManager.getInstance().getSprite("shortcut.png", (0,0))
+            self.shortCutLeft  = SpriteManager.getInstance().getSprite("shortcut.png", (1,0))
+            self.shortCutRight = SpriteManager.getInstance().getSprite("shortcut.png", (1,0))
+
             self.shortCutImage = None
             self.shortcutPos = vec(272,0)
-
+            self.big_box = vec(0,0)
             self.shortcutImages = {
                 0:None,
                 1:None,
@@ -47,14 +69,21 @@ class AmmoBar(object):
                 return pygame.transform.scale(self.shortcutImages[index], (16,16))
         
         def setShortcutImage(self, item, index: int = 0):
+            """
+            Params:
+            item -> ("action", attack_integer)
+            """
             image = None
             ammo = False
+
+            ##  Display Main shortcut
             if item[0] == "shoot":
                 if item[1] == 0:
                     image = SpriteManager.getInstance().getSprite("ammo.png", (0,1))
                 elif item[1] == 1:
                     image = SpriteManager.getInstance().getSprite("ammo.png", (0,2))
                     ammo = True
+
             elif item[0] == "element":
                 id = item[1]
                 if id == 0:
@@ -99,7 +128,7 @@ class AmmoBar(object):
                     pass
             
             if image:
-                image = pygame.transform.scale(image, (32,32))
+                pass
             self.shortcutImages[index] = image
             self.ammoImages[index] = ammo
 
@@ -131,7 +160,10 @@ class AmmoBar(object):
             else:
                 self.backImage = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, 0))
                 self.image = SpriteManager.getInstance().getSprite("ammo.png", (self.damageId, EQUIPPED["Arrow"]+1))
-                
+        
+        def getShortcutPos(self):
+            return self.big_box
+        
         def draw(self, drawSurface, player):
             if player.hp <= INV["max_hp"]//3 or player.hp == 1:
                 self.damageId = 2
@@ -143,10 +175,34 @@ class AmmoBar(object):
             self.setArrow(player)
             drawSurface.blit(self.backImage, self.position)
             drawSurface.blit(self.image, self.position)
-            drawSurface.blit(self.shortCutBackground, self.shortcutPos)
+            
 
+            ##  Shortcuts
+            self.big_box = (self.shortcutPos[0] - 32, self.shortcutPos[1])
+            drawSurface.blit(self.shortCutBackground, self.big_box)
+            drawSurface.blit(self.shortCutLeft, (self.big_box[0]-19, self.big_box[1]+8))
+            drawSurface.blit(self.shortCutRight, (self.big_box[0]+35, self.big_box[1]+8))
+            
+            ##  Calculate index of active shortcut and left/right shortcuts
+            active = ACTIVE_SHORTCUT[0]
+            active_left = active - 1
+            if active_left < 0:
+                active_left = 5
+            active_right = active + 1
+            if active_right > 5:
+                active_right = 0
+            
+            ##  Left and Right Shortcuts
+            if self.shortcutImages[active_left]:
+                print(active_left)
+                print(self.shortcutImages[active_left])
+                drawSurface.blit(self.shortcutImages[active_left], (self.big_box[0] - 19, self.big_box[1] + 8))
+            if self.shortcutImages[active_right]:
+                drawSurface.blit(self.shortcutImages[active_right], (self.big_box[0] + 35, self.big_box[1] + 8))
+
+            ##  Main Shortcut Image
             if self.shortcutImages[ACTIVE_SHORTCUT[0]]:
-                drawSurface.blit(self.shortcutImages[ACTIVE_SHORTCUT[0]], (self.shortcutPos[0], self.shortcutPos[1]))
+                drawSurface.blit(pygame.transform.scale(self.shortcutImages[ACTIVE_SHORTCUT[0]], (32,32)), (self.big_box))
                 if self.ammoImages[ACTIVE_SHORTCUT[0]]:
                     if SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "item":
                         id = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
@@ -165,7 +221,6 @@ class AmmoBar(object):
                         self.drawNumber(vec(304-32, 16), INV["bombo"], drawSurface)
 
         def update(self, seconds):
-            self.shortCutBackground.set_alpha(200)
             if self.shortcutImages[ACTIVE_SHORTCUT[0]]:
                 pass
                 #self.shortcutImages[ACTIVE_SHORTCUT[0]].set_alpha(50)
@@ -192,7 +247,13 @@ class ElementIcon(object):
             equipped = EQUIPPED["C"]
             if equipped != None:
                 self.image = SpriteManager.getInstance().getSprite("element.png", (equipped+1, 0))
-            drawSurface.blit(self.image, self.position)
+            drawSurface.blit(self.image, (self.position[0] + 4, self.position[1]))
+
+            dodge = EQUIPPED["Dodge"]
+            if dodge != None:
+                image = SpriteManager.getInstance().getSprite("element.png", (dodge+1, 0))
+                drawSurface.blit(image, (self.position[0] + 4 + 19, self.position[1]))
+
 
 class EnergyBar(Drawable):
     """
@@ -209,6 +270,7 @@ class EnergyBar(Drawable):
         self.image = SpriteManager.getInstance().getSprite("energy.png", (self.element,0))
 
     def draw(self, drawSurface):
+        return
         drawSurface.blit(self.image, self.position)
 
 

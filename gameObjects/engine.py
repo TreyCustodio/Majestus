@@ -2,7 +2,7 @@ import pygame
 from math import ceil
 from UI import EventManager, ACTIONS
 from utils import SpriteManager
-from . import (Drawable, HudImageManager, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
+from . import (Drawable, HudImageManager, HudButtons, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
@@ -305,7 +305,6 @@ class AE(object):
         """
         if self.camera:
             self.camera.position[0] = pos[0] - (self.camera.getSize()[0] // 2)
-            
             self.camera.position[1] = pos[1] - (self.camera.getSize()[0] // 2)
             if self.name:
                 self.name.position = (self.camera.position[0] + (RESOLUTION[0]//2 - self.name.width // 2), self.camera.position[1]+200)
@@ -1609,9 +1608,7 @@ class AE(object):
     """
     Draw Methods
     """
-    """
-    Nonetype gets getting passed in
-    """
+
     def drawNpcs(self, drawSurface):
         
         if self.spawning:
@@ -1624,7 +1621,6 @@ class AE(object):
                             n.interactable = False
                     if self.inShop or self.textBox:
                         n.draw(drawSurface, drawIcon = False)
-
                     else:
                         n.draw(drawSurface)
         
@@ -1707,6 +1703,8 @@ class AE(object):
             self.drawNumber(vec(34, self.moneyImage.position[1]), INV["money"], drawSurface, row = 2)
         else:
             self.drawNumber(vec(34, self.moneyImage.position[1]), INV["money"], drawSurface)
+        
+        
 
         """
         Keys
@@ -1767,6 +1765,8 @@ class AE(object):
         
         if self.player.drunk:
             self.drawNumber(vec(8,64), int(self.player.drunkTimer), drawSurface, row = 3)
+        
+        HudButtons.draw(drawSurface)
 
         
 

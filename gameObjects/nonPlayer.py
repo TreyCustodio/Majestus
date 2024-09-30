@@ -376,7 +376,10 @@ class Drop(NonPlayer):
     def setInteractable(self):
         pass
     
-    def draw(self, drawSurf):
+    """
+    param drawIcon should always be false
+    """
+    def draw(self, drawSurf, drawIcon = False):
         if self.timer >= self.lifeTime-2:
             temp = self.lifeTime-2
             if (self.timer >= temp and self.timer <= temp+0.2) or (self.timer >= temp+0.4 and self.timer <= temp+0.6) or (self.timer >= temp+0.8 and self.timer <= temp+1.0) or (self.timer >= temp+1.2 and self.timer <= temp+1.4) or (self.timer >= temp+1.6 and self.timer <= temp+1.8):

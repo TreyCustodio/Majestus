@@ -3,6 +3,7 @@ This file contains information relevant to version history,
 as well as ideas and everything on my to-do list.
 ~Trey Custodio~
 
+
 ## v0.1
 Scorching Fields first version. Lava Knight Boss.
 
@@ -13,6 +14,8 @@ Scorching Fields first version. Lava Knight Boss.
 - [ ] Icon manager for buttons
 - [ ] Shop / Dark Cloaker
 - [ ] Light Cloaker
+  - [ ] I Wonder boss theme
+  - [ ] Introduce health concept
 - [ ] Shortcuts
   - [ ] Next/Prev shortcuts
   - [ ] Icons

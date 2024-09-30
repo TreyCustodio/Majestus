@@ -75,7 +75,8 @@ KEY = {
        "left":pygame.K_LEFT,
        "target": pygame.K_LSHIFT,
        "target_left":pygame.K_a,
-        "target_right":pygame.K_s
+        "target_right":pygame.K_s,
+        "shortcut":pygame.K_RSHIFT
     }
 
 
@@ -463,6 +464,12 @@ class EventManager(object):
                                 ACTIONS["right"] = True
                             elif key == KEY["left"]:
                                 ACTIONS["left"] = True
+                            elif key == KEY["shortcut"]:
+                                ACTIONS["trigger_r"] = True
+                            elif key == KEY["target_left"]:
+                                ACTIONS["target_left"] = True
+                            elif key == KEY["target_right"]:
+                                ACTIONS["target_right"] = True
          
 
                         elif event.type == pygame.KEYUP:
@@ -487,6 +494,12 @@ class EventManager(object):
                                 ACTIONS["left"] = False
                             elif key == KEY["target"]:
                                 ACTIONS["target"] = False
+                            elif key == KEY["shortcut"]:
+                                ACTIONS["trigger_r"] = False
+                            elif key == KEY["target_left"]:
+                                ACTIONS["target_left"] = False
+                            elif key == KEY["target_right"]:
+                                ACTIONS["target_right"] = False
                     
                     
                     ##Move menu cursors

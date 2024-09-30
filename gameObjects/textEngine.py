@@ -277,7 +277,8 @@ class TextEngine(object):
 
             ##Draw the box
             drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
-            drawSurface.blit(self.cube, position - Drawable.CAMERA_OFFSET)
+            if not self.closing and not self.starting:
+                drawSurface.blit(self.cube, position - Drawable.CAMERA_OFFSET)
             
             ##Wait for closing animation
             if self.closing:
@@ -295,8 +296,6 @@ class TextEngine(object):
                 self.box_drawn = True
 
             
-            
-
             ##  Text routines
             ##End of dialogue
             if self.end:
@@ -315,32 +314,26 @@ class TextEngine(object):
                 else:
                     pass
                 return
-                    #self.drawEnd(position, drawSurface)
 
             ##Continue to next line
             elif self.ready_to_continue:
                 if self.displayIcon != None:
                     self.drawIcon((position[0] + 106, position[1] - 32) - Drawable.CAMERA_OFFSET, drawSurface)
                 return
-                #self.drawContinue(position, drawSurface)
             
             ##Buffer
             elif self.displayTimer > 0 and self.displayTimer < 0.1:
                 return
-                #self.drawYellow1(position, drawSurface)
                 
             else:
                 ##Draw text
                 if self.displayIcon != None:
                     self.drawIcon((position[0] + 106, position[1] - 32) - Drawable.CAMERA_OFFSET, drawSurface)
                 self.displayText(position, drawSurface)
-        
-            
-        
+
         
         def drawPrompt(self, position, drawSurface):
             drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,5)), position - Drawable.CAMERA_OFFSET)
-
 
         def drawIcon(self, position, drawSurface):
             box = SpriteManager.getInstance().getSprite("icon.png", (0,0))
@@ -352,33 +345,6 @@ class TextEngine(object):
             drawSurface.blit(self.textBox, position)
             self.box_drawn = True
 
-        def drawContinue(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,1)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,1)), position)
-
-        def drawYellow1(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,3)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,3)), position)
-            self.displayText(position, drawSurface)
-        
-        def drawYellow2(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,4)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,4)), position)
-            self.displayText(position, drawSurface)
-
-        def drawEnd(self, position, drawSurface):
-            if self.large:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,2)), position)
-            else:
-                drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox.png", (0,2)), position)
-
-        
         def drawChars(self):
             ##Sign boxes
             if self.type == 3:
@@ -450,10 +416,6 @@ class TextEngine(object):
             else:
                 self.playSFX("message.wav")
                     
-                
-                
-                
-
         def handleEvent(self):
             if self.closing or self.starting or self.done:
                 return
