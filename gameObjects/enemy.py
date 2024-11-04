@@ -2042,7 +2042,7 @@ class AlphaFlapper(Enemy):
         self.speed = 20
         self.initial_speed = 20
         self.hurtRow = 1
-        self.maxHp = 6
+        self.maxHp = 50
         self.hp = self.maxHp
         self.boss = boss
         self.damage = 1

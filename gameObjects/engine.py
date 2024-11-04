@@ -144,6 +144,8 @@ class AE(object):
         self.whiting = False
         self.startingMobster = False
         self.inShop = False
+        self.cutscene = False
+
         #HUD
         self.healthBar = HealthBar.getInstance()
         self.ammoBar = AmmoBar.getInstance()
@@ -155,6 +157,24 @@ class AE(object):
         #self.enemyPlacement
         #self.bgm
     
+    def initializeIntro(self):
+        self.cutscene = True
+        self.player = None
+        self.readyToTransition = False
+        self.largeText = False
+        self.textBox = False
+        self.text = ""
+        self.icon = None
+        self.boxPos = vec(32,64)
+        self.boxType = 0
+        self.textInt = 0
+        self.timer = 0.0
+        self.whiting = False
+        self.area_fading = False
+
+        ##  Images
+        self.black = pygame.transform.scale(SpriteManager.getInstance().getSprite("fade.png"), (304, 208))
+
     """
     Getter Methods
     """

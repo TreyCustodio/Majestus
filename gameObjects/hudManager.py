@@ -16,8 +16,8 @@ class HudButtons(object):
 
         ##  Shortcuts
         pos = AmmoBar.getInstance().getShortcutPos()
-        drawSurface.blit(IconManager.getButton("shortcut_left"), (pos[0] - 19, pos[1] + 17))
-        drawSurface.blit(IconManager.getButton("shortcut_right"), (pos[0] + 31, pos[1] + 17))
+        drawSurface.blit(IconManager.getButton("shortcut_left"), (pos[0] - 21, pos[1] + 17))
+        drawSurface.blit(IconManager.getButton("shortcut_right"), (pos[0] + 33, pos[1] + 17))
         drawSurface.blit(IconManager.getButton("shortcut_trigger"), (pos[0] + 6, pos[1] + 24))
 
 class AmmoBar(object):
@@ -194,8 +194,6 @@ class AmmoBar(object):
             
             ##  Left and Right Shortcuts
             if self.shortcutImages[active_left]:
-                print(active_left)
-                print(self.shortcutImages[active_left])
                 drawSurface.blit(self.shortcutImages[active_left], (self.big_box[0] - 19, self.big_box[1] + 8))
             if self.shortcutImages[active_right]:
                 drawSurface.blit(self.shortcutImages[active_right], (self.big_box[0] + 35, self.big_box[1] + 8))
@@ -205,20 +203,22 @@ class AmmoBar(object):
                 drawSurface.blit(pygame.transform.scale(self.shortcutImages[ACTIVE_SHORTCUT[0]], (32,32)), (self.big_box))
                 if self.ammoImages[ACTIVE_SHORTCUT[0]]:
                     if SHORTCUTS[ACTIVE_SHORTCUT[0]][0] == "item":
+                        pos = (self.big_box[0] + 30, self.big_box[1] + 16)
                         id = SHORTCUTS[ACTIVE_SHORTCUT[0]][1]
                         if id == 1:
-                            self.drawNumber(vec(304-32, 16), INV["potion"], drawSurface)
+                            self.drawNumber(pos, INV["potion"], drawSurface)
                         elif id == 2:
-                            self.drawNumber(vec(304-32, 16), INV["smoothie"], drawSurface)
+                            self.drawNumber(pos, INV["smoothie"], drawSurface)
                         elif id == 3:
-                            self.drawNumber(vec(304-32, 16), INV["beer"], drawSurface)
+                            self.drawNumber(pos, INV["beer"], drawSurface)
                         elif id == 4:
-                            self.drawNumber(vec(304-32, 16), INV["joint"], drawSurface)
+                            self.drawNumber(pos, INV["joint"], drawSurface)
                         elif id == 5:
-                            self.drawNumber(vec(304-32, 16), INV["speed"], drawSurface)
+                            self.drawNumber(pos, INV["speed"], drawSurface)
 
                     else:
-                        self.drawNumber(vec(304-32, 16), INV["bombo"], drawSurface)
+                        pos = (self.big_box[0] + 16, self.big_box[1] + 12)
+                        self.drawNumber(pos, INV["bombo"], drawSurface)
 
         def update(self, seconds):
             if self.shortcutImages[ACTIVE_SHORTCUT[0]]:

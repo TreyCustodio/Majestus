@@ -23,24 +23,8 @@ class Intro_Cut(AbstractEngine):
             """
             Does not call super().__init()
             """
-            self.fading = False
-            self.player = None
-            self.largeText = False
-            self.introDone = False
-            self.textBox = False
-            self.text = ""
-            self.icon = None
-            self.boxPos = vec(32,64)
-            self.textInt = 0
-            self.background = Level("intro_cut.png")
-            self.timer = 0
-            self.playingBgm = False
-            self.light = Drawable(vec(16*4, 16*3), fileName="light.png", offset=(0,0))
-            self.red = Level(fileName = "introcut_1.png")
-            self.frameTimer = 0.0
-            self.frame = 0
-            self.dark = Drawable(vec(16*12, 16*3), fileName="light.png", offset=(4,0))
-            self.darkFrame = 4
+            AE.initializeIntro(self)
+            
         
         def reset(self):
             self.playingBgm = False
@@ -52,46 +36,27 @@ class Intro_Cut(AbstractEngine):
             self.icon = None
             self.boxPos = vec(32,64)
             self.textInt = 0
-            self.timer = 0
+            self.timer = 0.0
 
         def playBgm(self):
             SoundManager.getInstance().playBGM("still-dreaming.mp3")
             self.playingBgm = True
 
-        def displayText(self, text = "", icon = None, large = True):
+        def displayText(self, text = "", icon = None, large = True, box = 2):
             """
             Display text
             """
             self.textBox = True
             self.text = text
             self.largeText = large
-          
+            self.boxType = box
+        
+        
 
         def draw(self, drawSurface):
-            
-            if self.fading:
-                Fade.getInstance().draw(drawSurface)
-                return
-            elif self.textInt >= 8:
-                Level(fileName="intro_cut.png").draw(drawSurface)
-            elif self.textInt >= 6:
-                Level(fileName="majestus.png").draw(drawSurface)
-            elif self.textInt == 4:
-                Level(fileName="intro_cut.png").draw(drawSurface)
-            elif self.textInt == 3:
-                self.boxPos = vec(32, RESOLUTION[1]-(64+32))
-                self.red.draw(drawSurface)
-                self.light.draw(drawSurface)
-                self.dark.draw(drawSurface)
-            elif self.textInt == 2:
-                self.boxPos = vec(32, RESOLUTION[1]-(64+32))
-                Level(fileName = "gods.png").draw(drawSurface)
-            else:
-                self.background.draw(drawSurface)
-
-            if self.textInt < 2:
-                Text(vec(0,0), text = "Press SPACE to skip").draw(drawSurface)
-            
+            drawSurface.blit(self.black,vec(0,0))
+            return
+        
         
         
         def handleEvent(self):
@@ -102,53 +67,44 @@ class Intro_Cut(AbstractEngine):
 
         def update(self, seconds):
             """
-            Fade within Intro engine,
-            ScreenManager fades In after introDone == True
             """
-            if self.textInt == 3:
-                if self.timer >= 2.0:
-                    self.timer = 0.0
-                    self.textInt += 1
-                    return
-                else:
-                    self.timer += seconds
-                    return
-            
-            elif self.textInt == 5:
+            if self.textInt == 0:
+                self.timer += seconds
                 if self.timer >= 1.0:
-                    self.timer = 0.0
+                    self.displayText(SPEECH["intro_0"], box=4)
                     self.textInt += 1
-                    return
-                else:
-                    self.timer += seconds
-                    return
-            elif self.textInt == 7:
-                if self.timer >= 2.0:
                     self.timer = 0.0
-                    self.textInt += 1
-                    return
-                else:
+            elif self.textInt == 1:
+                if self.text == "":
                     self.timer += seconds
-                    return
-                
-            elif self.textInt > 10:
-                if Fade.getInstance().frame == 8:
-                    self.timer += seconds
-                    if self.timer >= 0.5:
+                    if self.timer >= 1.5:
                         self.timer = 0.0
-                        SoundManager.getInstance().fadeoutBGM()
-                        self.introDone = True
-                        return
-                    return
-                else:
-                    Fade.getInstance().update(seconds)
-                    return
-                
-            self.timer += seconds
-            if self.timer >= 1:
-                self.displayText(INTRO[self.textInt], large = True)
-                self.timer = 0
-                self.textInt += 1
+                        self.textInt = 2
+                        self.displayText(SPEECH["intro_1"], box=4)
+                    elif self.timer >= 1.0 and SoundManager.getInstance().currentlyPlaying == None:
+                        self.playBgm()
+                        
+            elif self.textInt == 2:
+                if self.text == "":
+                    self.textInt += 1
+                    self.displayText(SPEECH["intro_2"], box=4)
+            elif self.textInt == 3:
+                if self.text == "":
+                    self.textInt += 1
+                    self.displayText(SPEECH["intro_3"], box=4)
+            elif self.textInt == 4:
+                if self.text == "":
+                    self.textInt += 1
+                    self.displayText(SPEECH["intro_4"], box=4)
+            elif self.textInt == 5:
+                if self.text == "":
+                    self.textInt += 1
+                    self.displayText(SPEECH["intro_5"], box=4)
+            elif self.textInt == 6:
+                if self.text == "":
+                    self.textInt += 1
+                    self.displayText(SPEECH["intro_6"], box=4)
+            return
 
 
 
@@ -158,7 +114,6 @@ class Test(AbstractEngine):
     def getInstance(cls):
         if cls._INSTANCE == None:
          cls._INSTANCE = cls._T()
-      
         return cls._INSTANCE
     
     class _T(AE):
@@ -430,7 +385,7 @@ class Tutorial_2(AbstractEngine):
             super().__init__("tut_2", True, vec(608, 208))
             #self.player = Player(vec(146, 276))
             self.roomId = 4
-            self.bgm = "forget_me_nots.mp3"
+            self.bgm = "thug_loop.mp3"
             self.ignoreClear = True
             self.max_enemies = 2
             self.enemyPlacement = 0
@@ -646,7 +601,7 @@ class Tutorial_3(AbstractEngine):
         def __init__(self):
             super().__init__("tut_3", True, vec(304, 320))
             self.roomId = 4
-            self.bgm = "forget_me_nots.mp3"
+            self.bgm = "thug_loop.mp3"
             self.ignoreClear = True
             self.max_enemies = 4
             self.enemyPlacement = 0
@@ -706,7 +661,7 @@ class Tutorial_3(AbstractEngine):
                     if b == self.trigger1:
                         self.transport(Tutorial_2, 2, keepBGM=True)
                     elif b == self.trigger2:
-                        self.transportPos(Light_Cloak, vec(0,0), keepBGM=False)
+                        self.transportPos(Entrance, vec(16*9,16*9), keepBGM=False)
                     elif b == self.trigger3:
                         self.transport(Tutorial_4, 3, True)
                     else:
@@ -724,7 +679,7 @@ class Tutorial_4(AbstractEngine):
         def __init__(self):
             super().__init__("tut_4")
             self.roomId = 4
-            self.bgm = "forget_me_nots.mp3"
+            self.bgm = "thug_loop.mp3"
             self.ignoreClear = False
             self.max_enemies = 1
             self.enemyPlacement = 1
@@ -2021,6 +1976,7 @@ class Entrance(AbstractEngine):
                     if b == self.door1:
                         self.transport(Intro_1, (16*9, (16*11) - 8))
                     elif b == self.trigger1:
+                        self.transport(Intro_3, (16*9, 16*3))
                         self.player.position[1] = 16*11
                         b.interact(self.player, self)
                     else:

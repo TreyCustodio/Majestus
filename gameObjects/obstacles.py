@@ -13,6 +13,7 @@ class Boulder(Drawable):
         return
     def setRender(self):
         return
+    
 class ForceField(Animated):
     """
     Should be converted into an enemy type

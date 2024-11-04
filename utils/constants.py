@@ -560,6 +560,7 @@ Follows format:
 
 roomName_class#
 """
+
 SPEECH = {
 "alpha_flapper":
 "Skreeeeeeeeee!!&&\n\
@@ -973,6 +974,74 @@ convince you otherwise.\n",
 "darkcloak_5":
 "Huh. Well, I guess\n\
 I'll see what happens.\n",
+
+"intro_0":
+"It is %gYear 160% in the\n\
+world of Verea.$$\n\
+A wavering moon glistens\n\
+above the troubled continent,\n\
+illuminating roads paved by\n\
+the endless stream of dreams.\n",
+
+"intro_1":
+"At the conclusion of the world's\n\
+most catalysmic war,\n\
+the %rUnified World Powers%\n\
+don a victorious crown.\n",
+
+
+"intro_2":
+"The %rPowers% consist of\n\
+warriors from across\n\
+the continent.$$\n\
+These warriors tear apart\n\
+their enemies by weaving\n\
+Light and Darkness into viscious\n\
+elemental techniques.$$\n\
+With their powers combined,\n\
+the %wLuminates%, the\n\
+sophisticated bringers of %wLight%,\n\
+and the %dDarklings%, the \n\
+savage spreaders of %ddarkness%,\n\
+dominate life in Verea.\n",
+
+"intro_3":
+"Fearing the loss of their dominance,\n\
+the %rPowers% move to eradicate\n\
+the %bNaturalites%:&&\n\
+a proud race of warriors\n\
+who produce miracles with\n\
+nature's blessings.\n",
+
+
+
+"intro_4":
+"Fearing the loss of their dominance,\n\
+the government targets\n\
+the Naturalites,&&\n\
+a race of warriors who wield\n\
+nature's blessings.\n",
+
+"intro_5":
+"Fearing the loss of their dominance,\n\
+the government targets\n\
+the Naturalites,&&\n\
+a race of warriors who wield\n\
+nature's blessings.\n",
+
+"intro_6":
+"Fearing the loss of their dominance,\n\
+the government targets\n\
+the Naturalites,&&\n\
+a race of warriors who wield\n\
+nature's blessings.\n",
+
+"intro_7":
+"Fearing the loss of their dominance,\n\
+the government targets\n\
+the Naturalites,&&\n\
+a race of warriors who wield\n\
+nature's blessings.\n",
 
 "tutorial_1":
 "Press Y to shoot arrows.",

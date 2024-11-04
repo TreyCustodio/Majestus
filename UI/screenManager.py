@@ -3,6 +3,7 @@ import gc
 from gameObjects import PauseEngine, TextEngine, HudImageManager
 from UI import ACTIONS, EventManager
 from rooms import *
+from memory_profiler import profile
 
 from utils import SoundManager
 from . import TextEntry, EventMenu
@@ -103,13 +104,6 @@ class ScreenManager(object):
     drawSurf -> specific surface for textboxes passed in by main.py
     """
     def drawText(self, drawSurf):
-        if self.inIntro:
-            #image = Drawable(self.boxPos, "TextBox2.png", (0,7))
-            #image.draw(drawSurf)
-            #self.intro.background.draw(drawSurf)
-
-            if self.intro.textInt == 3:
-                self.intro.dark.draw(drawSurf)
 
         ##TextEngine finished
         if self.textEngine.done:
@@ -236,6 +230,7 @@ class ScreenManager(object):
             return
         
     #Displaying Text
+    @profile
     def draw(self, drawSurf):
         """
         Drawing the game based on the state
@@ -322,10 +317,9 @@ class ScreenManager(object):
         self.fade.setFrame(0)
         if choice == 0:
             SoundManager.getInstance().fadeoutBGM()
-            #SoundManager.getInstance().playSFX("WW_PressStart.wav")
+            SoundManager.getInstance().playSFX("WW_PressStart.wav")
             self.startingGame = True
-            self.fading =  True
-            self.fade.setRow(1)
+            self.fadeOn(4)
 
 
         elif choice == 1:
@@ -344,6 +338,10 @@ class ScreenManager(object):
             return pygame.quit() """
             
         if self.state == "game":
+            if self.game.cutscene:
+                self.game.handleEvent()
+                return
+            
             ##  Pause the game if the window is moved   ##
             if not self.game.pause_lock:
                 ##  Handle events once the healthbar is initialized   ##
@@ -390,12 +388,6 @@ class ScreenManager(object):
         elif self.state == "textBox":
             self.textEngine.handleEvent()
 
-            
-
-        elif self.state == "intro":
-            if EventManager.getInstance().performAction("map"):
-                self.intro.fading = True
-                self.intro.textInt = 11
 
         elif self.state == "mobster":
             self.mobsterEngine.handleEvent()
@@ -403,8 +395,30 @@ class ScreenManager(object):
     #Only runs if in game
     def handleCollision(self):
         if self.state == "game":
+            if self.game.cutscene:
+                return
             self.game.handleCollision()
     
+    def transition(self):
+        ##Runs twice
+        self.fadeOff(15)
+        pos = self.game.tra_pos
+        player = self.game.player
+        newGame = self.game.tra_room.getInstance()
+        keepBGM = self.game.tra_keepBGM
+        if not self.game.transporting_area:
+            self.game.reset()
+            gc.collect()
+            self.game = newGame
+            self.game.initializeRoom(player, pos, keepBGM)
+            self.fadingIn = True
+            self.fade.frame = 9
+        else:
+            self.game.reset()
+            gc.collect()
+            self.game = newGame
+            self.game.initializeArea(player, pos, keepBGM)
+
     #Update all states
     def update(self, seconds):
 
@@ -413,6 +427,13 @@ class ScreenManager(object):
 
         ##  Update according to state   ##
         if self.state == "game":
+            ##  For cutscenes like intro
+            if self.game.cutscene:
+                self.game.update(seconds)
+
+                if self.game.readyToTransition:
+                    self.transition()
+                return
             
             if self.returningToMain:
                 if self.wipe.increasing == False:
@@ -442,26 +463,8 @@ class ScreenManager(object):
                 self.fading = True
             ##Room transition
             if self.game.readyToTransition:
-                ##Runs twice
-                self.fadeOff(15)
-                pos = self.game.tra_pos
-                player = self.game.player
-                newGame = self.game.tra_room.getInstance()
-                keepBGM = self.game.tra_keepBGM
-                if not self.game.transporting_area:
-                    self.game.reset()
-                    gc.collect()
-                    self.game = newGame
-                    self.game.initializeRoom(player, pos, keepBGM)
-                    self.fadingIn = True
-                    self.fade.frame = 9
-                else:
-                    self.game.reset()
-                    gc.collect()
-                    self.game = newGame
-                    self.game.initializeArea(player, pos, keepBGM)
+                self.transition()
 
-                
             elif self.game.whiting:
                 if self.white.alpha == 255:
                     if self.game.transporting_area:
@@ -481,7 +484,10 @@ class ScreenManager(object):
         elif self.state == "textBox":
             #self.updateLight(seconds)
             self.textEngine.update(seconds)
-            self.game.update(seconds, updateEnemies=False)
+            if self.game.cutscene:
+                self.game.update(seconds)
+            else:
+                self.game.update(seconds, updateEnemies=False)
 
         elif self.state == "paused":
             self.pauseEngine.update(seconds)
@@ -502,12 +508,13 @@ class ScreenManager(object):
 
             ##New Game
             if self.startingGame:
-                if self.fade.frame == 8:
+                if self.wipe.increasing == False:
                     if not pygame.mixer.get_busy():
-                        self.game = Tutorial_1.getInstance()
+                        self.fadeOff(5)
+                        self.game = Intro_Cut.getInstance()
                         self.game.lockHealth()
                         self.state.startGame()
-                        self.fadingIn = True
+                        self.startingGame = False
             
                     
             ##Continue

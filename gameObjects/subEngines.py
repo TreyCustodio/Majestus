@@ -679,6 +679,7 @@ class PauseEngine(object):
             
         ##  Settings
         elif self.inSettings:
+            pygame.quit()
             return
 
         ##  Inventory

@@ -203,7 +203,7 @@ class EventManager(object):
                     ##  Window manipulation
                     if event.type == pygame.WINDOWMOVED or event.type == pygame.WINDOWLEAVE or not pygame.mouse.get_focused():
                         self.updating = False
-                        if engine.state == "game":
+                        if engine.state == "game" and not engine.game.cutscene:
                             if engine.game.player:
                                 engine.game.player.stop()
                             

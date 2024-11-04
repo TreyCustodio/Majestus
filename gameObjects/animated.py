@@ -207,7 +207,7 @@ class Animated(Drawable):
             self.image = SpriteManager.getInstance().getSprite(self.fileName,
                                                 (self.frame, self.row))
             
-    def update(self, seconds):
+    def update(self, seconds, motion=False):
         if not self.animate:
             return
 
@@ -219,6 +219,16 @@ class Animated(Drawable):
         
         if self.animationTimer > 1 / self.framesPerSecond:
             
+            if motion:
+                if self.motionTick == 0:
+                    self.motionTick = 1
+                elif self.motionTick == 1:
+                    self.motionTick = 2
+                elif self.motionTick == 2:
+                    self.motionTick = 3
+                elif self.motionTick == 3:
+                    self.motionTick = 0
+
             self.frame += 1
             self.frame %= self.nFrames
             
@@ -250,6 +260,14 @@ class Animated(Drawable):
             self.rot %= 360
             self.image = pygame.transform.rotate(self.image, self.rot)
 
+class TextCursor(Animated):
+    def __init__(self):
+        super().__init__(vec(0,0), "text_components.png", (0,0), 4)
+        self.motionTick = 0
+    
+    def update(self, seconds):
+        super().update(seconds, motion = True)
+        
 class Fade():
     """
     If there's only going to be one animation of fades, a singleton class works.
