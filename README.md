@@ -4,6 +4,7 @@ Expect to see a full-fledged demo including the first two areas by Januray 1st, 
 
 ##  Running the Game
 On a Windows device, execute the run.bat file to run the game (this just runs py main.py in the command line)<br>
+
 By starting a **New Game**, you may catch a glimpse of how I display the colorful introductory text.<br>
 By selecting **Continue**, you can explore the first area of the game, including various enemies and a shop.
 
