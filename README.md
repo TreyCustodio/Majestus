@@ -1,24 +1,30 @@
-# Controls:
+#  Majestus (WIP)
+This is a huge, independent passion project.
 
-**ESC** to toggle fullscreen on pause screen or title screen<br>
+The game isn't currently in the most playable state.
+By starting a  New Game, you may catch a glimpse of how I display the colorful introductory text.
 
-**Arrow** keys for directional movement<br>
-horizontal movement is supported<br>
+By selecting Continue, you can explore the first area of the game, including various enemies and a shop.
 
-**Z** to interact with the environment, talk to npcs, open chests, progress dialogue<br>
+## Controls:
 
-**X** to shoot arrows<br>
+- **ESC** to toggle fullscreen on pause screen or title screen<br>
+- **Arrow** keys for directional movement<br>
+diagonal movement is supported<br>
 
-**C** to use elemental attack<br>
+- **Z** to interact with the environment, talk to npcs, open chests, progress dialogue<br>
 
-Hold **Z** while moving to sprint<br>
-run into enemies while sprinting to freeze them in their tracks<br>
-can only sprint in one direction and not diagonally<br>
-stops sprinting once you let go of Z or let go of the arrow key<br>
+- **X** to shoot arrows<br>
 
-**ENTER** to open the pause screen menu and **ENTER** again to close it<br>
-In the pause screen, select your element with C
+- **C** to use elemental attack<br>
 
+- Hold **Z** while moving to sprint<br>
+- run into enemies while sprinting to freeze them in their tracks<br>
+- can only sprint in one direction and not diagonally<br>
+- stops sprinting once you let go of Z or let go of the arrow key<br>
 
-To Quit:
-Open the menu, select Quit, and select YES
+- **ENTER** to open the pause screen menu and **ENTER** again to close it<br>
+- In the pause screen, select your element with C
+
+- To Quit:
+- Open the menu, select Quit, and select YES
