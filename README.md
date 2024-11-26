@@ -1,4 +1,4 @@
-#  Majestus (WIP)
+#  Majestus (WIP Demo)
 This is a huge, independent passion project. The game isn't currently in the most playable state.<br>
 Expect to see a full-fledged demo including the first two areas by Januray 1st, 2025.<br>
 
