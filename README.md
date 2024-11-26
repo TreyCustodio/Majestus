@@ -2,8 +2,8 @@
 This is a huge, independent passion project. The game isn't currently in the most playable state.<br>
 Expect to see a full-fledged demo including the first two areas by Januray 1st, 2025.<br>
 
-By starting a New Game, you may catch a glimpse of how I display the colorful introductory text.<br>
-By selecting Continue, you can explore the first area of the game, including various enemies and a shop.
+By starting a **New Game**, you may catch a glimpse of how I display the colorful introductory text.<br>
+By selecting **Continue**, you can explore the first area of the game, including various enemies and a shop.
 
 ## Controls:
 
