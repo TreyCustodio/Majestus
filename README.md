@@ -43,4 +43,4 @@ diagonal movement is supported<br>
 Within the world of Verea exist two dominant races: the Luminates and the Darklings.<br>
 These warriors smother their foes by wielding the elements of Light and Darkness.<br>
 A third race, the oppressed Naturalaties, are small in number but wield the powerful forces of nature.<br>
-As Kylo, the secrets of the world's conflicts unfold before you as you explore the ancient ruins of Majestus.
+As Kylo, a teenaged boy who cannot wield the elements, the secrets of the world's conflicts unfold before you as you explore the ancient ruins of Majestus.
