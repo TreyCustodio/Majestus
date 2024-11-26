@@ -1,6 +1,6 @@
 #  Majestus (WIP Demo)
 Explore the ancient ruins as a dark fantasy story unfolds before you.<br>
-Fight enemies, collect treasure, and upgrade yourself as you plunder the dangerous chambers.<br>
+Fight enemies, collect treasure, and upgrade yourself as you unveil the secrets of the world.<br>
 
 This is a huge, independent passion project. The game isn't currently in the most playable state.<br>
 Expect to see a full-fledged demo including the first two areas by Januray 1st, 2025.<br>
