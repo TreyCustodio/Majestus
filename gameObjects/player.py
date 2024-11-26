@@ -11,14 +11,9 @@ import pygame
 class Player(Animated):
     def __init__(self, position=vec(0,0), direction=2, fileName = "Link.png"):
         super().__init__(position, fileName, (0, direction))
-        self.ignoreCollision = False
-        self.hp = INV["max_hp"]
-
-        #Frames, vel, speed, and row
-        #Must reach this far to move player
+        
+        #   Movement, Animation, Damage Attributes-----------------------------------------------
         self.analogTrack = 0.20
-        self.drunk = False#Buff to attack, nerf to speed
-        self.drunkTimer = 0
         self.height = 26
         self.width = 18
         self.framesPerSecond = 30
@@ -27,62 +22,7 @@ class Player(Animated):
         self.vel = vec(0,0)
         self.speed = 100
         self.row = direction # (0 down), (1 right), (2 up), (3 left)
-        self.dying = False
-        self.dead = False
-        self.norm = False
-        #States
-        
-        
-        self.headingOut = False
-        self.movingTo = None
-        self.moving = False
-        self.pushing = False
-        self.walking = False
-        self.colliding = False
-        self.shooting = False
-        self.fired = False
-        #Movement locks
-        self.talking = False
-        self.key_lock = False
-        self.keyDown_lock = False
-        self.directionLock = False
-        self.positionLock = False
         self.collisionRect = pygame.Rect((self.position[0]+1,self.position[1]+7),(16,16))
-        ##Weapons/items##
-        #Bullet
-        self.bullet = None
-        self.arrowCount = 1
-        self.arrowReady = True
-        self.arrowTimer = 0
-        #Gale slash
-        self.slash = None
-        self.chargeTimer = 0
-        self.charged = False
-        self.charging = False
-        #Flame Sword
-        self.sword = None
-        self.swordReady = True
-        self.swordSound = "DarkLink1.wav"
-        self.swordCounter = 1
-        self.swordRefresher = 0
-        #Thunder clap
-        self.clap = None
-        self.clapTimer = 0.01
-        self.clapReady = False
-        #Ice cleats
-        self.cleats = None
-        self.running = False
-        self.runningDirection = 0
-        #Hook
-        self.hook = None
-        #Blizzard
-        self.freezing = False
-        self.blizzard = None
-        self.slowing = False
-        self.attacking = False
-        
-        
-        self.event = None
         self.invincible = False
         self.iframeTimer = 0
         self.idleTimer = 0#Timer used for having the player stand still
@@ -90,8 +30,81 @@ class Player(Animated):
         self.targeting = False
         self.target = Animated(self.position, fileName="target.png", nFrames=4, fps=16)
         self.rot = 1
-        
         self.key_delay = False
+        self.drunkTimer = 0.0
+        self.ignoreCollision = False
+        self.hp = INV["max_hp"]
+
+        
+        #   States------------------------------------------------------------------------
+        ##  Death
+        self.dying = False
+        self.dead = False
+        self.headingOut = False
+
+        ##  Movement/Collision
+        self.movingTo = None
+        self.moving = False
+        self.pushing = False
+        self.walking = False
+        self.colliding = False
+        self.shooting = False
+        self.talking = False
+        self.key_lock = False
+        self.keyDown_lock = False
+        self.directionLock = False
+        self.positionLock = False
+
+        ##  Special
+        self.drunk = False  # Buff to attack, nerf to speed
+        self.elevated = False   # Reveal secrets and sometimes take no damage
+        self.fired = False
+        
+
+        #   Weapons/items----------------------------------------------------------------
+        ##  Arrows
+        self.bullet = None
+        self.arrowCount = 1
+        self.arrowReady = True
+        self.arrowTimer = 0.0
+
+        ##  Wind
+        ### Slash
+        self.slash = None
+        self.chargeTimer = 0.0
+        self.charged = False
+        self.charging = False
+
+        ##  Flames
+        ### Sword
+        self.sword = None
+        self.swordReady = True
+        self.swordSound = "DarkLink1.wav"
+        self.swordCounter = 1
+        self.swordRefresher = 0
+
+        ##  Thunder
+        ### Hook
+        self.hook = None
+
+        ### Clap
+        self.clap = None
+        self.clapTimer = 0.01
+        self.clapReady = False
+
+        ##  Ice
+        ### Cleats
+        self.cleats = None
+        self.running = False
+        self.runningDirection = 0
+
+        ### Blizzard
+        self.freezing = False
+        self.blizzard = None
+        self.slowing = False
+        self.attacking = False
+
+        
         
     def drink(self):
         self.drunkTimer += 30
@@ -104,7 +117,7 @@ class Player(Animated):
         self.drunk = False
 
     def see(self):
-        self.high = True
+        self.elevated = True
     
     def heal(self, integer):
         SoundManager.getInstance().playSFX("solve.wav")

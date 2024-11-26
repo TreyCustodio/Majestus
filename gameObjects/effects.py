@@ -31,6 +31,9 @@ class Name(Drawable):
 
     def setAlpha(self):
         self.image.set_alpha(self.alpha)
+    
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
+        return
 
     """
     @param value -> vector to scale to. Default is (128, 64)
