@@ -40,7 +40,7 @@ diagonal movement is supported<br>
 ###  PS5 Controls
 
 ##  Story
-Within the world of Verea exist two dominant races: the Luminates and the Darklings,<br>
-people who can control Light and Darkness respectively.<br>
+Within the world of Verea exist two dominant races: the Luminates and the Darklings.<br>
+These warriors smother their foes by wielding the elements of Light and Darkness.<br>
 The other race, the oppressed Naturalaties, are small in number but wield the powerful forces of nature.<br>
 As Kylo, the secrets of the world's conflicts unfold before you as you explore the ancient ruins of Majestus.
