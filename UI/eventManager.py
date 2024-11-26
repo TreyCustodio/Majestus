@@ -182,8 +182,10 @@ class EventManager(object):
             if self.readyToFetch:
                 ##Handle events in the queue
                 for event in pygame.event.get():
-                    #if event.type != pygame.JOYAXISMOTION:
-                    #print(event)
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        return
+
                     ##Quit game
                     if event.type == pygame.QUIT:
                         pygame.quit()
