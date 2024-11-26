@@ -5,8 +5,9 @@ Expect to see a full-fledged demo including the first two areas by Januray 1st, 
 By starting a **New Game**, you may catch a glimpse of how I display the colorful introductory text.<br>
 By selecting **Continue**, you can explore the first area of the game, including various enemies and a shop.
 
-## Controls:
+## Controls
 
+###  Keyboard
 - **ESC** to toggle fullscreen on pause screen or title screen<br>
 - **Arrow** keys for directional movement<br>
 diagonal movement is supported<br>
@@ -27,3 +28,7 @@ diagonal movement is supported<br>
 
 - To Quit:
 - Open the menu, select Quit, and select YES
+
+###  Nintendo Switch Controls
+###  Xbox Controls
+###  PS5 Controls
