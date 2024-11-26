@@ -1,7 +1,7 @@
 #  Majestus (WIP Demo)
-Majestus plunges the player into a dark fantasy story. 
-Explore the ancient ruins of Majestus as a story unfolds before you!
-Fight enemies, collect money, and upgrade yourself as you plunder the dangerous chambers.
+Majestus plunges the player into a dark fantasy story.<br> 
+Explore the ancient ruins of Majestus as a story unfolds before you!<br>
+Fight enemies, collect money, and upgrade yourself as you plunder the dangerous chambers.<br>
 
 This is a huge, independent passion project. The game isn't currently in the most playable state.<br>
 Expect to see a full-fledged demo including the first two areas by Januray 1st, 2025.<br>
