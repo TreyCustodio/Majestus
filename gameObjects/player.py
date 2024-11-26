@@ -13,6 +13,7 @@ class Player(Animated):
         super().__init__(position, fileName, (0, direction))
         self.ignoreCollision = False
         self.hp = INV["max_hp"]
+
         #Frames, vel, speed, and row
         #Must reach this far to move player
         self.analogTrack = 0.20
@@ -1038,7 +1039,7 @@ class Player(Animated):
                 #self.position += self.vel * abs(norm(self.vel)) * seconds
 
                 ##  Using Method 2:
-                self.position += vec(mag(self.vel)//2 * sign_vec(self.vel), mag(self.vel)//2 * sign_vec(self.vel)) * seconds
+                self.position += (mag(self.vel)//2 * sign_vec(self.vel)) * seconds
             
             else:
                 self.position += self.vel * seconds
