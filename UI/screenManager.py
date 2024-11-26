@@ -230,7 +230,7 @@ class ScreenManager(object):
             return
         
     #Displaying Text
-    @profile
+    #@profile
     def draw(self, drawSurf):
         """
         Drawing the game based on the state

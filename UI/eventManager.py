@@ -210,11 +210,13 @@ class EventManager(object):
                             engine.state.pause()
                         pygame.event.clear()
                         return
+                    
                     elif not self.updating:
                         self.updating = True
                     
-                    ##  Controller inputs
-                    #Gamecube
+                    #   Controller inputs
+                    
+                    ##  Gamecube
                     if self.controller == "Gamecube":
                         if event.type == pygame.JOYBUTTONDOWN:
                             ACTIONS["interact"] = event.button == GAMECUBE["interact"]

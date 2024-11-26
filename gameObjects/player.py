@@ -28,7 +28,7 @@ class Player(Animated):
         self.row = direction # (0 down), (1 right), (2 up), (3 left)
         self.dying = False
         self.dead = False
-
+        self.norm = False
         #States
         
         
@@ -998,15 +998,50 @@ class Player(Animated):
             elif self.iframeTimer <= 0.7:
                 self.image = SpriteManager.getInstance().getSprite("null.png")
         
-        #Update clap cooldown
+        #   Update clap cooldown
         if self.clapReady == False:
             self.clapTimer += seconds
             if self.clapTimer >= 5.0:
                 self.clapTimer = 0
                 self.clapReady = True
         
+        #  Diagonal Movement + Vector Normalization
         if self.movingDiagonal():
-            self.position += self.vel * seconds
+
+            if True:
+                
+                #   I have 2 ways to calculate the accurate diagonal velocity vector:
+
+                ##  1. -> Normalizing the Vector
+                ##  Multiply the velocity vector by
+                ##  the absolute value of the normalized vector
+                ##  to get more accurate diagonal movement.
+
+                ##  2. -> Pythagorean Theorem
+                ##  The diagonal vector = c.
+                ##  a = x direction, b = y direction
+                ##  c**2 = a**2 + b**2.
+                ##  So c = sqrt(a**2 + b ** 2).
+                ##  Dive c // 2 to get the x and y components of the diagonal vector.
+                ##  Multiply each component by the sign (-1 / +1) of each component.
+
+                ##  Calculate the magnitude of the velocity vector
+                mag = lambda v: sqrt(v[0] ** 2 + v[1] ** 2)
+                
+                ##   Caclulate the normalized velocity vector
+                norm = lambda v: v / mag(v)
+
+                ##  Get the sign of each component of the velocity vector
+                sign_vec = lambda v: vec( -1 if v[0] < 0 else (1 if v[0] > 0 else 0), -1 if v[1] < 0 else (1 if v[1] > 0 else 0) )
+
+                ##  Using Method 1:
+                #self.position += self.vel * abs(norm(self.vel)) * seconds
+
+                ##  Using Method 2:
+                self.position += vec(mag(self.vel)//2 * sign_vec(self.vel), mag(self.vel)//2 * sign_vec(self.vel)) * seconds
+            
+            else:
+                self.position += self.vel * seconds
 
         else:
             self.position += self.vel * seconds
