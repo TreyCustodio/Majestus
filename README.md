@@ -8,7 +8,7 @@ By selecting **Continue**, you can explore the first area of the game, including
 ## Controls
 
 ###  Keyboard
-- **ESC** to toggle fullscreen on pause screen or title screen<br>
+- **ESC** to close the game at any time<br>
 - **Arrow** keys for directional movement<br>
 diagonal movement is supported<br>
 
