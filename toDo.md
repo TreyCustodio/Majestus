@@ -34,9 +34,14 @@ Scorching Fields first version. Lava Knight Boss.
 - [ ] Keep updating no matter what during healthbar initialization.
 - [ ] No pausing (event handling) in between textboxes
 - [ ] Boners need to throw bone to the side they get hit
-- [ ] Fix slowdown in rooms with camera (Tut_2 and Tut_3)
+- [ ] Fix slowdown in (Tut_2 and Tut_3)
+  - Reset the singleton rooms. Completely reinstantiate the room upon reintry. 
 - [ ] Fix fadeout and screen wipe
 - [ ] Outline white characters
+- [ ] Redrawing Grotto
+  - [ ] Finish Tut_2
+    - [ ] Place each tile used on a tilemap (delete old tilemap)
+    - [ ] Recdraw Tut_3 and Tut_1 using the new tiles only
 
 ## v0.25 - Saving
 ### Primary Objectives

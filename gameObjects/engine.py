@@ -93,7 +93,6 @@ class AE(object):
         #Speaking
         self.textBox = False
         self.text = ""
-        self.largeText = False
         self.icon = None
         self.boxPos = vec(30,64)
         self.promptResult = False
@@ -161,7 +160,6 @@ class AE(object):
         self.cutscene = True
         self.player = None
         self.readyToTransition = False
-        self.largeText = False
         self.textBox = False
         self.text = ""
         self.icon = None
@@ -807,7 +805,7 @@ class AE(object):
                 SoundManager.getInstance().fadeoutBGM()
             
 
-    def displayText(self, text = "", icon = None, large = True, box = 2):
+    def displayText(self, text = "", icon = None, box = 2):
         """
         Display text
         """
@@ -840,7 +838,6 @@ class AE(object):
 
         self.textBox = True
         self.text = text
-        self.largeText = large
         self.boxType = box
         
         if self.player != None:
@@ -1519,6 +1516,10 @@ class AE(object):
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
+        #print("npcs: " + str(len(self.npcs)))
+        #print("enemies: " + str(len(self.enemies)))
+        #print()
+
         if self.transporting or self.startingMobster or self.dead:
             return
         

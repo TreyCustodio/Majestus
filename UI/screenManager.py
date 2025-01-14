@@ -148,6 +148,7 @@ class ScreenManager(object):
                 self.pauseEngine.textBox = False
                 self.pauseEngine.text = ""
                 self.state.speakP()
+
             ##Intro
             elif self.inIntro:
                 self.intro.textBox = False
@@ -157,6 +158,7 @@ class ScreenManager(object):
                     self.intro.fading = True
                 
                 self.state.speakI()
+
             ##Game, evaluate prompt
             else:
                 if "Y/N" in self.game.text:
@@ -165,6 +167,7 @@ class ScreenManager(object):
                 self.game.text = ""
                 self.game.icon = None
                 self.state.speak()
+
             #Reset
             self.textEngine.reset()
             return
@@ -174,6 +177,7 @@ class ScreenManager(object):
             if self.textEngine.closing:
                 self.drawGame(drawSurf)
                 self.drawPause(drawSurf)
+
             elif self.textEngine.backgroundBool:
                 self.drawGame(drawSurf)
                 self.drawPause(drawSurf)
@@ -194,26 +198,22 @@ class ScreenManager(object):
         else:
             if self.textEngine.closing:
                 self.drawGame(drawSurf)
+
             elif self.textEngine.backgroundBool:
                 self.drawGame(drawSurf, True)
                 self.textEngine.setBackgroundBool()
+
             self.drawGame(drawSurf)
             self.textEngine.draw(self.game.boxPos, drawSurf)
 
     def drawGame(self, drawSurf, drawBox = False):
-        if self.inIntro:
-            if drawBox:
-                self.intro.drawText(drawSurf)
-            else:
-                self.intro.draw(drawSurf)
-        else:
-            if drawBox:
-                if self.textEngine.large:
-                    self.game.drawText(drawSurf)
-                else:
-                    self.game.draw(drawSurf)
-            else:
+        if drawBox:
+            if self.textEngine.type == 1:
                 self.game.draw(drawSurf)
+            else:
+                self.game.drawText(drawSurf)
+        else:
+            self.game.draw(drawSurf)
     
     def drawPause(self, drawSurf):
         self.pauseEngine.draw(drawSurf)
@@ -228,7 +228,11 @@ class ScreenManager(object):
 
         if self.startingGame or self.continuingGame or self.returningToMain:
             return
-        
+    
+    def draw_fps(self, drawSurf, fps):
+        text = Text(vec(*(RESOLUTION - 16)), str(fps))
+        text.draw(drawSurf)
+
     #Displaying Text
     #@profile
     def draw(self, drawSurf):
@@ -243,7 +247,7 @@ class ScreenManager(object):
                 if "Y/N" in self.game.text:
                     self.textEngine.setText(self.game.text, self.game.icon, prompt = True)
                 else:
-                    self.textEngine.setText(self.game.text, self.game.icon, self.game.largeText, type = self.game.boxType)
+                    self.textEngine.setText(self.game.text, self.game.icon, type = self.game.boxType)
 
             if self.game.whiting:
                 self.white.draw(drawSurf)
@@ -275,12 +279,11 @@ class ScreenManager(object):
 
             if self.pauseEngine.text != "":
                 self.state.speakP()
-                #self.textEngine = TextEngine.getInstance()
                 if "Y/N" in self.pauseEngine.text:
-                    self.textEngine.setText(self.pauseEngine.text, prompt = True)
+                    self.textEngine.setText(self.pauseEngine.text, prompt = True, type = 1)
                     
                 else:
-                    self.textEngine.setText(self.pauseEngine.text)
+                    self.textEngine.setText(self.pauseEngine.text, type = 3)
             self.pauseEngine.draw(drawSurf)
 
         elif self.state == "intro":
@@ -289,7 +292,7 @@ class ScreenManager(object):
             self.intro.draw(drawSurf)
             if self.intro.textBox:
                 self.state.speakI()
-                self.textEngine.setText(self.intro.text, self.intro.icon, self.intro.largeText)
+                self.textEngine.setText(self.intro.text, self.intro.icon)
 
         elif self.state == "mobster":
             self.mobsterEngine.draw(drawSurf)
@@ -333,10 +336,6 @@ class ScreenManager(object):
     
 
     def handleEvent(self):
-        ##Quick quit for debugging##
-        """ if event.type == pygame.KEYDOWN and event.key == K_DELETE:
-            return pygame.quit() """
-            
         if self.state == "game":
             if self.game.cutscene:
                 self.game.handleEvent()
@@ -348,6 +347,7 @@ class ScreenManager(object):
                 if self.game.getHealthbarInitialized():
                     if not self.game.fading:
                         if EventManager.getInstance().performAction("pause"):
+                            print("Pause")
                             self.pause()
                             return
 

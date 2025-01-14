@@ -52,7 +52,7 @@ class EventMenu(AbstractMenu):
         super().__init__(background, fontName, color)
 
         ##Display Control for debugging
-        displayBool = False
+        displayBool = True
         self.readyToDisplay = displayBool
         self.initialized = displayBool
 

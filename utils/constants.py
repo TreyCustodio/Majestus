@@ -976,72 +976,60 @@ convince you otherwise.\n",
 I'll see what happens.\n",
 
 "intro_0":
-"It is %gYear 160% in the\n\
-world of Verea.$$\n\
-A wavering moon glistens\n\
-above the troubled continent,\n\
-illuminating roads paved by\n\
-the endless stream of dreams.\n",
+"It is %gCycle 160% in the\n\
+world of %pVerea%.$$\n\
+Long has the %pmystic land% been\n\
+a setting for war.$$\n\
+As one war ends...$$\n\
+So begins another...\n",
+# A wavering, moon glistens\n\
+# above the troubled continent,\n\
+# illuminating roads paved by\n\
+# the endless stream of dreams.\n",
 
 "intro_1":
-"At the conclusion of the world's\n\
-most catalysmic war,\n\
-the %rUnified World Powers%\n\
-don a victorious crown.\n",
+"Four flavors of man\n\
+exist in %pVerea%.$$\n\
+The %wLuminates%, sophisticated\n\
+bringers of %wLight%,$$\n\
+The %dDarklings%, savage\n\
+spreaders of %dDarkness%,$$\n\
+The %fNaturalites%, proud warriors\n\
+who produce miracles\n\
+with %pnature's blessings%,$$\n\
+And the %bNonnies%, people\n\
+who lack elemental affinity.\n",
 
 
 "intro_2":
-"The %rPowers% consist of\n\
-warriors from across\n\
-the continent.$$\n\
-These warriors tear apart\n\
-their enemies by weaving\n\
-Light and Darkness into viscious\n\
-elemental techniques.$$\n\
-With their powers combined,\n\
-the %wLuminates%, the\n\
-sophisticated bringers of %wLight%,\n\
-and the %dDarklings%, the \n\
-savage spreaders of %ddarkness%,\n\
-dominate life in Verea.\n",
+"The %wLuminates% and the %dDarklings%\n\
+have joined, forming the\n\
+%rUnified World Powers%.$$\n\
+They have declared\n\
+%wtheir% %dkind% as the\n\
+supreme human race.\n",
 
 "intro_3":
-"Fearing the loss of their dominance,\n\
-the %rPowers% move to eradicate\n\
-the %bNaturalites%:&&\n\
-a proud race of warriors\n\
-who produce miracles with\n\
-nature's blessings.\n",
-
-
+"%rThe Powers%, exerting their dominance,\n\
+and fearing rebellion,\n\
+Move to quickly eradicate\n\
+the four tribes of the\n\
+Naturalite race.\n",
 
 "intro_4":
-"Fearing the loss of their dominance,\n\
-the government targets\n\
-the Naturalites,&&\n\
-a race of warriors who wield\n\
-nature's blessings.\n",
-
-"intro_5":
-"Fearing the loss of their dominance,\n\
-the government targets\n\
-the Naturalites,&&\n\
-a race of warriors who wield\n\
-nature's blessings.\n",
-
-"intro_6":
-"Fearing the loss of their dominance,\n\
-the government targets\n\
-the Naturalites,&&\n\
-a race of warriors who wield\n\
-nature's blessings.\n",
-
-"intro_7":
-"Fearing the loss of their dominance,\n\
-the government targets\n\
-the Naturalites,&&\n\
-a race of warriors who wield\n\
-nature's blessings.\n",
+"The %tThunder% and %gWind% tribes\n\
+lie on the verge of extinction,$$\n\
+The elsuive %iIce% tribe remains\n\
+safe in hiding,$$\n\
+And the %fFire% tribe fights\n\
+to keep their lives,\n\
+their hope waning swiftly.$$\n\
+As the %ftribesmen% ignite\n\
+their final flames,\n\
+two brothers make\n\
+a desperate retreat,$$\n\
+An army of %wLight% and %dShadow%\n\
+hot on their tails...\n",
 
 "tutorial_1":
 "Press Y to shoot arrows.",

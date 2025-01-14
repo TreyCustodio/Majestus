@@ -35,29 +35,24 @@ class Intro_Cut(AbstractEngine):
             self.text = ""
             self.icon = None
             self.boxPos = vec(32,64)
-            self.textInt = 0
+            self.textInt = 3
             self.timer = 0.0
 
         def playBgm(self):
             SoundManager.getInstance().playBGM("still-dreaming.mp3")
             self.playingBgm = True
 
-        def displayText(self, text = "", icon = None, large = True, box = 2):
+        def displayText(self, text = "", icon = None, box = 4):
             """
             Display text
             """
             self.textBox = True
             self.text = text
-            self.largeText = large
             self.boxType = box
         
-        
-
         def draw(self, drawSurface):
             drawSurface.blit(self.black,vec(0,0))
             return
-        
-        
         
         def handleEvent(self):
             pass
@@ -67,13 +62,17 @@ class Intro_Cut(AbstractEngine):
 
         def update(self, seconds):
             """
+            Update the intro's state.
             """
+
+            #   Display the Narration
             if self.textInt == 0:
                 self.timer += seconds
                 if self.timer >= 1.0:
                     self.displayText(SPEECH["intro_0"], box=4)
                     self.textInt += 1
                     self.timer = 0.0
+            
             elif self.textInt == 1:
                 if self.text == "":
                     self.timer += seconds
@@ -88,22 +87,25 @@ class Intro_Cut(AbstractEngine):
                 if self.text == "":
                     self.textInt += 1
                     self.displayText(SPEECH["intro_2"], box=4)
+            
             elif self.textInt == 3:
                 if self.text == "":
                     self.textInt += 1
                     self.displayText(SPEECH["intro_3"], box=4)
+            
             elif self.textInt == 4:
                 if self.text == "":
                     self.textInt += 1
                     self.displayText(SPEECH["intro_4"], box=4)
+            
             elif self.textInt == 5:
                 if self.text == "":
+                    self.fade()
                     self.textInt += 1
-                    self.displayText(SPEECH["intro_5"], box=4)
+            
             elif self.textInt == 6:
-                if self.text == "":
-                    self.textInt += 1
-                    self.displayText(SPEECH["intro_6"], box=4)
+                if not self.fading:
+                    self.transport("intro_1", (16*9, 16*9))
             return
 
 

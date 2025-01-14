@@ -198,6 +198,7 @@ class EventManager(object):
                     if event.type == pygame.JOYDEVICEADDED:
                         self.setJoystick()
                         return
+                    
                     elif event.type == pygame.JOYDEVICEREMOVED:
                         self.removeJoystick(event.instance_id)
                         return
