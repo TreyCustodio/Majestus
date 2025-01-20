@@ -113,7 +113,7 @@ def main():
             gameEngine.update(seconds)
         
             #   (i)  Calculate FPS each second
-            #   Should be as close to 60 as possible per the tick(60)
+            #Should be as close to 60 as possible per the tick(60)
             """ frame_count += 1
             if time.time() - start_time > 1:
                 fps = frame_count / (time.time() - start_time)

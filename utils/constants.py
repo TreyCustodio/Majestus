@@ -976,9 +976,9 @@ convince you otherwise.\n",
 I'll see what happens.\n",
 
 "intro_0":
-"It is %gCycle 160% in the\n\
-world of %pVerea%.$$\n\
-Long has the %pmystic land% been\n\
+"It is %gCycle 160%~ in the\n\
+world of %pVerea%~.$$\n\
+Long, has the, %pmystic land%~ been\n\
 a setting for war.$$\n\
 As one war ends...$$\n\
 So begins another...\n",
@@ -989,46 +989,49 @@ So begins another...\n",
 
 "intro_1":
 "Four flavors of man\n\
-exist in %pVerea%.$$\n\
-The %wLuminates%, sophisticated\n\
-bringers of %wLight%,$$\n\
-The %dDarklings%, savage\n\
-spreaders of %dDarkness%,$$\n\
-The %fNaturalites%, proud warriors\n\
+exist in %pVerea%~.$$\n\
+The %wLuminates%~, sophisticated\n\
+bringers of %wLight%~,$$\n\
+The %dDarklings%~, savage\n\
+spreaders of %dDarkness%~,$$\n\
+The %fNaturalites%~, proud warriors\n\
 who produce miracles\n\
-with %pnature's blessings%,$$\n\
-And the %bNonnies%, people\n\
+with %pnature's blessings%~,$$\n\
+And the %bNonnies%~, people\n\
 who lack elemental affinity.\n",
 
 
 "intro_2":
-"The %wLuminates% and the %dDarklings%\n\
+"The %wLuminates%~ and the %dDarklings%~\n\
 have joined, forming the\n\
-%rUnified World Powers%.$$\n\
+%rUnified World Powers%~.$$\n\
 They have declared\n\
-%wtheir% %dkind% as the\n\
+%wtheir%~ %dkind%~ as the\n\
 supreme human race.\n",
 
 "intro_3":
-"%rThe Powers%, exerting their dominance,\n\
+"%rThe Powers%~, exerting their dominance,\n\
 and fearing rebellion,\n\
 Move to quickly eradicate\n\
 the four tribes of the\n\
 Naturalite race.\n",
 
 "intro_4":
-"The %tThunder% and %gWind% tribes\n\
+"a\n",
+
+"":
+"The %tThunder%~ and %gWind%~ tribes\n\
 lie on the verge of extinction,$$\n\
-The elsuive %iIce% tribe remains\n\
+The elusive %iIce%~ tribe remains\n\
 safe in hiding,$$\n\
-And the %fFire% tribe fights\n\
+And the %fFire%~ tribe fights\n\
 to keep their lives,\n\
 their hope waning swiftly.$$\n\
-As the %ftribesmen% ignite\n\
+As the %ftribesmen%~ ignite\n\
 their final flames,\n\
 two brothers make\n\
 a desperate retreat,$$\n\
-An army of %wLight% and %dShadow%\n\
+An army of %wLight%~ and %dShadow%~\n\
 hot on their tails...\n",
 
 "tutorial_1":

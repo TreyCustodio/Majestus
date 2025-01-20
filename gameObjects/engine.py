@@ -10,6 +10,10 @@ from . import (Drawable, HudImageManager, HudButtons, Slash, Blizzard, HealthBar
 
 from utils import SoundManager, vec, RESOLUTION, SPEECH, ICON, INV, COORD, FLAGS, EQUIPPED, UPSCALED, INTRO, SHORTCUTS, ACTIVE_SHORTCUT
 
+"""
+Damage Numbers --------------------------------------------
+"""
+
 class DamageNumberManager(object):
     def __init__(self):
         self.numbers = []
@@ -35,11 +39,15 @@ class DamageNumber(object):
         self.maxDamagePos = self.damagePos[1]-8
 
 
+"""
+Engine ----------------------------------------------------
+"""
+
 class AE(object):
+    """
+    (0.) Initializations
+    """
     def __init__(self, room_dir = "", camera = False, size = vec(*RESOLUTION)):
-        """
-        __init__ is only ever called once
-        """
         self.name = None
         if room_dir != "":
             self.room_dir = room_dir
@@ -89,6 +97,7 @@ class AE(object):
         self.flashes = 0
         self.fading = False
         self.area_fading = False
+        self.intro = False
 
         #Speaking
         self.textBox = False
@@ -97,10 +106,12 @@ class AE(object):
         self.boxPos = vec(30,64)
         self.promptResult = False
         self.selectedItem = ""
+        
         ##Puzzle conditions
         self.room_set = False
         self.room_clear = False
         self.clearFlag = 0
+        
         ##Object Lists
         self.enemies = [] #list of enemies to be used for placeEnemies()
         self.obstacles = []
@@ -123,6 +134,7 @@ class AE(object):
         self.moneyImage = None
         self.keyImage = None
         self.transLock = True
+        
         ##Boss
         self.bossTheme = None
         self.boss = None
@@ -150,60 +162,76 @@ class AE(object):
         self.ammoBar = AmmoBar.getInstance()
         self.elementIcon = ElementIcon.getInstance()
         self.energyBar = EnergyBar()
-
-        #Unique room elements:
-        #self.max_enemies
-        #self.enemyPlacement
-        #self.bgm
     
     def initializeIntro(self):
+
+        #   (1.) Primary States and Variables
         self.cutscene = True
         self.player = None
+        self.whiting = False
+        self.area_fading = False
+        self.intro = True
+        self.black = pygame.transform.scale(SpriteManager.getInstance().getSprite("fade.png"), (304, 208))
+        
+
+        #   (2.) Transportation
         self.readyToTransition = False
+        self.transporting = False
+        self.transLock = False
         self.textBox = False
+        self.tra_keepBGM = False
+        self.transporting_area = False
+
+
+        #   (3.) Text
         self.text = ""
         self.icon = None
         self.boxPos = vec(32,64)
         self.boxType = 0
         self.textInt = 0
         self.timer = 0.0
-        self.whiting = False
-        self.area_fading = False
-
-        ##  Images
-        self.black = pygame.transform.scale(SpriteManager.getInstance().getSprite("fade.png"), (304, 208))
-
+        
+        
     """
-    Getter Methods
+    (1.) Getter Methods -------------------------------
     """
 
     def getHorizontalRoom(self, quadrants: int = 2, gap = False):
+        """
+        Returns the door data in
+        a horizontal room.
+        """
+
         if gap:
             return [1, 2, 4, 7]
-    """
-    Returns:
-    True if the healthbar is initialized.
-    False otherwise
-    """
+    
+
     def getHealthbarInitialized(self):
+        """
+        Returns True if the healthbar
+        is initialized.
+        """
         return self.healthBarDrawn
 
-    """
-    Returns:
-    True if the healthbar is drawing damage.
-    False otherwise
-    """
+    
     def getHealthBarDrawing(self):
+        """
+        Returns True if the healthbar
+        is being displayed.
+        """
         return self.healthBar.drawingHurt or self.healthBar.drawingHeal
     
+    
     """
-    Auxilary Methods
+    (2.) Auxilary Methods -------------------------------------
     """
 
-    """
-    Boss script load
-    """
+    
     def bsl(self, enemy, bossTheme):
+        """
+        Boss script load (bsl) para Cave Story.
+        Loads up the boss fight.
+        """
         self.pause_lock = True
         self.bossTheme = bossTheme
         self.player.keyLock()
@@ -212,13 +240,18 @@ class AE(object):
         self.fightingBoss = True
         self.drawBossHealth = True
 
-    """
-    Boss script end
-    """
+    
     def bse(self):
+        """
+        Boss script end.
+        Ends the boss fight.
+        """
         self.fightingBoss = False
 
     def stopFadeIn(self):
+        """
+        Finish the fadeIn process.
+        """
         self.whiting = False
         self.transLock = False
         self.fading = False
@@ -227,13 +260,22 @@ class AE(object):
         self.player.keyDownUnlock()
 
     def reset(self):
-        Drawable.resetOffset()
+        """
+        Reset the room's variables
+        and its states.
+        """
+
+        #   (1.) Reset the room name animation
         if self.name:
             self.name.reset()
+        
+        #   (2.) Respawn the enemies
         for n in self.npcs:
             n.respawn()
             if n.vanish:
                 self.disappear(n)
+        
+        #   (3.) Empty out all data structures; Reset all vars
         self.drops = []
         self.dropCount = 0
         self.npcs = []
@@ -253,9 +295,14 @@ class AE(object):
         self.tra_pos = None
         self.tra_keepBGM = False
         self.startingMobster = False
+
+        #   (4.) Completely Reset the room (??)
         if self.resetting:
             self.enemyCounter = 0
             self.room_clear = False
+        
+        #   (5.) Reset the camera position
+        Drawable.resetOffset()
         if self.camera:
             self.camera.position = vec(0,0)
             
@@ -717,7 +764,8 @@ class AE(object):
         Initializes fadeout by locking
         player and setting self.fading to True
         """
-        self.player.keyLock()
+        if self.player:
+            self.player.keyLock()
         self.fading = True
 
     def whiteOut(self):
@@ -736,7 +784,10 @@ class AE(object):
         if not self.transporting and not self.transLock:
             if intro:
                 self.transporting = True
-                self.tra_room = room.getInstance()
+                self.readyToTransition = True
+                self.tra_room = room
+                SoundManager.getInstance().fadeoutBGM()
+                self.tra_pos = position
                 return
             
             #self.player.keyDownLock()
@@ -744,6 +795,7 @@ class AE(object):
                 self.whiteOut()
             else:
                 self.fade()
+
             self.transporting = True
             self.tra_room = room
             
@@ -1516,19 +1568,19 @@ class AE(object):
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
-        #print("npcs: " + str(len(self.npcs)))
-        #print("enemies: " + str(len(self.enemies)))
-        #print()
 
+        #   (1.) Ensure the engine doesn't update during certain conditions
         if self.transporting or self.startingMobster or self.dead:
             return
         
+        #   (2.) Update the healthbar and camera
         if not self.healthBar.drawn:
             if self.camera:
                 self.updateCamera(seconds)
             self.updateHealthBar(seconds)
             return
         
+        #   (3.) Update Death
         if self.dying:
             Drawable.CAMERA_OFFSET = vec(0,0)
             self.updatePlayer(seconds)
@@ -1540,31 +1592,38 @@ class AE(object):
                     self.dead = True
             return
         
+        #   (4.) Area Transition Animation
         if self.area_fading:
             if self.areaIntro.fading:
                 self.areaIntro.update(seconds)
                 if not self.areaIntro.fading:
                     self.stopFadeIn()
             return
-                    
+
+        #   (5.) Map Conditions
         if not self.mapCondition:
             if self.itemsToCollect == 0:
                 self.mapCondition = True
                 Map.getInstance().rooms[self.area][self.roomId].clearRoom()
         
-        ##Visual effects
+        #   (6.) Visual Effects
         if self.name:
             self.name.update(seconds)
+
         if self.effects:
             for e in self.effects:
                 e.update(seconds)
+
         if self.effects_behind_walls:
             for e in self.effects_behind_walls:
                 e.update(seconds)
+
         if self.locks:
             for l in self.locks:
                 l.update(seconds)
-        ##Pop-up messages
+        
+
+        #   (7.) Global Pop-up Messages
         if not FLAGS[1] and INV["flameShard"] > 0:
             FLAGS[1] = True
             self.displayText(SPEECH["flameShard"])
@@ -1581,7 +1640,8 @@ class AE(object):
             FLAGS[4] = True
             self.displayText(SPEECH["galeShard"])
         
-        ##Prompt Results
+
+        #   (8.) Update Prompt Results
         if self.promptResult:
             if self.selectedItem == "mobster":
                 self.handleBattlePrompt()
@@ -1590,28 +1650,41 @@ class AE(object):
 
         
 
-            
+        #   (9.) Obstacles
         if self.torches:
             for t in self.torches:
                 t.update(seconds)
+
         if self.obstacles:
             for o in self.obstacles:
                 o.update(seconds)
+        
 
+        #   (10.) Player, enemies, drops, etc.
         if self.updatingPlayer:
             self.updatePlayer(seconds)
+
         self.updateDrops(seconds)
+
         self.updateSpawning(seconds)
+
         if updateEnemies:
             self.updateNpcs(seconds)
+
         self.updatePushableBlocks(seconds)
+
         self.updateSwitches(seconds)
+
         self.updateProjectiles(seconds)
+
         self.updateHUD(seconds)
+
         if self.tiles:
             for t in self.tiles:
                 t.update(seconds)
+
         self.floor.update(seconds)
+
         if not self.ignoreClear:
             if self.room_clear and self.clearFlag == 0:
                 self.clearFlag = 1
@@ -1619,6 +1692,7 @@ class AE(object):
         
         if self.camera:
             self.updateCamera(seconds)
+
         if self.inShop:
             self.shopDisplay.update(seconds)
             self.highlight.update(seconds)

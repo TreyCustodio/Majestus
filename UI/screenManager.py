@@ -305,8 +305,8 @@ class ScreenManager(object):
     """
     def pause(self):
         self.game.player.stop()
+        self.fadeOn(15)
         SoundManager.getInstance().playSFX("OOT_PauseMenu_Open.wav")
-        Map.getInstance().updateHighlight()
         self.state.pause()
     
     def openMap(self):
@@ -347,7 +347,6 @@ class ScreenManager(object):
                 if self.game.getHealthbarInitialized():
                     if not self.game.fading:
                         if EventManager.getInstance().performAction("pause"):
-                            print("Pause")
                             self.pause()
                             return
 
@@ -458,9 +457,11 @@ class ScreenManager(object):
 
             
 
-            if not self.fading and self.game.fading:
-                self.fadeOn(15)
-                self.fading = True
+            if self.game.fading:
+                if not self.fading:
+                    self.fadeOn(15)
+                    self.fading = True
+
             ##Room transition
             if self.game.readyToTransition:
                 self.transition()

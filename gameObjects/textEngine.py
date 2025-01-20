@@ -46,35 +46,33 @@ class Text(Drawable):
             self.image = Text.FONT.render(text, False, color)
     
 
-    """
-    Static Method drawChar
-    Draws a char that appears in textboxes.
-    @param char is the char that is drawn
-    @param alpha is the alpha value
-    @param flag specifies different text styles
-
-    Information for sprite file chars.png:
-    row 0 = upper case alphabetical chars, for frames 0-25
-    row 1 = lower case alphabetical chars, for frames 0-25
-    row 2 = numerical chars, for frames 0-9
-    row 3 = special chars, from frames 0-31
-
-    Alphabetical and special chars use ASCII values to print.
-    Alphabetical char frame = ascii value - 65
-    Special char frame = ascii value - 33
-    ! = 33
-    @ = 64
-    Ex: "A"
-    value = 65
-    frame = 65-65 = 0
     
-    flags:
-    0 -> default, 1 -> shake, 2 -> black, 3 -> white
-    """
     def drawChar(drawSurface, position = vec(0,0), char: str ="", alpha: int = 255, color = "default", flag=0):
-        ##  Safety Return   ##
-        if char == " " or char == "" or char == "&" or len(char) > 1:
-            return
+        """
+        Static Method drawChar
+        Draws a char that appears in textboxes.
+        @param char is the char that is drawn
+        @param alpha is the alpha value
+        @param flag specifies different text styles
+
+        Information for sprite file chars.png:
+        row 0 = upper case alphabetical chars, for frames 0-25
+        row 1 = lower case alphabetical chars, for frames 0-25
+        row 2 = numerical chars, for frames 0-9
+        row 3 = special chars, from frames 0-31
+
+        Alphabetical and special chars use ASCII values to display.
+        Alphabetical char frame = ascii value - 65
+        Special char frame = ascii value - 33
+        ! = 33
+        @ = 64
+        Ex: "A"
+        value = 65
+        frame = 65-65 = 0
+        
+        flags:
+        0 -> default, 1 -> shake, 2 -> black, 3 -> white
+        """
         
         Text.last_pos = position
         ##  Black Text in EB Garamond  ##
@@ -85,13 +83,14 @@ class Text(Drawable):
         
         ##  Off-white Text in EB Garamond   ##
         elif flag == 3:
-            SoundManager.getInstance().playSFX("text_2.wav")
             if color != "default":
                 image = Text.getImage(char, color)
             else:
-                image = Text.getImage(char, (255,255, 200))
-            drawSurface.blit(image, position)
-            return
+                image = Text.getImage(char, (255, 255, 200))
+            
+            #   Major change here; return the image instead of blitting
+            #drawSurface.blit(image, position)
+            return (image, char, color)
 
         ##  Numeric chars   ##
         if char.isnumeric():
@@ -116,29 +115,10 @@ class Text(Drawable):
         image.set_alpha(alpha)
         if flag == 1:
             image = pygame.transform.scale(image, (16,16))
+        
+        #   Making a huge change here.
+        #   Just return the image and the position
         drawSurface.blit(image, position)
-
-    """
-    Draw the cursor at the end of the textBox
-    """
-    def drawCursor(drawSurface, mainSurface):
-        if Text.cursor == None:
-            Text.cursor = TextCursor()
-
-        ##  Set position for moving cursor
-        motionTick = Text.cursor.motionTick
-        if motionTick == 0:
-            y = 0
-        elif motionTick == 1:
-            y = -2
-        elif motionTick == 2:
-            y = 0
-        elif motionTick == 3:
-            y = 2
-        cursorSurf = pygame.surface.Surface(vec(16,22))
-        cursorSurf.blit(Text.cursor.image, (0,0))
-        mainSurface.blit(cursorSurf, (Text.last_pos[0] + 16, (Text.last_pos[1] - 14) + y))
-        mainSurface.blit(IconManager.getButton("interact"), (Text.last_pos[0] + 16, Text.last_pos[1]))
 
 
 class TextEngine(object):
@@ -199,23 +179,30 @@ class TextEngine(object):
             self.starting = True
             self.displayIcon = None
 
-            self.charIndex = 0
-            self.textSpace = 0
-            self.color_index_start = -1
-            self.color_index_end = -1
-            self.color_char = ""
+            #   Colors
+            self.color = "default"
+
+            #   Textbox States
+            self.input_tick = 0
             self.box_drawn = False
             self.ready_to_display = True
             self.ready_to_continue = False
             self.end = False
             self.closing = False
             self.done = False
+            self.motionTick = 0
+
+            #   Textbox Images
             self.frame = 1
             self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (0,0))
-            
             self.displayTimer = 0.0
+            self.cursor = TextCursor()
+            self.displayLine = 0
+            self.index_image = pygame.transform.scale(SpriteManager.getInstance().getSprite("white_px.png"), (6,20))
 
+            #   Parsing
             self.lineNum = 1 #The line the text display is currently on
+            self.charIndex = 0
 
             self.promptHighlight = Highlight((16*6 - 8, 16*5 + 10), flag = 2)
             self.prompt = False
@@ -226,15 +213,27 @@ class TextEngine(object):
             self.voiceInt = -1
             self.frameTimer = 0.0
             self.noBox = False
-            self.buffering = False
+            
+
             self.clearing = False
+
+            #   Buffers
             self.buffTimer = 0.0
+            self.buffering = False
+            self.buffTime = 0.2
+
             self.type = 0
             self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (0,1)) #Animated cube at bottom
             self.cubeTick = 0
             self.alpha = 255
             self.setImage()
 
+            #   Character array
+            self.dialogue = [[]]
+
+        """
+        (1.) Auxillary Methods-------------------------------------------------------
+        """
 
         def setPromptHighlight(self, position):
             self.promptHighlight.position = vec(position[0]+64-6, position[1]+32-6)
@@ -275,9 +274,6 @@ class TextEngine(object):
             self.alpha = 255
 
             self.charIndex = 0
-            self.color_index_end = -1
-            self.color_index_start = -1
-            self.color_char = ""
             self.box_drawn = False
             self.ready_to_display = True
             self.ready_to_continue = False
@@ -286,7 +282,7 @@ class TextEngine(object):
             self.done = False
             self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (0,0))
             self.textSpace = 0
-            
+
             self.displayTimer = 0.0
 
             self.lineNum = 1 #The line the text display is currently on
@@ -302,11 +298,10 @@ class TextEngine(object):
             self.clearing = False
             self.setImage()
             self.type = 2
-        
 
-        """
-        (1.) Auxillary Methods-------------------------------------------------------
-        """
+            self.dialogue = [[]]
+            self.color = "default"
+        
 
         def playSFX(self, name, checkBusy = False):
             if checkBusy:
@@ -318,8 +313,7 @@ class TextEngine(object):
 
         def setText(self, text, icon = None, prompt = False, type = 2):
             """
-            Prepare to display the text
-            and the textBox.
+            Create the textBox surface.
 
             Expects:
             1. text to display, 
@@ -327,56 +321,55 @@ class TextEngine(object):
             3. if it is a prompt, 
             4. the type of box
             """
-            #   (1.) Prompt Display
+            #   (1.) Get the box ---------------------
+
+            ##  (i.) Prompt
             if prompt:
                 self.prompt = True
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
 
-            #   (2.) Common Box
+            ##  (ii.) Common Box
             elif type == 2:
                 self.type = 2
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox2.png", (self.frame,0))
             
-            #   (3.) Sign Post
+            ##  (iii.) Sign Post
             elif type == 3:
                 self.type = 3
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox3.png", (self.frame,0))
             
-            #   (4.) Invisible
+            ##  (iv.) Invisible
             elif type == 4:
                 self.type = 4
                 self.textBox = pygame.surface.Surface(vec(304,208))
             
-            #   (5.) Small Box
+            ##  (v.) Small Box
             elif type == 1:
                 self.type = 1
                 self.textBox = SpriteManager.getInstance().getSprite("TextBox.png", (self.frame,0))
 
-            #   (6.) Add an Icon
+
+            #   (2.) Add an Icon --------------------------
             if icon != None and self.displayIcon == None:
                 self.displayIcon = icon
             
-            #   (7.) Exclude "Y/N" from text prompt display
+
+            #   (3.) Parse the text ----------------------
             if self.prompt:
+                ##  Exclude "Y/N" from text prompt display
                 self.text = text[3:]
             else:
                 self.text = text
 
-            #   (8.) Play sound effects
+            self.buildDialogue()
+
+            #   (4.) Play the opening sfx -------------------
             if len(self.text) <= 8:
                 pass
             else:
                 if self.type != 4:
                     self.playSFX("TextBox_Open.wav")
-            
-            #   (9.) Set the text to display
-            if "\n" in self.text:
-                ##  Multiple lines
-                self.line = self.text[self.charIndex:self.text.index("\n")]
-            
-            else:
-                ##  1 line
-                self.line = self.text
+
         
         def setAlpha(self):
             """
@@ -384,6 +377,7 @@ class TextEngine(object):
             transparent.
             """
             self.textBox.set_alpha(220)
+
 
 
         """
@@ -405,7 +399,9 @@ class TextEngine(object):
 
                 ##  Invisible: Blit in the top right
                 drawSurface.blit(self.textBox, vec(0,0) - Drawable.CAMERA_OFFSET)
-            
+                if not self.ready_to_continue:
+                    pass
+
             else:
                 ##  Others: Blit at the desired position
                 drawSurface.blit(self.textBox, position - Drawable.CAMERA_OFFSET)
@@ -439,7 +435,7 @@ class TextEngine(object):
 
                 ##  Draw the cursor for box 4
                 if self.type == 4:
-                    Text.drawCursor(self.textBox, drawSurface)
+                    self.drawCursor(drawSurface)
                 
                 ##  Draw the Icon
                 if self.displayIcon != None:
@@ -467,7 +463,7 @@ class TextEngine(object):
 
                 ##  Draw the cursor for box 4; Waiting for input but not finished.
                 if self.type == 4:
-                    Text.drawCursor(self.textBox, drawSurface)
+                    self.drawCursor(drawSurface)
                 
                 ##  Draw the Icon
                 if self.displayIcon != None:
@@ -485,7 +481,9 @@ class TextEngine(object):
             else:
 
                 ##  Draw the Text
-                self.displayText(position, self.textBox)
+                self.displayText(self.textBox, drawSurface)
+                if not self.ready_to_continue:
+                    self.drawInput(drawSurface)
 
                 ##  Draw the Icon
                 if self.displayIcon != None:
@@ -495,18 +493,63 @@ class TextEngine(object):
         def drawPrompt(self, position, drawSurface):
             drawSurface.blit(SpriteManager.getInstance().getSprite("TextBox2.png", (0,5)), position - Drawable.CAMERA_OFFSET)
 
+        def drawCursor(self, drawSurf):
+            """
+            Draws the cursor when waiting
+            for input from the player.
+            Cursor depends on the box type.
+            """
+            #   (1.) Draw the cursor onto the screen
+            ##  Interact Icon stays stationary
+            drawSurf.blit(IconManager.getButton("interact"), (10 + (8 * self.charIndex) , 20 * (self.displayLine + 1) + 14))
+            
+            ##  Arrow moves up and down
+            drawSurf.blit(self.cursor.image, (10 + (8 * self.charIndex) , 19 * (self.displayLine + 1) + self.cursor.y))
+
+
+        def drawInput(self, drawSurf):
+            #   (1.) Get the color value from dialogue arr
+            # print(self.dialogue[self.lineNum-1][self.charIndex])
+            # print("Index: " + str(self.charIndex))
+            # print("Line: " + str(self.lineNum))
+            # print()
+
+            char = self.dialogue[self.lineNum-1][self.charIndex]
+            if len(char) > 2:
+                color = char[2]
+            else:
+                color = "default"
+            
+
+            #   (2.) Set the color of the index image
+            if color == "default":
+                self.index_image.fill((255,255,200))
+
+            else:
+                self.index_image.fill(color)
+
+
+            #   (3.) Display the index image; flashing when buffering
+            if self.buffering and self.buffTimer < 0.0:
+                ##  Draw
+                if self.input_tick < 10:
+                    drawSurf.blit(self.index_image, (10 + (8 * self.charIndex) , 20 * (self.displayLine + 1)))
+
+            else:
+                drawSurf.blit(self.index_image, (10 + (8 * self.charIndex) , 20 * (self.displayLine + 1)))
+            
+
         def drawIcon(self, position, drawSurface):
             box = SpriteManager.getInstance().getSprite("icon.png", (0,0))
             icon = SpriteManager.getInstance().getSprite("icon.png", self.displayIcon)
             drawSurface.blit(box, position)
             drawSurface.blit(icon, position)
 
-        def drawBox(self, position, drawSurface):
-            drawSurface.blit(self.textBox, position)
-            self.box_drawn = True
 
-        def drawChars(self, drawSurface = None):
+        def parseChar(self, char = "", drawSurface = None):
             """
+            Produce certain effects depending
+            on the dialogue type and the char.
             drawSurface -> textBox
             """
             #   (1.) Sign boxes
@@ -527,81 +570,84 @@ class TextEngine(object):
             
             #   (2.) Invisible
             elif self.type == 4:
+                
+                #  (i). Color Coating
+                if char == "%":
+                    #   (a.) Observe the next char
+                    next_char = self.text[self.charIndex + 1]
 
-                ##  Get the character at the current index
-                char = self.line[self.charIndex]
-
-                ##  Set a buffer for commas
-                if char == ",":
-                    if self.charIndex < len(self.line) - 3:
-                        self.buffTimer = -0.5
-
-                ##  Begin / End Color Coating
-                elif char == "%":
-
-                    ###  End of colored phrase; reset elements
-                    if self.color_index_end != -1 and self.charIndex >= self.color_index_end:
-                        self.color_index_end = -1
-                        self.color_index_start = -1
-                        self.color_char = ""
+                    #   (b.) '%%' = '%' without any color changing
+                    if next_char == '%':
+                        ##  Display %
                         return
                     
-                    ###  Start of colored phrase; set the indices
+                    #   (c.) Switch the text color
+                    elif next_char == "~":
+                        self.color = "default"
+
+                    ## Red
+                    elif next_char == "r":
+                        self.color = (255,50,50)
+
+                    ## Blue
+                    elif next_char == "b":
+                        self.color = (50,50,255)
+                    
+                    ## Green
+                    elif next_char == "g":
+                        self.color = (50,255,50)
+
+                    ## White
+                    elif next_char == "w":
+                        self.color = (255,255,255)
+
+                    ## Dark Purple
+                    elif next_char == "d":
+                        self.color = (200,0,200)
+
+                    ## Pink
+                    elif next_char == "p":
+                        self.color = (255, 17, 191)
+
+                    ## Fire
+                    elif next_char == "f":
+                        self.color = (255, 69, 30)
+
+                    ## Ice
+                    elif next_char == "i":
+                        self.color = (30, 255, 247)
+
+                    ## Lightning
+                    elif next_char == "t":
+                        self.color = (248, 255, 17)
+
+                    ## Return to default
                     else:
-                        self.color_index_start = self.charIndex
-                        self.color_index_end = self.line.index(char, self.charIndex+1)# Find next index of '%'
-                        self.color_char = self.line[self.charIndex+1]#  Find the color char
-                        self.charIndex += 2
-                        self.textSpace += 1
-                
-                ##  Draw the char according to the color char
-                if self.color_index_end != -1 and self.charIndex >= self.color_index_start:
-                    ### Red
-                    if self.color_char == "r":
-                        color = (255,50,50)
-
-                    ### Blue
-                    elif self.color_char == "b":
-                        color = (50,50,255)
+                        self.color = "default"
                     
-                    ### Green
-                    elif self.color_char == "g":
-                        color = (50,255,50)
-
-                    ### White
-                    elif self.color_char == "w":
-                        color = (255,255,255)
-
-                    ### Dark Purple
-                    elif self.color_char == "d":
-                        color = (200,0,200)
-
-                    ### Pink
-                    elif self.color_char == "p":
-                        color = (255, 17, 191)
-
-                    ### Fire
-                    elif self.color_char == "f":
-                        color = (255, 69, 30)
-
-                    ### Ice
-                    elif self.color_char == "i":
-                        color = (30, 255, 247)
-
-                    ### Lightning
-                    elif self.color_char == "t":
-                        color = (248, 255, 17)
-
-                    ### Wind is green
-                    
-
-                    ### Draw the char after setting the color
-                    Text.drawChar(drawSurface, ((10) + (8 * (self.charIndex - (2 * self.textSpace) - (self.textSpace - 1))), (8 + (self.lineNum * 28)) ), char= self.line[self.charIndex], color=color, flag=3)
+                    ##  Go to the next regular char, skipping '%c'
+                    self.charIndex += 1
+                    return
                 
-                ##  Draw a normal char
+                #   (ii.) Clearing the text
+                elif char == "$":
+                    next_char = self.text[self.charIndex + 1]
+                    if next_char == "$":
+                        ##  We're clearing
+                        self.dialogue[self.lineNum - 1].append(("clear", "$"))
+                        self.charIndex += 1
+                        return
+                
+                #   (iii.) Waiting for input
+                elif char == "&":
+                    pass
+
+                #   (iv.) Regular draw routine / other effects
                 else:
-                    Text.drawChar(drawSurface, ((10) + (8 * (self.charIndex - (3 * self.textSpace))), (8 + (self.lineNum * 28)) ), char= self.line[self.charIndex], flag=3)
-            
+                    pass
+
+                #   (v.) Append the image and position to the dialogue array
+                self.dialogue[self.lineNum - 1].append(Text.drawChar(drawSurface, char= char, color=self.color, flag=3))
 
             #   (3.) Other Boxes
             else:
@@ -612,26 +658,43 @@ class TextEngine(object):
                 else:
                     Text.drawChar(self.textBox, ((12) + (8 * self.charIndex), 7), char= self.line[self.charIndex], flag=2)
 
-                ##  Code for original font that includes spacing
-                """ if self.lineNum == 2:
-                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 34), char= self.line[self.charIndex])
-                elif "&&" in self.line:
-                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 22), char= self.line[self.charIndex])
-                else:
-                    Text.drawChar(self.textBox, ((0 + 6) + (10 * self.charIndex), 7), char= self.line[self.charIndex])
-                """
 
+        def buildDialogue(self):
+            """
+            Build an array containing
+            the surfaces and positions
+            of each character's image.
+            """
 
-        """
-        Main text display method.
-        Try if not mixer busy for slower text.
+            while True:
+                char = self.text[self.charIndex]
+                #   (1.) Go to next line
+                if char == '\n':
+                    self.lineNum += 1
+                    self.dialogue.append([])
+                    self.charIndex += 1
+                    continue
+                
+                #   (2.) Get the image and position of the char
+                self.parseChar(char, self.textBox)
+                self.charIndex += 1
 
-        drawSurface -> textbox
-        """
-        def displayText(self, position, drawSurface, question = False): 
-            
+                if self.charIndex >= len(self.text) - 1:
+                    break
+                
+            self.charIndex = 0
+            self.lineNum = 1
+
+        
+        def displayText(self, drawSurface, mainSurface): 
+            """
+            Driver code for text display.
+
+            Expects:
+            drawSurface -> the textbox
+            """
             #   (1.) Wait if buffering
-            if self.buffering:
+            if self.buffering or self.clearing:
                 return
             
 
@@ -641,103 +704,73 @@ class TextEngine(object):
 
 
             #   (3.) Draw the character, increment the index
-            self.drawChars(drawSurface)
+                    
+            #   (i.) Get the char and position
+            char = self.dialogue[self.lineNum-1][self.charIndex][0]
+            pos = vec(10 + (8 * self.charIndex) , 20 * (self.displayLine + 1))
+            
+            #   (ii.) Display the char
+            if char == "clear":
+                ##   Clear, wait for input
+                self.clearing = True
+                self.ready_to_continue = True
+                EventManager.getInstance().disableAction("interact")
+                self.lineNum += 1
+                return
+
+            else:
+                ##  Buffer for commas
+                if self.dialogue[self.lineNum-1][self.charIndex][1] == ",":
+                    self.buffTimer -= 0.6
+
+                ##  Play sfx and display
+                self.playSFX("text_2.wav")
+                drawSurface.blit(char, pos)
+            
+            
+            #   (iii.) Increment the charIndex
             self.charIndex += 1
+            
 
-            #   (4.) Update the engine at the end of the line
-            if self.charIndex >= len(self.line):
+            #   (4.) Check if we are at the end of the line
+            if self.charIndex >= len(self.dialogue[self.lineNum - 1]):
 
-                ##  (i.) Play a sound effect, Update self.text
-                SoundManager.getInstance().stopSFX("message.wav")
-                self.text = self.text[self.charIndex+1:]
+                #  (i.) Increment the line number
+                self.lineNum += 1
+                self.displayLine += 1
 
-                ##  (ii.) Finish the text display once self.text is empty
-                if self.text == "":
+                #   (ii.) Check if there are no more lines
+                if self.lineNum > len(self.dialogue):
+                    ##  Reset the indices, wait for input, end dialogue
+                    Text.last_pos = pos
                     self.end = True
                     self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
                     self.ready_to_continue = True
-                    if self.type == 4:
-                        return
-                        self.playSFX("text_2.wav")
-                    else:
-                        self.playSFX("OOT_Dialogue_Done.wav")
+                    EventManager.getInstance().disableAction("interact")
+                    self.playSFX("OOT_Dialogue_Done.wav")
+                    self.lineNum -= 1
+                    self.displayLine -= 1
+
+                #   (iii.) Reset the charIndex, ready to display next line
+                else:
                     self.charIndex = 0
 
 
-                ##  (iii.) Get ready to display additional lines
-                elif "\n" in self.text:
+        """
+        (3.) Handling Events and Updating ---------------------------------------------
+        """
 
-                    ###  Invisible Text
-                    if self.type == 4:
-                        ####    Wait for input and continue
-                        if "&&" in self.line:
-                            self.ready_to_continue = True
-                            self.charIndex = 0
-                            self.textSpace = 0
-                            self.lineNum += 1
-                            self.line = self.text[:self.text.index("\n")]
-                        
-                        ####    Wait for input, clear text, and continue
-                        elif "$$" in self.line:
-                            self.clearing = True
-                            self.ready_to_continue = True
-                            self.charIndex = 0
-                            self.textSpace = 0
-                            self.lineNum = 1
-                            self.line = self.text[:self.text.index("\n")]
-                        
-                        ####    Draw to the next line
-                        else:
-                            self.line = self.text[:self.text.index("\n")]
-                            self.charIndex = 0
-                            self.textSpace = 0
-                            self.lineNum += 1
-
-                    ###  Other Boxes
-                    else:
-                        if self.lineNum == 1 and (not "&&" in self.line):
-                            self.line = self.text[:self.text.index("\n")]
-                            self.charIndex = 0
-                            self.lineNum = 2
-                        else:
-                            self.ready_to_continue = True
-                            self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
-                            self.cubeTick = 0
-                            self.line = self.text[:self.text.index("\n")]
-                            self.playSFX("message-finish.wav")
-                            self.charIndex = 0
-                            if self.type != 1:
-                                self.lineNum = 1
-
-
-                ##  (iv.) Wait for input
-                else:
-                    self.ready_to_continue = True
-                    self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (4,1))
-                    self.cubeTick = 0
-                    self.line = self.text
-                    self.charIndex = 0
-                    self.playSFX("message-finish.wav")
-            
-
-            #   (5.) Play a sound effect for each character
-            """ else:
-                if self.type == 4:
-                    return
-                    self.playSFX("text_2.wav")
-                else:
-                    self.playSFX("message.wav") """
-                    
-        
         def handleEvent(self):
             if self.closing or self.starting or self.done:
                 return
+            
             ##Prompt selection
             if self.choosing:
                 if ACTIONS["right"] and self.highlighted == 0:
                     self.highlighted = 1
                     self.promptHighlight.position = vec(self.promptHighlight.position[0]+88, self.promptHighlight.position[1])
                     self.playSFX("pause_cursor.wav")
+                
                 elif ACTIONS["left"] and self.highlighted == 1:
                     self.highlighted = 0
                     self.promptHighlight.position = vec(self.promptHighlight.position[0]-88, self.promptHighlight.position[1])
@@ -753,12 +786,12 @@ class TextEngine(object):
                         self.promptResult = True
 
             elif self.ready_to_continue:       
-                ##Progressing text
-                #Text.drawCursor(self.textBox, (216, 40))
+                ##  Progressing text
                 if EventManager.getInstance().performAction("interact"):
                     if self.end == True:
                         self.setClosing()
                         self.blitBackground()
+
                     else:
                         self.playSFX("OOT_Dialogue_Next.wav")
                         self.box_drawn = False
@@ -766,17 +799,21 @@ class TextEngine(object):
                         self.backgroundBool = True
                         if self.type == 4:
                             if self.clearing:
+                                self.charIndex = 0
+                                self.displayLine = 0
                                 self.closing = True
                             return
                         self.blitBackground()
                     
-                    
-
                 elif EventManager.getInstance().performAction("map"):
                     self.setClosing()
                     self.blitBackground()
                     return
-
+            else:
+                #   Speed up text
+                if EventManager.getInstance().isPressed("interact"):
+                    self.buffTimer = self.buffTime
+        
         def blitBackground(self):
             """
             Blit the background of the textBox.
@@ -807,18 +844,21 @@ class TextEngine(object):
             self.closing = True
             self.frame = 5
 
+            if self.type == 4:
+                self.charIndex = 0
+                self.displayLine = 0
+
         def update(self, seconds):
             
             #   (1.) Update Cursor
-            if Text.cursor != None:
-                Text.cursor.update(seconds)
+            
 
 
             #   (2.) Update Buffer
             if self.buffering:
-                self.buffTimer += (seconds * 2)
+                self.buffTimer += (seconds*2)
                 if self.type == 4:
-                    if self.buffTimer >= 0.1:
+                    if self.buffTimer >= self.buffTime:
                         self.buffering = False
                         self.buffTimer = 0.0
 
@@ -826,12 +866,12 @@ class TextEngine(object):
             #   (3.) Startup Animation
             if self.starting:
 
-                ##  Skip Animation for type 4
+                #   (i.) Skip Animation for type 4
                 if self.type == 4:
                     self.starting = False
                     return
                 
-                ##  Small Boxes
+                #   (ii.) Small Box Animation
                 elif self.type == 1:
                     self.frame += 1
                     self.frame %= 5
@@ -841,7 +881,7 @@ class TextEngine(object):
                         self.setBackgroundBool()
                     return
                 
-                ##  Other Boxes
+                #   (iii.) Other box animation
                 else:
                     if self.frameTimer >= 0.01:
                         self.frameTimer = 0.0
@@ -859,7 +899,7 @@ class TextEngine(object):
             
             #   (4.) Closing Animation
             elif self.closing:
-                ##  Small Boxes
+                #   (i.) Small Box Animation
                 if self.type == 1:
                     self.frame -= 1
                     if self.frame == 0:
@@ -869,8 +909,9 @@ class TextEngine(object):
                         self.setImage()
                     return
                 
-                ##  Other Boxes
+                #   (ii.) Other Box Animation
                 else:
+                    ##  Track the frameTimer
                     if self.frameTimer >= 0.01:
                         self.frameTimer = 0.0
 
@@ -898,29 +939,41 @@ class TextEngine(object):
                                 self.done = True
                             else:
                                 self.setImage()
+
+                    ##  Increment the frame timer
                     else:
                         self.frameTimer += seconds
                     
+                    
+
                     return
                                     
           
-            ##  Update Prompt Elements
+            #   (5.) Update Prompt Elements
             if self.prompt:
                 self.promptHighlight.update(seconds)
             
+
+            #   (6.) Waiting for Input Animation
+            elif self.ready_to_continue:
+                self.cursor.update(seconds)
+
+
+            #   (7.) End of dialogue; not waiting for input
+            elif self.done:
+                pass
+            
+
+            #   (8.) Update Text Animation
             else:
-                ##  Update for ready to continue
-                if self.ready_to_continue:
-                    pass
-                ##  No Update Once Done
-                elif self.done:
-                    pass
-                else:
-                    ##  Update Cube Animation
-                    self.frameTimer += seconds
-                    if self.frameTimer >= 0.05:
-                        self.frameTimer = 0.0
-                        self.cubeTick += 1
-                        self.cubeTick %= 4
-                        self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (self.cubeTick, 1))
+                self.input_tick += 1
+                if self.input_tick >= 20:
+                    self.input_tick = 0
+
+                self.frameTimer += seconds
+                if self.frameTimer >= 0.05:
+                    self.frameTimer = 0.0
+                    self.cubeTick += 1
+                    self.cubeTick %= 4
+                    self.cube = SpriteManager.getInstance().getSprite("TextBox2.png", (self.cubeTick, 1))
 

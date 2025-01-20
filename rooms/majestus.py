@@ -24,6 +24,7 @@ class Intro_Cut(AbstractEngine):
             Does not call super().__init()
             """
             AE.initializeIntro(self)
+            self.textInt = 4
             
         
         def reset(self):
@@ -86,6 +87,7 @@ class Intro_Cut(AbstractEngine):
             elif self.textInt == 2:
                 if self.text == "":
                     self.textInt += 1
+                    
                     self.displayText(SPEECH["intro_2"], box=4)
             
             elif self.textInt == 3:
@@ -100,12 +102,7 @@ class Intro_Cut(AbstractEngine):
             
             elif self.textInt == 5:
                 if self.text == "":
-                    self.fade()
-                    self.textInt += 1
-            
-            elif self.textInt == 6:
-                if not self.fading:
-                    self.transport("intro_1", (16*9, 16*9))
+                    self.transport(Tutorial_1, (16*9, 16*9), intro=True)
             return
 
 

@@ -162,18 +162,34 @@ class EventManager(object):
         def removeJoystick(self, id):
             self.controller = "key"
         
-        """
-        If the action is activated, the action
-        is deactivated and the function returns True
-        False otherwise
-        """
         def performAction(self, action: str):
+            """
+            Returns True if the action is
+            available.
+
+            Turns the action off afterward!
+            """
             if ACTIONS[action]:
                 ACTIONS[action] = False
                 return True
             else:
                 return False
         
+        def isPressed(self, action: str):
+            """
+            Returns True if the action
+            is currently pressed.
+
+            Does not turn the action off!
+            """
+            return ACTIONS[action]
+        
+        def disableAction(self, action: str):
+            """
+            Disables an action.
+            """
+            ACTIONS[action] = False
+            
         def setSpecial(self, action: str):
             ACTIONS["special"] = action
 

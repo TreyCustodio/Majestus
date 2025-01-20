@@ -264,9 +264,29 @@ class TextCursor(Animated):
     def __init__(self):
         super().__init__(vec(0,0), "text_components.png", (0,0), 4)
         self.motionTick = 0
+        self.motionTimer = 0.0
+        self.y = 4
     
     def update(self, seconds):
+        #   (1.) Update Animation
         super().update(seconds, motion = True)
+
+        #   (2.) Update the motion tick
+        if self.motionTimer >= 0.2:
+            self.motionTick += 1
+            self.motionTick %= 4
+            self.motionTimer = 0.0
+        else:
+            self.motionTimer += seconds
+        
+        if self.motionTick == 0:
+            self.y = 4
+        elif self.motionTick == 1:
+            self.y = 2
+        elif self.motionTick == 2:
+            self.y = 4
+        elif self.motionTick == 3:
+            self.y = 6
         
 class Fade():
     """
