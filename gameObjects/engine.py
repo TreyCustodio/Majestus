@@ -47,18 +47,36 @@ class AE(object):
     """
     (0.) Initializations
     """
-    def __init__(self, room_dir = "", camera = False, size = vec(*RESOLUTION)):
+    def __init__(self, room_dir = "", camera = False, size = vec(*RESOLUTION), animate_walls = False, wall_frames = 6, animate_floor = False, floor_frames = 6):
+        
+        #   (1.) Initialize the effects
         self.name = None
         if room_dir != "":
             self.room_dir = room_dir
-            self.walls = Walls(room_dir)
-            self.floor = Floor(room_dir)
+
+            #   (i.) Walls
+            if animate_walls:
+                self.walls = Walls(room_dir, animate=True, nFrames=wall_frames)
+            else:
+                self.walls = Walls(room_dir)
+            
+            #   (ii.) Floor
+            if animate_floor:
+                self.floor = Floor(room_dir, animate=True, nFrames=floor_frames)
+            else:
+                self.floor = Floor(room_dir)
+
+            #   (iii.) Room Name
             self.name = Name(room_dir)
         
+        #   (iv.) Camera
         if camera:
             self.camera = Camera()
         else:
             self.camera = None
+        
+        
+        #   (2.) Initialize the States, timers, and other data
         self.updatingPlayer = True
         self.textInt = 0
         self.timer = 0.0 #A universal timer; can be used for anything
@@ -84,7 +102,6 @@ class AE(object):
         self.deathTimer = 0
 
         #Room transitioning
-
         self.readyToTransition = False
         self.transporting = False
         self.transporting_area = False
@@ -790,7 +807,6 @@ class AE(object):
                 self.tra_pos = position
                 return
             
-            #self.player.keyDownLock()
             if fade_white:
                 self.whiteOut()
             else:
@@ -1568,7 +1584,6 @@ class AE(object):
 
 
     def update(self, seconds, updateEnemies = True, updatePlayer = True):
-
         #   (1.) Ensure the engine doesn't update during certain conditions
         if self.transporting or self.startingMobster or self.dead:
             return
@@ -1682,8 +1697,9 @@ class AE(object):
         if self.tiles:
             for t in self.tiles:
                 t.update(seconds)
-
+    
         self.floor.update(seconds)
+        self.walls.update(seconds)
 
         if not self.ignoreClear:
             if self.room_clear and self.clearFlag == 0:
@@ -1863,9 +1879,6 @@ class AE(object):
         
         HudButtons.draw(drawSurface)
 
-        
-
-
 
     def drawTiles(self, drawSurface):
         if self.tiles:
@@ -1922,8 +1935,6 @@ class AE(object):
         
         #Background/Tiles
         self.floor.draw(drawSurface)
-        
-        
         self.drawTiles(drawSurface)
         
         #Switches
@@ -1932,15 +1943,19 @@ class AE(object):
         if self.effects_behind_walls:
             for e in self.effects_behind_walls:
                 e.draw(drawSurface)
+
         self.walls.draw(drawSurface)
+        
         if self.locks:
             for l in self.locks:
                 l.draw(drawSurface)
 
         #Blocks
         self.drawBlocks(drawSurface)
+        
         #Pushable blocks
         self.drawPushable(drawSurface)
+        
         #Npcs
         self.drawNpcs(drawSurface)
 

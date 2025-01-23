@@ -10,7 +10,7 @@ Majestus v0.2
 Author - Trey Custodio 12/26/2024
 
 This file drives the code for the game,
-handles debugging, and sets up all
+helps with debugging, and sets up all
 of the game's objects.
 Time module is used for runtime analysis.
 """
@@ -21,21 +21,20 @@ def main():
     The While loop runs until the game closes.
     """
 
-    #   Initialize Pygame
+    #   (1.) Initialize Pygame
     pygame.init()
     pygame.font.init()
     pygame.joystick.init()
 
-    #   Initialize the Screen
+    #   (2.) Initialize the Screen
     flags = pygame.SCALED #| pygame.NOFRAME | pygame.FULLSCREEN
     screen = pygame.display.set_mode(list(map(int, UPSCALED)), flags=flags)
     drawSurface = pygame.Surface(list(map(int, RESOLUTION)))
     transparentSurface = drawSurface.subsurface(drawSurface.get_rect())
     textSurface = drawSurface.subsurface(drawSurface.get_rect())
-    
     pygame.mouse.set_visible(False)
 
-    #   Window Icon and Message
+    #   (3.) Window Icon and Message
     rand = randint(0,5)
     if rand == 1:
         pygame.display.set_caption("Majestus: I'll learn pixel art one day...")
@@ -56,11 +55,11 @@ def main():
     iconSurf.blit(image, (0,0))
     pygame.display.set_icon(iconSurf)
     
-    #   Main Engines
+    #   (4.) Main Engines
     gameEngine = ScreenManager()
     eventManager = EventManager.getInstance()
     
-    #   Runtime / FPS Analysis
+    #   (5.) Runtime / FPS Analysis
     start_time = time.time()
     frame_count = 0
 

@@ -91,9 +91,10 @@ class EventManager(object):
     Singleton class that manages each event in the pygame event queue
     and decides how to affect the game based on the event.
 
-    In higher level classes, event handling is done as follows:
+    In higher level scripts, event handling is done as follows:
     1. Checking if the desired action is activated by calling Actions["action"]
     and performing the action without deactivating it (action stays on as long as button held without pressing another).
+    
     2. Checking if the desired action is activated, performing it, and deactivating it
     by calling performAction("action") -> Interactions, Pausing
     """

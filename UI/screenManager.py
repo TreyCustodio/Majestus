@@ -16,44 +16,49 @@ from pygame import Surface
 from pygame.locals import *
 
 """
-Original ScreenManager Implementation by Doctor Liz Matthews.
-Heavily Modified by Trey Custodio
+Original ScreenManager written by Dr. Liz Matthews.
+Modified by Trey Custodio 1/23/2025
 """
 class ScreenManager(object):
       
     def __init__(self):
+
+        #   Start the music
         self.playTheme()
+
+        #   Initialize the Hud Manager
         HudImageManager.initialize()
+
+        #   Controller data
         self.controller = "key"
         self.controllerSet = False
         self.inIntro = False
-        self.game = None # Add your game engine here!
+
+        #   Engines
+        self.game = None
         self.mobsterEngine = MobsterEngine()
         self.pauseEngine = PauseEngine()
         self.textEngine = TextEngine.getInstance()
         self.state = ScreenManagerFSM(self)
-        self.pausedText = TextEntry(vec(0,0),"Paused")
-        self.transparency = False #Boolean that activates the transparent surface
 
-        ##  Main Menu transitioning states
+        #   States
         self.startingGame = False
         self.continuingGame = False
         self.returningToMain = False
 
-        ##  Fade control
+        #  Fade control
         self.fade = Fade.getInstance()
         self.white = WhiteOut()
         self.fade.setRow(1)
         self.fade.setFrame(8)
         self.fading = False
         self.fadingIn = False
-        self.wipe = Wipe() #1 instantiated
+        self.wipe = Wipe() # only 1 instantiated
         
-        size = self.pausedText.getSize()
-        midpoint = RESOLUTION // 2 - size
-        self.pausedText.position = vec(*midpoint)
+        #   Screen Geometry
+        # midpoint = RESOLUTION // 2 - size
 
-        self.displayTitle = False
+        #   Title Screen
         self.titleTimer = 0.0
         self.mainMenu = EventMenu("title_screen.png", fontName="zelda")
 
@@ -70,38 +75,59 @@ class ScreenManager(object):
                                 center="both")
         
 
-                                    
+
+    """
+    (1.) Auxillary ---------------------------------
+    """                    
     def playTheme(self):
+        """
+        Play the title theme.
+        """
         SoundManager.getInstance().playBGM("Fontaines.mp3")
 
+    
     def setController(self, text):
+        """
+        Set the controller
+        """
         self.controller = text
 
-    """
-    Fade screen to black.
-    @Param speed is the number you increase
-    the black alpha value by each frame
-    """
+
     def fadeOn(self, speed: int = 1):
+        """
+        Fade screen to black.
+        Param: speed = the number you increase
+        the black alpha value by each frame.
+        """
         self.wipe.increase(speed)
     
-    """
-    Fade the screen in from black.
-    @Param speed is the number you decrease
-    the black alpha value by each frame
-    """
+    
     def fadeOff(self, speed: int = 1):
+        """
+        Fade the screen in from black.
+        Param: speed = the number you decrease
+        the black alpha value by each frame
+        """
         self.wipe.decrease(speed)
     
+    
     def drawWipe(self, drawSurf):
+        """
+        Draw the screen wipe (black image).
+        """
         self.wipe.draw(drawSurf)
     
+    
     def setWipe(self, image: Surface):
+        """
+        Change the wipe's image.
+        """
         pass
 
+
+
     """
-    Draw routine for textboxes.
-    drawSurf -> specific surface for textboxes passed in by main.py
+    (2.) Drawing -----------------------------------
     """
     def drawText(self, drawSurf):
 
@@ -299,17 +325,22 @@ class ScreenManager(object):
 
        
         
-    
     """
-    Handling Events
+    (3.) Handling Events ------------------------------
     """
     def pause(self):
+        """
+        Pause the game.
+        Open the pause screen.
+        """
         self.game.player.stop()
-        self.fadeOn(15)
         SoundManager.getInstance().playSFX("OOT_PauseMenu_Open.wav")
         self.state.pause()
     
     def openMap(self):
+        """
+        Open the map.
+        """
         self.game.player.stop()
         SoundManager.getInstance().playSFX("OOT_PauseMenu_Open.wav")
         Map.getInstance().updateHighlight()
@@ -317,13 +348,16 @@ class ScreenManager(object):
         self.pauseEngine.mapOpen = True
 
     def handleChoice(self, choice):
+        """
+        Handle choice of title screen
+        selection.
+        """
         self.fade.setFrame(0)
         if choice == 0:
             SoundManager.getInstance().fadeoutBGM()
             SoundManager.getInstance().playSFX("WW_PressStart.wav")
             self.startingGame = True
             self.fadeOn(4)
-
 
         elif choice == 1:
             SoundManager.getInstance().fadeoutBGM()
@@ -334,8 +368,11 @@ class ScreenManager(object):
             return pygame.quit()
         
     
-
     def handleEvent(self):
+        """
+        Decide whether to have the
+        other engines handle events or not.
+        """
         if self.state == "game":
             if self.game.cutscene:
                 self.game.handleEvent()
@@ -351,8 +388,6 @@ class ScreenManager(object):
                             return
 
                     self.game.handleEvent()
-
-
 
         elif self.state == "paused":
             if self.returningToMain:
@@ -391,15 +426,29 @@ class ScreenManager(object):
         elif self.state == "mobster":
             self.mobsterEngine.handleEvent()
 
-    #Only runs if in game
+
     def handleCollision(self):
+        """
+        Decide whether to have the
+        game engine handle collision or not.
+        """
         if self.state == "game":
             if self.game.cutscene:
                 return
             self.game.handleCollision()
     
+    
+    """
+    (4.) Updating --------------------------------
+    """
     def transition(self):
-        ##Runs twice
+        """
+        Transition to another room.
+        Move from one game engine to another.
+
+        Runs Twice -> but why?
+        """
+        self.fading = True
         self.fadeOff(15)
         pos = self.game.tra_pos
         player = self.game.player
@@ -418,22 +467,27 @@ class ScreenManager(object):
             self.game = newGame
             self.game.initializeArea(player, pos, keepBGM)
 
-    #Update all states
+    
     def update(self, seconds):
+        """
+        Update all states.
+        """
 
-        ##  Update Screen FX    ##
+        #   (1.) Update the screen wipe
         self.wipe.update(seconds)
 
-        ##  Update according to state   ##
+
+        #   (2.) Update the room
         if self.state == "game":
-            ##  For cutscenes like intro
+            #   (i.) In cutscenes + Transition
             if self.game.cutscene:
                 self.game.update(seconds)
-
+                
                 if self.game.readyToTransition:
                     self.transition()
                 return
             
+            #   (ii.) Quitting to title
             if self.returningToMain:
                 if self.wipe.increasing == False:
                     self.fadeOff(20)
@@ -441,6 +495,7 @@ class ScreenManager(object):
                     self.fadingIn = True
                 return
             
+            #   (iii.) Dead
             if self.game.dead:
                 self.wipe.setColor((255,0,0))
                 self.fadeOn(5)
@@ -448,24 +503,27 @@ class ScreenManager(object):
                 self.returningToMain = True
                 return
             
+            #   (iv.) Fading in
             if self.fadingIn:
                 self.game.updatingPlayer = False
+            
+            #   (v.) Update as usual
             else:
                 if not self.game.updatingPlayer:
                     self.game.updatingPlayer = True
                 self.game.update(seconds)
 
-            
-
+            #   (vi.) Game Engine triggers screen wipe
             if self.game.fading:
                 if not self.fading:
                     self.fadeOn(15)
                     self.fading = True
 
-            ##Room transition
+            #   (vii.) Room transition
             if self.game.readyToTransition:
                 self.transition()
 
+            #   (viii.) White fadeout
             elif self.game.whiting:
                 if self.white.alpha == 255:
                     if self.game.transporting_area:
@@ -477,19 +535,23 @@ class ScreenManager(object):
                 else:
                     self.white.update(seconds)
             
+            #   (ix.) Transition to Mobster
             if self.game.startingMobster:
                 self.game.reset()
                 self.state = "mobster"
                 self.mobsterEngine.initialize()
 
+
+        #   (3.) Update the textbox
         elif self.state == "textBox":
-            #self.updateLight(seconds)
             self.textEngine.update(seconds)
             if self.game.cutscene:
                 self.game.update(seconds)
             else:
                 self.game.update(seconds, updateEnemies=False)
 
+
+        #   (4.) Update the pause screen
         elif self.state == "paused":
             self.pauseEngine.update(seconds)
             if self.game.getHealthBarDrawing():
@@ -503,11 +565,12 @@ class ScreenManager(object):
                     self.fadingIn = True
         
 
+        #   (5.) Update the title screen
         elif self.state == "mainMenu":
+            #   (i.) Update / Animate
             self.mainMenu.update(seconds)
             
-
-            ##New Game
+            #   (ii.) Starting a new game
             if self.startingGame:
                 if self.wipe.increasing == False:
                     if not pygame.mixer.get_busy():
@@ -518,7 +581,7 @@ class ScreenManager(object):
                         self.startingGame = False
             
                     
-            ##Continue
+            #   (iii.) Continuing a game
             elif self.continuingGame:
                 if self.wipe.increasing == False:
                     if not pygame.mixer.get_busy():
@@ -534,26 +597,12 @@ class ScreenManager(object):
                         self.game.unlockHealth()
                         self.game.stopFadeIn()
                         return
-                        
-        elif self.state == "intro":
 
-            if self.textEngine.voiceInt == -1:
-                self.textEngine.voiceInt = 0
-
-            self.intro.update(seconds)
-            if self.intro.introDone:
-                self.fading = True
-                self.fadingIn = True
-                ##Transition to Entrance##
-                self.inIntro = False
-                self.intro.reset()
-                self.game = Entrance.getInstance()
-                self.game.initializeRoom()
-                self.state.toGame()
-
+        #   (6.) Update monster mobster
         elif self.state == "mobster":
             self.mobsterEngine.update(seconds)
-
+        
+        #   (7.) Update the wipe
         if self.fading:
             if self.fadingIn:
                 if self.wipe.decreasing == False:
@@ -579,6 +628,3 @@ class ScreenManager(object):
             else:
                 if self.game and self.game.transporting and self.wipe.increasing == False:
                     self.game.finishFade()
-    
-
-   

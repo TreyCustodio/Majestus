@@ -331,8 +331,7 @@ class Tutorial_1(AbstractEngine):
     
     class _T1(AE):
         def __init__(self):
-            super().__init__("tut_1")
-            #self.player = Player(vec(146, 276))
+            super().__init__("tut_1", animate_walls=True, wall_frames=2)
             self.roomId = 4
             self.bgm = None
             self.ignoreClear = True
