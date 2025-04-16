@@ -368,7 +368,7 @@ INV = {
     "speed":0,
     "wallet": 99,
     "money": 99,
-    "keys": 0,
+    "keys": 1,
 
     ##Upgrades
     "flameCost": 20,
@@ -976,12 +976,21 @@ convince you otherwise.\n",
 I'll see what happens.\n",
 
 "intro_0":
-"It is %gCycle 160%~ in the\n\
-world of %pVerea%~.$$\n\
-Long, has the, %pmystic land%~ been\n\
-a setting for war.$$\n\
+"Journal of %fKyro Phoenix%~,\n\
+30th Day of Winter,\n\
+Year 160.$$\n\
+I'd like to begin documenting\n\
+my experience here in %pVerea%~.$$\n\
+Wavering moons glisten above\n\
+this %ptroubled continent%~,\n\
+illuminating roads paved by\n\
+the %pendless stream of dreams%~.$$\n\
+Long have the %rtides of war%~\n\
+washed upon this %pmystic land%~.$$\n\
 As one war ends...$$\n\
-So begins another...\n",
+Another is always\n\
+sure to follow...\n",
+
 # A wavering, moon glistens\n\
 # above the troubled continent,\n\
 # illuminating roads paved by\n\
@@ -990,49 +999,67 @@ So begins another...\n",
 "intro_1":
 "Four flavors of man\n\
 exist in %pVerea%~.$$\n\
-The %wLuminates%~, sophisticated\n\
+(1) The %wLuminates%~, sophisticated\n\
 bringers of %wLight%~,$$\n\
-The %dDarklings%~, savage\n\
+(2) The %dDarklings%~, savage\n\
 spreaders of %dDarkness%~,$$\n\
-The %fNaturalites%~, proud warriors\n\
+(3) The %fNaturalites%~, proud warriors\n\
 who produce miracles\n\
 with %pnature's blessings%~,$$\n\
-And the %bNonnies%~, people\n\
+And (4) the %bNonnies%~, people\n\
 who lack elemental affinity.\n",
 
 
 "intro_2":
-"The %wLuminates%~ and the %dDarklings%~\n\
-have joined, forming the\n\
+"During the last %rGreat War%~,\n\
+the %wLuminates%~ and the %dDarklings%~\n\
+joined forces, forming the\n\
 %rUnified World Powers%~.$$\n\
-They have declared\n\
-%wtheir%~ %dkind%~ as the\n\
-supreme human race.\n",
+Upon emerging victorious,\n\
+they declared %wtheir%~ %dkind%~\n\
+as the %rsupreme human race%~.\n",
 
 "intro_3":
-"%rThe Powers%~, exerting their dominance,\n\
-and fearing rebellion,\n\
-Move to quickly eradicate\n\
-the four tribes of the\n\
-Naturalite race.\n",
+"Come to find out,\n\
+even the world's %rstrongest\n\
+force%~ fears their own demise.$$\n\
+So, the %rPowers%~ have chosen to\n\
+quell their fear by eradicating\n\
+the four tribes which\n\
+make up the %fNaturalite race%~,&&\n\
+thus eliminating the threat\n\
+of rebellion before the idea\n\
+could manifest in our minds.$$\n\
+Ah, yes,&&\n\
+because the only solution\n\
+to preventing war is to\n\
+start another one.$$\n\
+Like clockwork.\n",
+
 
 "intro_4":
-"a\n",
-
-"":
-"The %tThunder%~ and %gWind%~ tribes\n\
-lie on the verge of extinction,$$\n\
-The elusive %iIce%~ tribe remains\n\
-safe in hiding,$$\n\
-And the %fFire%~ tribe fights\n\
-to keep their lives,\n\
-their hope waning swiftly.$$\n\
-As the %ftribesmen%~ ignite\n\
-their final flames,\n\
-two brothers make\n\
-a desperate retreat,$$\n\
-An army of %wLight%~ and %dShadow%~\n\
-hot on their tails...\n",
+"Anyways, the %tThunder%~ and %gWind%~ tribes\n\
+were quickly decimated thanks to the\n\
+element of surprise.$$\n\
+The nomadic %iIce%~ tribe remains\n\
+safe, concealed by raging\n\
+blizzards.$$\n\
+Now we, the %fFire%~ tribe, have\n\
+put up a great fight against\n\
+the %wsun%~ and %dmoon%~ thus far...$$\n\
+%rBut we've begun to ignite\n\
+our final flames.%~$$\n\
+My older brother, %fFiri%~,\n\
+and I were ordered to take refuge.&&\n\
+We've escaped the chaos of the\n\
+most recent battle,$$\n\
+but not without an army\n\
+of %wLight%~ and %dShadow%~\n\
+hot on our tails.&&\n\
+ \n\
+ \n\
+ \n\
+%fKyro Phoenix%~   \n",
 
 "tutorial_1":
 "Press Y to shoot arrows.",

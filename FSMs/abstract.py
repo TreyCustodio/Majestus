@@ -1,6 +1,6 @@
-from statemachine import StateMachine
+#from statemachine import StateMachine
 
-class AbstractGameFSM(StateMachine):
+class AbstractGameFSM(object):
     def __init__(self, obj):
         """All state machines will have an associated
            object."""

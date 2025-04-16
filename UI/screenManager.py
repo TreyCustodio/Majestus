@@ -1,9 +1,8 @@
-from FSMs import ScreenManagerFSM
+#from FSMs import ScreenManagerFSM
 import gc
 from gameObjects import PauseEngine, TextEngine, HudImageManager
 from UI import ACTIONS, EventManager
 from rooms import *
-from memory_profiler import profile
 
 from utils import SoundManager
 from . import TextEntry, EventMenu
@@ -14,6 +13,8 @@ from utils.load import LOAD
 
 from pygame import Surface
 from pygame.locals import *
+
+import os
 
 """
 Original ScreenManager written by Dr. Liz Matthews.
@@ -36,10 +37,10 @@ class ScreenManager(object):
 
         #   Engines
         self.game = None
-        self.mobsterEngine = MobsterEngine()
+        #self.mobsterEngine = MobsterEngine()
         self.pauseEngine = PauseEngine()
-        self.textEngine = TextEngine.getInstance()
-        self.state = ScreenManagerFSM(self)
+        #self.textEngine = TextEngine.getInstance()
+        self.state = "mainMenu"
 
         #   States
         self.startingGame = False
@@ -131,11 +132,13 @@ class ScreenManager(object):
     """
     def drawText(self, drawSurf):
 
-        ##TextEngine finished
-        if self.textEngine.done:
-            ##Paused
+        #   (Case 1) The Current Dialogue is Over. Return to the previous state. #
+        if TextEngine.finished():
+
+            #   Return to being Paused  #
             if self.pauseEngine.paused:
-                ##Evaluating prompts
+
+                ##   Evaluate Prompts like using items in the menu   ##
                 if "Y/N" in self.pauseEngine.text:
                     self.pauseEngine.promptResult = self.textEngine.promptResult
                     if self.pauseEngine.promptResult:
@@ -170,12 +173,13 @@ class ScreenManager(object):
                             #self.fade.setRow(1)             
                             
                     
-                ##Reset pause engine text states
+                ##  Reset pause engine text states; Go back to being paused  ##
                 self.pauseEngine.textBox = False
                 self.pauseEngine.text = ""
-                self.state.speakP()
+                self.state = "paused"
 
-            ##Intro
+
+            #   Return to Intro   #
             elif self.inIntro:
                 self.intro.textBox = False
                 self.intro.text = ""
@@ -183,22 +187,29 @@ class ScreenManager(object):
                 if self.intro.textInt == 11:
                     self.intro.fading = True
                 
-                self.state.speakI()
+                self.state = "intro"
 
-            ##Game, evaluate prompt
+
+            #   Return to Game  #
             else:
+                ##  Evaluate Prompts    ##
                 if "Y/N" in self.game.text:
                     self.game.promptResult = self.textEngine.promptResult
+                
+                ##  Reset gameEngine's text states  ##
                 self.game.textBox = False
                 self.game.text = ""
                 self.game.icon = None
-                self.state.speak()
+                self.state = "game"
 
-            #Reset
-            self.textEngine.reset()
+
+            #   Finally, Reset the textEngine
+            TextEngine.reset()
             return
 
-        ##Paused
+
+
+        #   (Case 2) Display Text on the pause menu #
         if self.pauseEngine.paused:
             if self.textEngine.closing:
                 self.drawGame(drawSurf)
@@ -210,28 +221,43 @@ class ScreenManager(object):
                 self.textEngine.setBackgroundBool()
             self.textEngine.draw(self.pauseEngine.boxPos + Drawable.CAMERA_OFFSET, drawSurf)
 
-        ##Intro
+
+
+        #   (Case 3) Display Text during the Intro cutscene #
         elif self.inIntro:
-            if self.textEngine.closing:
-                self.intro.draw(drawSurf)
-            elif self.textEngine.backgroundBool:
-                self.drawGame(drawSurf)
-                self.textEngine.setBackgroundBool()
-            self.textEngine.draw(self.intro.boxPos, drawSurf)
 
-        ##Draw the game ONCE after the textbox finishes the upscale
-        ##Game
+            #   Draw the intro background while the text display is closing #
+            # if self.textEngine.closing:
+            #     self.intro.draw(drawSurf)
+
+            #   Draw the intro background when prompted to do so    #
+            # elif self.textEngine.backgroundBool:
+            #     self.drawGame(drawSurf)
+            #     self.textEngine.setBackgroundBool()
+
+            #   Perform the TextEngine's draw routine   #
+            TextEngine.draw(self.intro.boxPos, drawSurf)
+
+
+
+        #   (Case 4) Display Text during gameplay   #
         else:
-            if self.textEngine.closing:
+            #   Draw the game ONCE after the textbox finishes upscaling #
+            if TextEngine.closing():
                 self.drawGame(drawSurf)
 
-            elif self.textEngine.backgroundBool:
+            #   Draw the game if prompted to do so  #
+            elif TextEngine.backgroundBool():
                 self.drawGame(drawSurf, True)
-                self.textEngine.setBackgroundBool()
+                TextEngine.setBackgroundBool()
 
+            #   Draw the game once more #
             self.drawGame(drawSurf)
-            self.textEngine.draw(self.game.boxPos, drawSurf)
 
+            #   Perform the TextEngine's draw routine   #
+            TextEngine.draw(self.game.boxPos, drawSurf)
+
+    
     def drawGame(self, drawSurf, drawBox = False):
         if drawBox:
             if self.textEngine.type == 1:
@@ -255,38 +281,48 @@ class ScreenManager(object):
         if self.startingGame or self.continuingGame or self.returningToMain:
             return
     
+
     def draw_fps(self, drawSurf, fps):
+        """Draw the current FPS"""
         text = Text(vec(*(RESOLUTION - 16)), str(fps))
         text.draw(drawSurf)
 
-    #Displaying Text
-    #@profile
+
     def draw(self, drawSurf):
         """
         Drawing the game based on the state
         """
-        if self.state == "game":
-            
-            self.game.draw(drawSurf)
-            if self.game.textBox:
-                self.state.speak()
-                if "Y/N" in self.game.text:
-                    self.textEngine.setText(self.game.text, self.game.icon, prompt = True)
-                else:
-                    self.textEngine.setText(self.game.text, self.game.icon, type = self.game.boxType)
 
+        #   (Case 1) We're in the game  #
+        if self.state == "game":
+            #   Perform the gameEngine's draw routine   #
+            self.game.draw(drawSurf)
+
+            #   Initiate the TextEngine when prompted   #
+            if self.game.textBox:
+                self.state = "textBox"
+                if "Y/N" in self.game.text:
+                    TextEngine.setText(self.game.text, self.game.icon, prompt = True)
+                else:
+                    TextEngine.setText(self.game.text, self.game.icon, type = self.game.boxType)
+
+            #   Draw transition effects (fade outs, white outs, etc.)   #
             if self.game.whiting:
                 self.white.draw(drawSurf)
             if self.game.area_fading:
                 self.game.drawArea(drawSurf)
 
 
+        #   (Case 2) We're on the pause menu    #
         elif self.state == "paused":
+
+            #   Resume Gameplay #
             if self.pauseEngine.closed:
                 self.pauseEngine.resetMenu()
-                self.state.pause()
+                self.state = "game"
                 return
             
+            #   Transition to settings menu #
             if self.pauseEngine.toSettings:
                 if self.wipe.alpha >= 255:
                     self.pauseEngine.fadeIn()
@@ -296,30 +332,46 @@ class ScreenManager(object):
                 else:
                     self.fadeOff(10)
 
-            
+            #   Transition to inventory #
             elif self.pauseEngine.inSettings and self.pauseEngine.toInventory:
                 self.fadeOff(10)
 
+            #   Draw the game behind the menu   #
             self.game.draw(drawSurf)
             
 
+            #   Initiate the TextEngine #
             if self.pauseEngine.text != "":
-                self.state.speakP()
+                self.state = "textBox"
+
+                ##  Handle Prompts  ##
                 if "Y/N" in self.pauseEngine.text:
                     self.textEngine.setText(self.pauseEngine.text, prompt = True, type = 1)
                     
                 else:
                     self.textEngine.setText(self.pauseEngine.text, type = 3)
+            
+            #   Draw the menu overtop everything    #
             self.pauseEngine.draw(drawSurf)
 
+
+        
+        #   (Case 3) We're in the Intro cutscene    #
         elif self.state == "intro":
+            #   Start the music if not already playing  #
             if not self.intro.playingBgm:
                 self.intro.playBgm()
-            self.intro.draw(drawSurf)
-            if self.intro.textBox:
-                self.state.speakI()
-                self.textEngine.setText(self.intro.text, self.intro.icon)
 
+            #   Perform the intro's draw routine    #
+            self.intro.draw(drawSurf)
+
+            #   Transition to dialogue state; Initiate the TextEngine   #
+            if self.intro.textBox:
+                self.state = "textBox"
+                TextEngine.setText(self.intro.text, icon = None, prompt = False, type = 4)
+
+
+        #   (Case 4) We're playing Monster Mobster  #
         elif self.state == "mobster":
             self.mobsterEngine.draw(drawSurf)
 
@@ -335,7 +387,8 @@ class ScreenManager(object):
         """
         self.game.player.stop()
         SoundManager.getInstance().playSFX("OOT_PauseMenu_Open.wav")
-        self.state.pause()
+        self.state = "paused"
+        #self.state.pause()
     
     def openMap(self):
         """
@@ -344,7 +397,8 @@ class ScreenManager(object):
         self.game.player.stop()
         SoundManager.getInstance().playSFX("OOT_PauseMenu_Open.wav")
         Map.getInstance().updateHighlight()
-        self.state.pause()
+        #self.state.pause()
+        self.state = "paused"
         self.pauseEngine.mapOpen = True
 
     def handleChoice(self, choice):
@@ -403,8 +457,10 @@ class ScreenManager(object):
 
             else:
                 self.pauseEngine.handleEvent()
+                ##  Paused -> TextBox
                 if self.pauseEngine.text != "":
-                    self.state.speakP()
+                    self.state = "textBox"
+                    #self.state.speakP()
                     if "Y/N" in self.pauseEngine.text:
                         self.textEngine.setText(self.pauseEngine.text, prompt = True)
                     else:
@@ -420,7 +476,7 @@ class ScreenManager(object):
                         self.handleChoice(choice)
 
         elif self.state == "textBox":
-            self.textEngine.handleEvent()
+            TextEngine.handleEvent()
 
 
         elif self.state == "mobster":
@@ -491,7 +547,8 @@ class ScreenManager(object):
             if self.returningToMain:
                 if self.wipe.increasing == False:
                     self.fadeOff(20)
-                    self.state.toMain()
+                    self.state = "mainMenu"
+                    #self.state.toMain()
                     self.fadingIn = True
                 return
             
@@ -544,7 +601,7 @@ class ScreenManager(object):
 
         #   (3.) Update the textbox
         elif self.state == "textBox":
-            self.textEngine.update(seconds)
+            TextEngine.update(seconds)
             if self.game.cutscene:
                 self.game.update(seconds)
             else:
@@ -560,7 +617,8 @@ class ScreenManager(object):
             if self.returningToMain:
                 if self.wipe.increasing == False:
                     self.fadeOff(20)
-                    self.state.toMain()
+                    self.state = "mainMenu"
+                    #self.state.toMain()
                     self.fading = True
                     self.fadingIn = True
         
@@ -577,7 +635,8 @@ class ScreenManager(object):
                         self.fadeOff(5)
                         self.game = Intro_Cut.getInstance()
                         self.game.lockHealth()
-                        self.state.startGame()
+                        self.state = "game"
+                        #self.state.startGame()
                         self.startingGame = False
             
                     
@@ -592,7 +651,8 @@ class ScreenManager(object):
                             self.game.initializeArea(pos=LOAD["position"])
                         else:
                             self.game.initializeRoom(pos=(LOAD["position"]))
-                        self.state.startGame()
+                        self.state = "game"
+                        #self.state.startGame()
                         self.continuingGame = False
                         self.game.unlockHealth()
                         self.game.stopFadeIn()

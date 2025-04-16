@@ -7,7 +7,7 @@ Will load entire sprite sheets if given an offset.
 
 """
 
-from pygame import image, Surface, Rect, SRCALPHA
+from pygame import display, image, Surface, Rect, SRCALPHA
 from os.path import join
 
 class SpriteManager(object):
@@ -33,10 +33,10 @@ class SpriteManager(object):
       # Folder in which images are stored
       _IMAGE_FOLDER = "images"
       
-      _ENEMY_FOLDER = "images\\enemies"
+      _ENEMY_FOLDER = join("images", "enemies")
 
-      _ROOM_FOLDER = "images\\levels"
-
+      _ROOM_FOLDER = join("images", "levels")
+      ## Note that windows OS will use "\\" while Linux OS will simply use "/"
       
 
       # Static information about the sprite sizes of particular image sheets.
@@ -139,11 +139,13 @@ class SpriteManager(object):
          self._loadRoutine(fullImage, fileName, sheet)
          
       def _loadFx(self, room_dir, fileName, sheet = False):
-          effects_folder = SpriteManager._SM._ROOM_FOLDER + "\\"+room_dir
+          effects_folder = join(SpriteManager._SM._ROOM_FOLDER, room_dir)
           fullImage = image.load(join(effects_folder, fileName))
           self._loadRoutine(fullImage, fileName, sheet, True)
 
       def _loadRoutine(self, fullImage, fileName, sheet = False, transparent = False):
+
+
          if not transparent:
             # Look up some information about the image to be loaded
             transparent = fileName in SpriteManager._SM._TRANSPARENCY

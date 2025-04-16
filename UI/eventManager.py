@@ -227,7 +227,8 @@ class EventManager(object):
                             if engine.game.player:
                                 engine.game.player.stop()
                             
-                            engine.state.pause()
+                            engine.state = "paused"
+                            #engine.state.pause()
                         pygame.event.clear()
                         return
                     

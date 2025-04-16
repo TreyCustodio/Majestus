@@ -383,7 +383,7 @@ class Tutorial_2(AbstractEngine):
             super().__init__("tut_2", True, vec(608, 208))
             #self.player = Player(vec(146, 276))
             self.roomId = 4
-            self.bgm = "thug_loop.mp3"
+            self.bgm = "unknown.wav"#"thug_loop.mp3"
             self.ignoreClear = True
             self.max_enemies = 2
             self.enemyPlacement = 0
@@ -599,7 +599,7 @@ class Tutorial_3(AbstractEngine):
         def __init__(self):
             super().__init__("tut_3", True, vec(304, 320))
             self.roomId = 4
-            self.bgm = "thug_loop.mp3"
+            self.bgm = "unknown.wav"#"thug_loop.mp3"
             self.ignoreClear = True
             self.max_enemies = 4
             self.enemyPlacement = 0

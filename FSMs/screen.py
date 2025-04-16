@@ -1,9 +1,15 @@
 from . import AbstractGameFSM
-from statemachine import State
 
+class State(object):
+    def __init__(self, state=""):
+        self.state = state
+    
+    def to(self, state):
+        self.state = state
+        return self.state
 
-class ScreenManagerFSM(AbstractGameFSM):
-    mainMenu = State(initial=True)
+class ScreenManagerFSM(object):
+    mainMenu = State()
     game     = State()
     paused   = State()
     textBox = State()
@@ -12,8 +18,8 @@ class ScreenManagerFSM(AbstractGameFSM):
     toIntro = mainMenu.to(intro)
     toGame = intro.to(game)
     speak =  game.to(textBox) | textBox.to(game) 
-    speakP = paused.to(textBox) | textBox.to(paused)
-    speakI = intro.to(textBox) | textBox.to(intro)
+    speakP = paused.to(textBox) | textBox.to(paused) # Paused -> Textbox or Textbox -> Paused
+    speakI = intro.to(textBox) | textBox.to(intro) # Intro -> Text or Text -> Intro
     pause = game.to(paused) | paused.to(game) | \
             mainMenu.to.itself(internal=True)
     toMain = game.to(mainMenu) | paused.to(mainMenu)

@@ -8,11 +8,12 @@ import time
 """
 Majestus v0.2
 Author - Trey Custodio 12/26/2024
+Taught by Dr. Liz Matthews during her undergraduate Video Games course.
 
-This file drives the code for the game,
+The Main file drives the code for the game,
 helps with debugging, and sets up all
-of the game's objects.
-Time module is used for runtime analysis.
+of the game's core objects.
+The time module is used for runtime analysis.
 """
 
 def main():
@@ -121,7 +122,6 @@ def main():
                 start_time = time.time() """
 
         
-
 
     #   quit if not running
     pygame.quit()
