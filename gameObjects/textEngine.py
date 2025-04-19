@@ -18,9 +18,13 @@ import numpy as np
 import os
 
 
-def playSfx(effect=""):
+def playSfx(effect="", low = False):
     """Here's a useful playSfx() function"""
-    SoundManager.getInstance().playSFX(effect)
+    if low:
+        SoundManager.getInstance().playLowSFX(effect, 0.02)
+    
+    else:   
+        SoundManager.getInstance().playSFX(effect)
 
 """
 First, the Text Class.
@@ -36,31 +40,64 @@ and other effects.
 """
 
 class Char(object):
-    """A character class.
-    Characters are meant to be displayed on a textbox surface
+    """
+    This class represents characters to be appended
+    to the dialogue matrix.
+    Chars contain values that specify how to
+    display them. Certain Chars call upon special effetcs,
+    which are handled in parse().
     """
 
     def __init__(self, char="", next_char=None):
 
         #   (1) Parse the char; get any potential color changes and display commands    #
-        color, self.displayCommand = self.parse(char, next_char)
-        Text.COLOR = color
+        color, self.displayCommand, sound = self.parse(char, next_char)
+        self.color = color # Keep track of the color for the index display
+        self.sound = sound # Keep track of the sound
+
 
         #   (2) Get the image from chars.png    #
         self.image = self.getImage(char)
 
 
-        #   (3) Set the char's position on the textBox  #
-
-
-        #   (4) Set the visibility value    #
+        #   (3) Set the visibility value    #
         self.visible = False
 
 
-        #   (5) Set the text value for debugging    #
+        #   (4) Set the text value for debugging    #
         self.text = char
 
-    
+
+        #   (5) Set the spacing value   #
+        #   ASSUMING OPEN-SANS  #
+        #   Letters taking up more space    #
+        if char == 'm' or char == "W" or char == "M":
+            self.spacing = 4
+        
+        elif char == 'w':
+            self.spacing = 3
+
+        elif char == "D" or char == "U"or char == "N":
+            self.spacing = 1
+        
+
+        #   Letters taking up less space    #
+        elif char == "i" or char == "I" or char == "l" or char == "'" or char in "()":
+            self.spacing = -4
+        
+        elif char == "t" or char == "f" or char == "J" or char == "j":
+            self.spacing = -3
+        
+        elif char == "r" or char == "1":
+            self.spacing = -2
+        
+        elif char == "c" or char == "y" or char == "s":
+            self.spacing = -1
+
+
+        #   Default to 0
+        else:
+            self.spacing = 0
 
 
     def getImage(self, char, fileName = "chars.png"):
@@ -101,6 +138,8 @@ class Char(object):
 
         color = Text.COLOR
         displayCommand = ""
+        sound = Text.SOUND
+        speaker = Text.SPEAKER
 
         #   (1) Cutscene Type   #
         if TextEngine.TYPE == 4:
@@ -169,25 +208,74 @@ class Char(object):
                         color = "default"
                 
             
-            #   $$ -> Clear the textBox #
+            #   $ -> For Portraying Emotional Sounds and Clearing #
             elif char == "$":
+                ##  $$ -> Clear the box  ##
                 if next_char == "$":
-                    ##  We're clearing  ##
                     displayCommand = "clear"
+                
+                ##  $s -> Sad sound ##
+                elif next_char == 's':
+                    sound = speaker + "sad1.wav"
+                    displayCommand = "sound"
+
+                ##  $s -> Sad sound ##
+                elif next_char == 'a':
+                    sound = speaker + "angry1.wav"
+                    displayCommand = "sound"
+
+                ##  $_ -> No sound  ##
+                elif next_char == '_':
+                    sound = ""
+                    displayCommand = "sound"
+
+                ##  $~ -> End sound section ##
+                elif next_char == '~':
+                    sound = speaker +"2.wav"
+                    displayCommand = "sound"
             
 
 
-            #   && -> Wait for input    #
+            #   & -> For different input commands   #
             elif char == "&":
+                ##   && -> Wait for input    ##
                 if next_char == "&":
-                    ##  We're waiting for input ##
                     displayCommand = "wait"
-            
-            
+                
+
+            #   , -> For controlling the display buffer  #
+            elif char == ",":
+
+                ##  ,, -> buffer -= 0.2 ##
+                if next_char == ",":
+                    displayCommand = "buff_short"
+                
+                ##  ,. -> buffer -= 0.8 ##
+                elif next_char == ".":
+                    displayCommand = "buff_long"
+                
+                ##  ,* -> ignore the buffer; instantly display text ##
+                elif next_char == "*":
+                    displayCommand = "instant"
+                
+                ##  ,~ -> reset the buffer effects  ##
+                elif next_char == "~":
+                    displayCommand = "buff_reset"
+                
+                ##  Any other char following ',' tells the engine to display the ','    ##
+                else:
+                    pass
+
             else:
                 pass
+        
+        #   Set the values for Text!
+        Text.COLOR = color
+        Text.SOUND = sound
 
-        return color, displayCommand
+        #   Set values for text based on displayCommand
+        
+        return color, displayCommand, sound
     
     
     def setVisible(self, value=True):
@@ -199,44 +287,69 @@ class Char(object):
 
 
 class Text(object):
-    """A static Text Utility class"""
+    """
+    A static Text Utility class.
+    The class variables in this class are used
+    to display special effects when displaying dialogue.
+    Char.parse() will change this class's variables.
+    """
 
     #   Initialize pygame fonts if not already done #
     if not pygame.font.get_init():
         pygame.font.init()
 
+
     #   Metadata about fonts, we'll use ALTTP font for now.
     FONT_FOLDER = "fonts"
     FONT = pygame.font.Font(os.path.join(FONT_FOLDER,
                                     "ReturnofGanon.ttf"), 16)
+    
+    FONT = pygame.font.Font(os.path.join(FONT_FOLDER,
+                                    "OpenSans-Regular.ttf"), 12)
+    
     BOX = pygame.font.Font(os.path.join(FONT_FOLDER,
                                     "ReturnofGanon.ttf"), 14)
     SMALL = pygame.font.Font(os.path.join(FONT_FOLDER,
                                     "ReturnofGanon.ttf"), 12)
     
+
     #   The current Cursor object we'll display
     CURSOR = None
 
+
     #   The last character's position
     LAST_POS = None
+
 
     #   The current color   #
     COLOR = "default"
 
 
+    #   The current sound   #
+    SOUND = "text_2.wav"
+
+
+    #   The current speaker #
+    SPEAKER = "text_"
+
+
+    #   Display the chars instantly?    #
+    INSTANT = False
+
 
 class TextEngine(object):
-    """This class should never be instantiated.
-    Not even a singleton class. There's too much data
-    that doesn't need to occupy space in memory.
-    However, we should keep track of the current dialogue matrix."""
-    
     """
-    TEXT DISPLAY PROCESS
+    ------------------- PURPOSE ----------------------------
+
+    This class is never instantiated, but it is
+    called upon and referenced when text needs to be displayed.
+    
+    
+    -------------- TEXT DISPLAY PROCESS --------------------
 
     (0) TextEngine is initialized with setText(text, icon).
 
-    (1) Build a dialogue matrix,
+    (1) Build the dialogue matrix,
     consisting of each character object.
 
     (2) During the draw routine, loop through
@@ -251,6 +364,25 @@ class TextEngine(object):
 
     (5) Once the current text display is done and it is time
     to resume gameplay, reset the engine.
+
+    
+    -------------- MEMORY CONCERNS -------------------------
+    I believe this structure is fine, but it should be
+    noted that every single CLASS VARIABLE will persist
+    in memory as long as the program is running.
+
+    I am thinking about switching to a singleton framework,
+    where the reset function will free up memory for every single
+    CLASS VARIABLE (which would be converted into instance variables for the singleton),
+    by setting them all = None, allowing the GC to collect it.
+
+    However, the only variable that contains large data is
+    the DIALOGUE. Reinstantiating variables like STATES, TICKERS, BUFFERS, etc.
+    just seems overtly redundant. Therefore, I believe keeping this class a static class
+    is fine under the condition that DIALOUGE is set to [] in the reset() function.
+
+    TLDR: I'm considering making this a singleton, but it's
+    fine as is as long as I set DIALOGUE = [] in reset().
     """
 
     #   Initialization Data   #
@@ -263,14 +395,17 @@ class TextEngine(object):
 
 
     #   Character Display   #
-    SPACING = 8         # num of pixels to seperate each char image by
-    BUFFER = 0.0        # a timer that drives the buffer time between each character that is displayed
+    SPACING = 8        # num of pixels to seperate each char image by
+    BUFFER = -0.2       # timer that drives the buffer time between each character that is displayed
     CURRENT_LINE = 0    # the current line to examine for displayChars()
     CURRENT_INDEX = 0   # the current index to examine for displayChars()
     A = 255             # transparency alpha value
-    CURSOR = TextCursor() # Text cursor; indicates input
+    CURSOR = None       # Text cursor; indicates input
+    INDEX_IMAGE = None  # Index Image; moves as each character is displayed
+    INPUT_TICK = 0
+    SOUND_TICK = 0
 
-    
+
     #   States that drive the draw routine  #
     STATES = {"ready_to_continue": False,   # Wait for (interact) to continue text display
               "end": False,                 # At the end of dialogue. Wait for box to close before DONE.
@@ -300,7 +435,7 @@ class TextEngine(object):
         TextEngine.DISPLAY_POS = vec(4, 4)
         TextEngine.CURRENT_INDEX = 0
         TextEngine.CURRENT_LINE = 0
-        TextEngine.BUFFER = 0.0
+        TextEngine.BUFFER = -0.2
         TextEngine.SPACING = 8
 
         #   Reset alpha #
@@ -372,7 +507,8 @@ class TextEngine(object):
         
         ##  Cutscene    ##
         elif type == 4:
-            TextEngine.BOX = pygame.surface.Surface(vec(304,208))
+            TextEngine.BOX = pygame.surface.Surface(vec(304,208), pygame.SRCALPHA)
+            TextEngine.BOX.fill((0,0,0,0))
         
         ##  Small Box   ##
         elif type == 1:
@@ -403,7 +539,8 @@ class TextEngine(object):
 
 
         #   (6) Now we can begin the draw routine   #
-
+        TextEngine.CURSOR = TextCursor()
+        TextEngine.INDEX_IMAGE = pygame.transform.scale(SpriteManager.getInstance().getSprite("white_px.png"), (6,20))
 
     def buildDialogue(text=""):
         """
@@ -417,7 +554,7 @@ class TextEngine(object):
 
         while True:
             #   Break the loop at the end of the text   #
-            if charIndex >= len(text) - 1:
+            if charIndex >= len(text) :
                 break
             
             #   Begin by getting the char   #
@@ -497,22 +634,19 @@ class TextEngine(object):
         #   (Case 2) We're at the end of the dialogue or awaiting input
         if TextEngine.atEnd() or TextEngine.waiting():
             #   Display the input icon  #
-            TextEngine.drawCursor()
+            TextEngine.drawCursor(screen)
             
             #   And there's no more chars to display for now, so we return  #
             return
         
         #   (2) Blit the next char to the box #
         TextEngine.displayChars()
+        TextEngine.drawIndex(screen)
 
         return
     
 
-    def displayChars():
-        #   Wait if buffering   #
-        if TextEngine.BUFFER < 0.0:
-            return
-
+    def displayRoutine(silent=False):
         #   Draw the next character to display and buffer   #
         ##  Obtain the current char ##
         line = TextEngine.CURRENT_LINE
@@ -526,7 +660,13 @@ class TextEngine(object):
 
             if TextEngine.CURRENT_LINE >= len(TextEngine.DIALOGUE):
                 ##  End of this dialogue box  ##
+                playSfx("text_done1.wav")
                 TextEngine.STATES["end"] = True
+                TextEngine.STATES["ready_to_continue"] = True
+
+                ##  Disable the interact action to force player to lift their finger    ##
+                EventManager.getInstance().disableAction("interact")
+
             else:
                 TextEngine.DISPLAY_POS[1] += TextEngine.SPACING * 2
                 TextEngine.DISPLAY_POS[0] = 4
@@ -537,16 +677,13 @@ class TextEngine(object):
         ##  Perform the char's displayCommand if needed ##
         command = char.displayCommand
         if command == "": # Just display the char
-            TextEngine.display(char.image)
+            TextEngine.display(char.image, char.sound, silent, char.spacing)
             #   ^^ Eventually this will just be a visibility toggle ^^  #
         
         else:
             ##  Which command is it?    ##
-            if command == "clear":
-                ##  Reset Display Pos   ##
-                TextEngine.DISPLAY_POS = vec(4, 0) # y is 0 because the \n will increment it during parsing
-                
-                ##  Wait for input  ##
+            if command == "clear":                
+                ##  Wait for input; then clear the box  ##
                 TextEngine.STATES["ready_to_continue"] = True
                 TextEngine.STATES["$$"] = True
 
@@ -554,10 +691,24 @@ class TextEngine(object):
                 EventManager.getInstance().disableAction("interact")
 
             elif command == "wait":
-                pass
-            
-            elif command == "buffer":
+                ##  Wait for input  ##
+                TextEngine.STATES["ready_to_continue"] = True
+
+                ##  Disable the interact action to force player to lift their finger    ##
+                EventManager.getInstance().disableAction("interact")
+                
+            elif command == "buff_short":
                 TextEngine.BUFFER = -0.4
+            
+            elif command == "buff_long":
+                TextEngine.BUFFER = -0.8
+
+            elif command == "instant":
+                Text.INSTANT = True
+            
+            elif command == "buff_reset":
+                Text.INSTANT = False
+                TextEngine.BUFFER = -1.2
         
 
         ##  Decrease the buffer ##
@@ -568,19 +719,76 @@ class TextEngine(object):
 
 
 
+    def displayChars():
+        #   Instantly display chars
+        if Text.INSTANT:
+            while Text.INSTANT:
+                TextEngine.displayRoutine(silent=True)
+            return
+
+        #   Wait if buffering   #
+        elif TextEngine.BUFFER < 0.0:
+            return
+        
+        #   Perform the usuual routine  #
+        TextEngine.displayRoutine()
+
+
 
     """
     Helper Funcs for the drawing process
     """
-    def display(image):
-        """Helper func for the displayChars()"""
+    def getCurrentChar():
+        line = TextEngine.CURRENT_LINE
+        index = TextEngine.CURRENT_INDEX
+        char = TextEngine.DIALOGUE[line][index]
 
-        playSfx("text_3.wav")
+        return char
+    
+    def display(image, sound="text_2.wav", silent=False, spacing=0):
+        """Helper func for the displayChars()"""
+        if not silent and sound != "":
+            if EventManager.getInstance().isPressed("interact"):
+                if TextEngine.SOUND_TICK == 1 or TextEngine.SOUND_TICK == 4 or TextEngine.SOUND_TICK == 7:
+                    playSfx(sound)
+            else:
+                playSfx(sound)
+
         TextEngine.DISPLAY_POS[0] += TextEngine.SPACING
         TextEngine.BOX.blit(image, TextEngine.DISPLAY_POS)
+        TextEngine.DISPLAY_POS[0] += spacing
 
 
-    def drawCursor(self, drawSurf):
+    def drawIndex(drawSurf):
+            #   (1.) Get the color value from dialogue arr
+            try:
+                char = TextEngine.getCurrentChar()
+            except:
+                return
+            
+            color = char.color
+            
+            index = TextEngine.INDEX_IMAGE
+
+            #   (2.) Set the color of the index image
+            if color == "default":
+                index.fill((255,255,200))
+
+            else:
+                index.fill(color)
+
+
+            #   (3.) Display the index image; flashing when buffering
+            if TextEngine.TYPE == 4:
+                # if TextEngine.BUFFER < 0.0:
+                #     ##  Draw
+                #     if TextEngine.INPUT_TICK < 17:
+                #         drawSurf.blit(index, TextEngine.DISPLAY_POS + vec(TextEngine.SPACING, 0))
+
+                # else:
+                drawSurf.blit(index, TextEngine.DISPLAY_POS + vec(TextEngine.SPACING, 0))
+
+    def drawCursor(drawSurf):
             """
             Draws the cursor when waiting
             for input from the player.
@@ -588,10 +796,10 @@ class TextEngine(object):
             """
             #   (1.) Draw the cursor onto the screen
             ##  Interact Icon stays stationary
-            drawSurf.blit(IconManager.getButton("interact"), (0,0))
+            drawSurf.blit(IconManager.getButton("interact"), TextEngine.DISPLAY_POS + vec(TextEngine.SPACING, 14 - 2))
             
             ##  Arrow moves up and down
-            drawSurf.blit(TextEngine.CURSOR.image, (0,0) + TextEngine.CURSOR.y)
+            drawSurf.blit(TextEngine.CURSOR.image, TextEngine.DISPLAY_POS + vec(TextEngine.SPACING, TextEngine.CURSOR.y - 2))
     
 
     """
@@ -603,13 +811,28 @@ class TextEngine(object):
 
             #   Progress the dialogue   #
             if EventManager.getInstance().performAction("interact"):
+
                 ##  Trigger shutdown sequence if at the end  ##
                 if TextEngine.atEnd():
-                    pass
+                    ### Reset the Display Pos   ###
+                    TextEngine.DISPLAY_POS = vec(4, -4) # y is 0 because the \n will increment it during parsing
+                    
+                    ### Play the continue sfx   ###
+                    playSfx("text_close1.wav")
+
+                    ### Reset relevant states   ###
+                    TextEngine.STATES["ready_to_continue"] = False
+                    TextEngine.STATES["closing"] = True
 
                 ##  Clear the box if clearing   ##
                 elif TextEngine.clearing():
+                    ### Reset the Display Pos   ###
+                    TextEngine.DISPLAY_POS = vec(4, -4) # y is 0 because the \n will increment it during parsing
+                    
+                    ### Play the continue sfx   ###
                     playSfx("text_next1.wav")
+
+                    ### Reset relevant states   ###
                     TextEngine.STATES["ready_to_continue"] = False
                     TextEngine.STATES["closing"] = True
                 
@@ -617,6 +840,9 @@ class TextEngine(object):
                 else:
                     playSfx("text_next1.wav")
                     TextEngine.STATES["ready_to_continue"] = False
+
+                    ##  Wait a little bit before displaying again   ##
+                    TextEngine.BUFFER = -0.4
 
         else:
             #   Speed up text display   #
@@ -659,7 +885,7 @@ class TextEngine(object):
                         TextEngine.BOX = pygame.surface.Surface(vec(304,208))
                     
                     ##  Reset closing state ##
-                    else:
+                    elif TextEngine.atEnd():
                         TextEngine.STATES["closing"] = False
                         TextEngine.STATES["done"] = True
         
@@ -667,6 +893,19 @@ class TextEngine(object):
         #   (Case 3) Waiting for input  #
         elif TextEngine.waiting():
             TextEngine.CURSOR.update(seconds)
+            
+
+        #   (Case x) Other Animations   #
+        else:
+            TextEngine.INPUT_TICK += 1
+            TextEngine.INPUT_TICK %= 20
+            if EventManager.getInstance().isPressed("interact"):
+                TextEngine.SOUND_TICK += 1
+                TextEngine.SOUND_TICK %= 10
+            else:
+                TextEngine.SOUND_TICK = 0
+
+            pass
 
         return
         #   Animate each of the characters in the dialogue box  #

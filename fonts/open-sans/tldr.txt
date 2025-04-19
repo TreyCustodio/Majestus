@@ -1,0 +1,7 @@
+Conditions to use Open-Sans:
+
+    License Copy: You must provide a copy of the Apache 2.0 License to anyone who receives the video game.
+
+    Attribution: Retain copyright, patent, and trademark notices from the original font. If the font includes a "NOTICE" text file, include a copy of the notices within that file or in your game's documentation/display.
+
+    Modified Files: If you modify the font, you must indicate that you have changed the files.

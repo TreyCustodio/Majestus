@@ -26,6 +26,17 @@ class Intro_Cut(AbstractEngine):
             AE.initializeIntro(self)
             self.textInt = 4
             
+            #   Backgrounds
+            self.light = SpriteManager.getInstance().getSprite("intro_light.png")
+            self.dark = SpriteManager.getInstance().getSprite("intro_dark.png")
+            self.nature = SpriteManager.getInstance().getSprite("intro_nature.png")
+
+            
+            #   For Alpha Values
+            self.alphaUp = False
+            self.alphaDown = False
+            self.a = 0
+            self.frame = 0
         
         def reset(self):
             self.playingBgm = False
@@ -36,8 +47,10 @@ class Intro_Cut(AbstractEngine):
             self.text = ""
             self.icon = None
             self.boxPos = vec(32,64)
-            self.textInt = 3
+            self.textInt = 0
             self.timer = 0.0
+
+            
 
         def playBgm(self):
             SoundManager.getInstance().playBGM("still-dreaming.mp3")
@@ -53,6 +66,17 @@ class Intro_Cut(AbstractEngine):
         
         def draw(self, drawSurface):
             drawSurface.blit(self.black,vec(0,0))
+
+            if self.textInt == 1.2:
+                self.light.set_alpha(self.a)
+                drawSurface.blit(self.light,vec(0,0))
+
+            elif self.textInt == 1.3:
+                self.dark.set_alpha(self.a)
+                drawSurface.blit(self.dark,vec(0,0))
+
+
+
             return
         
         def handleEvent(self):
@@ -65,7 +89,46 @@ class Intro_Cut(AbstractEngine):
             """
             Update the intro's state.
             """
+            #   Update the alpha
+            if self.alphaUp:
+                self.a += 2
+                if self.a >= 255:
+                    self.a = 255
+                    self.alphaUp = False
+                    if self.textInt == 1.2:
+                        self.displayText(SPEECH["intro_1l"], box=4)
+                    self.frame=0
+                    
+                return
+            
+            elif self.alphaDown:
+                self.a -= 2
+                if self.a <= 0:
+                    self.a = 0
+                    self.alphaDown = False
+                    self.alphaUp = True
+                    self.frame=0
 
+                    #   Display the next Dialogue chunk
+                    if self.textInt == 1.2:
+                        self.displayText(SPEECH["intro_1d"], box=4)
+                        self.textInt = 1.3
+
+                    elif self.textInt == 1.3:
+                        self.displayText(SPEECH["intro_1f"], box=4)
+                        self.textInt = 1.4
+
+                    elif self.textInt == 1.4:
+                        self.textInt = 2
+                
+                #   Prevent activating dialogue until backgrounds are completely faded  #
+                return
+            
+
+            #   Darken and Lighten the background
+            ##  Decrease for 30 frames, increase for 30 frames
+            
+            
             #   Display the Narration
             if self.textInt == 0:
                 self.timer += seconds
@@ -79,15 +142,58 @@ class Intro_Cut(AbstractEngine):
                     self.timer += seconds
                     if self.timer >= 1.5:
                         self.timer = 0.0
-                        self.textInt = 2
+                        self.textInt = 1.1
                         self.displayText(SPEECH["intro_1"], box=4)
                     elif self.timer >= 1.0 and SoundManager.getInstance().currentlyPlaying == None:
                         self.playBgm()
-                        
+            
+            #   Light   #
+            elif self.textInt == 1.1:
+                if self.text == "":
+                    self.textInt = 1.2
+                    self.alphaUp = True
+
+            #   Dark   #
+            elif self.textInt == 1.2:
+                if self.alphaUp:
+                    return
+                
+                if self.frame <= 24:
+                    self.a -= 5
+                else:
+                    self.a += 5
+
+                self.frame += 1
+                self.frame %= 50
+
+                if self.text == "":
+                    self.alphaDown = True
+
+                
+            #   Nature  #
+            elif self.textInt == 1.3 :
+
+                if self.frame <= 24:
+                    self.a -= 5
+                else:
+                    self.a += 5
+
+                self.frame += 1
+                self.frame %= 50
+
+                if self.text == "":
+                    self.alphaDown = True
+
+            #   Nonnie   #
+            elif self.textInt == 1.4:
+                if self.text == "":
+                    self.displayText(SPEECH["intro_1n"], box=4)
+                    self.alphaDown = True
+
+
             elif self.textInt == 2:
                 if self.text == "":
                     self.textInt += 1
-                    
                     self.displayText(SPEECH["intro_2"], box=4)
             
             elif self.textInt == 3:

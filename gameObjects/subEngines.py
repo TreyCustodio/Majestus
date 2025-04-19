@@ -146,6 +146,7 @@ class PauseEngine(object):
     
 
     def drawShards(self, drawSurf):
+        return
         image1 = SpriteManager.getInstance().getSprite("item.png", (0, 2))
         image2 = SpriteManager.getInstance().getSprite("item.png", (1, 2))
         image3 = SpriteManager.getInstance().getSprite("item.png", (2, 2))
@@ -450,13 +451,13 @@ class PauseEngine(object):
             SoundManager.getInstance().playSFX("bump.mp3")
                 
     def startPlacing(self):
-        SoundManager.getInstance().playSFX("Textbox_Open.wav")
+        SoundManager.getInstance().playSFX("TextBox_Open.wav")
         self.placing = True
         self.highlight.position = vec(16*13, 16*5)
         self.highlighted = vec(0,0)
     
     def stopPlacing(self):
-        SoundManager.getInstance().playSFX("Textbox_Open.wav")
+        SoundManager.getInstance().playSFX("TextBox_Open.wav")
         self.placing = False
         self.highlight.position = vec(16*3, 16*5)
         self.highlighted = vec(0,1)

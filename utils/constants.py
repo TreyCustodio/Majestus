@@ -976,17 +976,19 @@ convince you otherwise.\n",
 I'll see what happens.\n",
 
 "intro_0":
-"Journal of %fKyro Phoenix%~,\n\
-30th Day of Winter,\n\
-Year 160.$$\n\
+"Journal of %fKyro Phoenix%~,.\n\
+30th Day of Winter,.\n\
+Year 160,.$$\n\
 I'd like to begin documenting\n\
 my experience here in %pVerea%~.$$\n\
 Wavering moons glisten above\n\
 this %ptroubled continent%~,\n\
 illuminating roads paved by\n\
 the %pendless stream of dreams%~.$$\n\
-Long have the %rtides of war%~\n\
-washed upon this %pmystic land%~.$$\n\
+%pDreams%~ that egg on\n\
+the %rtides of war%~,\n\
+which have washed upon\n\
+this %pmystic land%~ for ages.$$\n\
 As one war ends...$$\n\
 Another is always\n\
 sure to follow...\n",
@@ -998,17 +1000,28 @@ sure to follow...\n",
 
 "intro_1":
 "Four flavors of man\n\
-exist in %pVerea%~.$$\n\
-(1) The %wLuminates%~, sophisticated\n\
-bringers of %wLight%~,$$\n\
-(2) The %dDarklings%~, savage\n\
-spreaders of %dDarkness%~,$$\n\
-(3) The %fNaturalites%~, proud warriors\n\
-who produce miracles\n\
-with %pnature's blessings%~,$$\n\
-And (4) the %bNonnies%~, people\n\
-who lack elemental affinity.\n",
+exist in %pVerea%~.\n",
 
+"intro_1l":
+"%w(1)%~ The %wLuminates%~ are sophisticated\n\
+bringers of %wLight%~. They roam\n\
+%pVerea%~ with vibrant dignity.\n",
+
+"intro_1d":
+"%d(2)%~ The %dDarklings%~ seek to spread\n\
+their %dDarkness%~ with a brutal,\n\
+savage disposition.\n",
+
+"intro_1f":
+"%f(3)%~ The %fNaturalites%~ produce\n\
+miracles with %pnature's blessings%~.\n\
+They are proud warriors\n\
+who live in isolation.\n",
+
+"intro_1n":
+"%b(4)%~ Finally, the %bNonnies%~ make up\n\
+those of us who lack elemental\n\
+affinity.\n",
 
 "intro_2":
 "During the last %rGreat War%~,\n\
@@ -1017,28 +1030,28 @@ joined forces, forming the\n\
 %rUnified World Powers%~.$$\n\
 Upon emerging victorious,\n\
 they declared %wtheir%~ %dkind%~\n\
-as the %rsupreme human race%~.\n",
+as the %rsuperior human race%~.\n",
 
 "intro_3":
 "Come to find out,\n\
-even the world's %rstrongest\n\
-force%~ fears their own demise.$$\n\
-So, the %rPowers%~ have chosen to\n\
-quell their fear by eradicating\n\
-the four tribes which\n\
-make up the %fNaturalite race%~,&&\n\
+the %rsuperior human\n\
+race%~ dreads their own demise.$$\n\
+So much so, that the %rPowers%~ have\n\
+chosen to quell their fears by\n\
+eradicating the four tribes which\n\
+compose the %fNaturalite race%~,&&\n\
 thus eliminating the threat\n\
 of rebellion before the idea\n\
-could manifest in our minds.$$\n\
-Ah, yes,&&\n\
-because the only solution\n\
-to preventing war is to\n\
-start another one.$$\n\
-Like clockwork.\n",
+could even manifest in our minds.$$\n\
+$aAhhh, Yes!&&\n\
+Because the only way\n\
+to prevent war is to\n\
+start another one!$$\n\
+Like clockwork!$~\n",
 
 
 "intro_4":
-"Anyways, the %tThunder%~ and %gWind%~ tribes\n\
+"Anyway, the %tThunder%~ and %gWind%~ tribes\n\
 were quickly decimated thanks to the\n\
 element of surprise.$$\n\
 The nomadic %iIce%~ tribe remains\n\
@@ -1047,8 +1060,8 @@ blizzards.$$\n\
 Now we, the %fFire%~ tribe, have\n\
 put up a great fight against\n\
 the %wsun%~ and %dmoon%~ thus far...$$\n\
-%rBut we've begun to ignite\n\
-our final flames.%~$$\n\
+%r$sBut we've begun to ignite\n\
+our final flames.%~$~$$\n\
 My older brother, %fFiri%~,\n\
 and I were ordered to take refuge.&&\n\
 We've escaped the chaos of the\n\
@@ -1056,10 +1069,10 @@ most recent battle,$$\n\
 but not without an army\n\
 of %wLight%~ and %dShadow%~\n\
 hot on our tails.&&\n\
+ $_\n\
  \n\
  \n\
- \n\
-%fKyro Phoenix%~   \n",
+$~%fKyro Phoenix%~$_   $~\n",
 
 "tutorial_1":
 "Press Y to shoot arrows.",
