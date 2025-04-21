@@ -24,7 +24,7 @@ class Intro_Cut(AbstractEngine):
             Does not call super().__init()
             """
             AE.initializeIntro(self)
-            self.textInt = 4
+            self.textInt = 0
             
             #   Backgrounds
             self.light = SpriteManager.getInstance().getSprite("intro_light.png")
