@@ -37,6 +37,7 @@ class SoundManager(object):
         def playBGM(self, name):
             if self.currentlyPlaying:
                 pygame.mixer.music.stop()
+                
             self.currentlyPlaying = name
             pygame.mixer.music.load(os.path.join(SoundManager._SM._MUSIC_FOLDER,
                                                  name))        

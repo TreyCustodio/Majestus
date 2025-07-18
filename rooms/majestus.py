@@ -53,7 +53,7 @@ class Intro_Cut(AbstractEngine):
             
 
         def playBgm(self):
-            SoundManager.getInstance().playBGM("still-dreaming.mp3")
+            SoundManager.getInstance().playBGM("02_Journal.wav")
             self.playingBgm = True
 
         def displayText(self, text = "", icon = None, box = 4):
@@ -224,13 +224,21 @@ class Test(AbstractEngine):
     class _T(AE):
         def __init__(self):
             super().__init__("test")
-            self.bgm = None#"MSM_Castle.mp3"
+            self.bgm = None #"MSM_Castle.mp3"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
             self.firi = Firi(vec(16*9, 16*6), 1)
             self.npcs = [
-
+                Test_Boner(vec(16*6, 16*5)),
+                Ice_Boner(vec(16*8, 16*5)),
+                Stinger(vec(16*5, 16*1))
+                # Stinger(vec(16*6, 16*3)),
+                # Mofos(vec(16*6, 16*5)),
+                # Flapper(vec(16*6, 16*7)),
+                # Gremlin(vec(16*6, 16*9)),
+                # Baller(vec(16*3, 16*3)),
+                # Heater(vec(16*12, 16*3)),
             ]
 
             self.doors = [0]

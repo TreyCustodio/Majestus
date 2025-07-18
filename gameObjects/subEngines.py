@@ -293,16 +293,16 @@ class PauseEngine(object):
 
     def equipElement(self):
         if self.highlight.position[0] == 16*3 and self.highlight.position[1] == 16*6:
-            SoundManager.getInstance().playSFX("TextBox_Open.wav")
+            SoundManager.getInstance().playSFX("text_open1.wav")
             EQUIPPED["C"] = 0
         elif self.highlight.position[0] == 16*5 and self.highlight.position[1] == 16*6:
-            SoundManager.getInstance().playSFX("TextBox_Open.wav")
+            SoundManager.getInstance().playSFX("text_open1.wav")
             EQUIPPED["C"] = 1
         elif self.highlight.position[0] == 16*7 and self.highlight.position[1] == 16*6:
-            SoundManager.getInstance().playSFX("TextBox_Open.wav")
+            SoundManager.getInstance().playSFX("text_open1.wav")
             EQUIPPED["C"] = 2
         elif self.highlight.position[0] == 16*9 and self.highlight.position[1] == 16*6:
-            SoundManager.getInstance().playSFX("TextBox_Open.wav")
+            SoundManager.getInstance().playSFX("text_open1.wav")
             EQUIPPED["C"] = 3
         else:
             SoundManager.getInstance().playSFX("bump.mp3")
@@ -311,11 +311,11 @@ class PauseEngine(object):
     def equipArrow(self):
         if self.highlight.position[1] == 16*5:
             if self.highlight.position[0] == 16*3:
-                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                SoundManager.getInstance().playSFX("text_open1.wav")
                 EQUIPPED["Arrow"] = 0
             elif self.highlight.position[0] == 16*4:
                 if INV["hasBombo"]:
-                    SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                    SoundManager.getInstance().playSFX("text_open1.wav")
                     EQUIPPED["Arrow"] = 1
                 else:
                     SoundManager.getInstance().playSFX("bump.mp3")
@@ -331,7 +331,7 @@ class PauseEngine(object):
         if self.highlight.position[1] == 16*5:
             ##Ol' Reliable
             if self.highlight.position[0] == 16*3:
-                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                SoundManager.getInstance().playSFX("text_open1.wav")
                 AmmoBar.getInstance().setShortcutImage("ammo.png",(0,1))
                 EventManager.getInstance().setSpecial("shoot")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
@@ -339,7 +339,7 @@ class PauseEngine(object):
 
             ##Bombofaun
             if self.highlight.position[0] == 16*4:
-                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                SoundManager.getInstance().playSFX("text_open1.wav")
                 AmmoBar.getInstance().setShortcutImage("ammo.png",(0,2), True)
                 EventManager.getInstance().setSpecial("shoot")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
@@ -348,7 +348,7 @@ class PauseEngine(object):
         ##Element Row
         elif self.highlight.position[1] == 16*6:
             if self.highlight.position[0] == 16*3:
-                SoundManager.getInstance().playSFX("TextBox_Open.wav")
+                SoundManager.getInstance().playSFX("text_open1.wav")
                 AmmoBar.getInstance().setShortcutImage("element.png",(1,0))
                 EventManager.getInstance().setSpecial("element")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "element"
@@ -451,13 +451,13 @@ class PauseEngine(object):
             SoundManager.getInstance().playSFX("bump.mp3")
                 
     def startPlacing(self):
-        SoundManager.getInstance().playSFX("TextBox_Open.wav")
+        SoundManager.getInstance().playSFX("text_open1.wav")
         self.placing = True
         self.highlight.position = vec(16*13, 16*5)
         self.highlighted = vec(0,0)
     
     def stopPlacing(self):
-        SoundManager.getInstance().playSFX("TextBox_Open.wav")
+        SoundManager.getInstance().playSFX("text_open1.wav")
         self.placing = False
         self.highlight.position = vec(16*3, 16*5)
         self.highlighted = vec(0,1)

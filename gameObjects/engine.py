@@ -18,12 +18,12 @@ class DamageNumberManager(object):
     def __init__(self):
         self.numbers = []
         
-    def addNumber(self, position, value):
-        self.numbers.append(DamageNumber(position, value))
+    def addNumber(self, position, value, row=3):
+        self.numbers.append(DamageNumber(position, value, row))
     
     def draw(self, engine, drawSurface):
         for num in self.numbers:
-            engine.drawDamageNumber(num.damagePos, num.damage, drawSurface, row = 3)
+            engine.drawDamageNumber(num.damagePos, num.damage, drawSurface, row =num.row)
     
     def updateNumbers(self, engine, seconds):
         for num in self.numbers:
@@ -33,10 +33,11 @@ class DamageNumberManager(object):
     
 
 class DamageNumber(object):
-    def __init__(self, position, damage):
+    def __init__(self, position, damage, row):
         self.damage = damage
         self.damagePos = position
         self.maxDamagePos = self.damagePos[1]-8
+        self.row = row
 
 
 """
@@ -287,10 +288,10 @@ class AE(object):
             self.name.reset()
         
         #   (2.) Respawn the enemies
-        for n in self.npcs:
-            n.respawn()
-            if n.vanish:
-                self.disappear(n)
+        # for n in self.npcs:
+        #     n.respawn()
+        #     if n.vanish:
+        #         self.disappear(n)
         
         #   (3.) Empty out all data structures; Reset all vars
         self.drops = []
@@ -873,7 +874,7 @@ class AE(object):
                 SoundManager.getInstance().fadeoutBGM()
             
 
-    def displayText(self, text = "", icon = None, box = 2):
+    def displayText(self, text = "", icon = None, box = 4):
         """
         Display text
         """
@@ -1130,26 +1131,31 @@ class AE(object):
                     n.press()
 
     def npcCollision(self):
+        """Handle Npc Collision"""
         for n in self.npcs:
-        #Check if it collides with the player first
+            #   Collision with Player   #
             if not self.player.ignoreCollision and self.player.doesCollide(n):
+                #   Freeze if hit by Ice Run   #
                 if self.player.running:
                     if not n.freezeShield and not n.frozen:
-                        if n.id == "noStop":
+                        if "noStop" in n.id:
                             n.freeze()
                         else:
                             self.player.stop_run(n)
                             n.freeze()
 
-                if (not self.player.invincible) or n.id == "shot":
-                    if n.handlePlayerCollision(self.player):
+                #   Handle Player Collision
+                if (not self.player.invincible) or "shot" in n.id:
+                    if n.handle_player_collision(self.player):
                         self.player.handleCollision(n)
 
-            #Enemies
+            #   Collision with projectiles in room    #
             if self.projectiles:
                 for p in self.projectiles:
                     self.projectilesOnEnemies(p,n)
-                    
+
+
+            #   Collision with blocks in room   #
             for b in self.blocks:
                 self.enemyCollision(b)
                         
@@ -1186,7 +1192,7 @@ class AE(object):
     
     def enemyCollision(self, other):
         for e in self.npcs:
-            if e.doesCollideBlock(other):
+            if e.collides_with_block(other):
                 e.inWall = True
                 e.bounce(other)
             
@@ -1223,24 +1229,33 @@ class AE(object):
     other -> enemy
     """
     def projectilesOnEnemies(self, projectile, other):
-        if other.doesCollideProjectile(projectile):
-            if other.ignoreCollision:
+        if other.collides_with_projectile(projectile):
+            if other.ignore_collision:
                 return
+            
             if not projectile.hit:
-                other.handleCollision(projectile)
+                other.handle_projectile_collision(projectile)
                 if other.hit:
-                    ##Display the damage indicator
-                    hp_after = other.hp
-                    hp_before = other.hp + projectile.damage
+                    #   Display the damage indicator    #
+                    # hp_after = other.hp
+                    # hp_before = other.hp + projectile.damage
                     #self.indicator.setImage(other.indicatorRow, hp_before, hp_after, other.maxHp, projectile.damage)
-                    damage = other.getInjury()
-                    other.resetInjury()
-                    ##Display damage numbers appropriately
-                    if projectile.id == "slash" or projectile.id == "blizz":
-                        self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage)
+                    
+                    #   Display Damage Numbers #
+                    damage = other.get_injury()
+                    other.reset_injury()
+
+                    if damage == 0:
+                        self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage, row=0)
+                    elif damage < 0:
+                        self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage * -1, row=2)
                     else:
-                        self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage)
+                        self.damageNums.addNumber(vec(other.getCenterX(), other.position[1]), damage, row=3)
+                            
+                    
                     other.hit = False
+
+                    #   Have Projectile handle its collision    #
                     if projectile.id == "arrow":
                         projectile.handleOtherCollision(self, other)
                         return
@@ -1331,7 +1346,7 @@ class AE(object):
             switch.update(self.player)
 
     def outOfBoundsSafety(self, n):
-        if n.boundsSafety():
+        if n.bounds_safety():
             if n.position[0] >= self.size[0]:
                 if n.projectile:
                     n.dead = True
@@ -1361,40 +1376,43 @@ class AE(object):
 
 
     def update_Enemy(self, seconds, n):
-        n.update(seconds, self.player.position, self.player)
+        n.update(seconds, self.player)
+
         self.outOfBoundsSafety(n)
 
-        if n.id == "spawn" or n.spawn:
+        if "spawn" in n.id:
             if n.spawning:
                 objects = n.getObjectsToSpawn()
                 if objects:
                     for i in objects:
                         self.npcs.append(i)
                 n.resetObjects()
+
         if n.dead:
             self.disappear((n))
             if self.dropCount < 5:
-                drop = n.getDrop()
+                drop = n.get_drop()
                 if drop != None:
                     if drop.id == "greenHeart":
                         self.spawning.append(drop)
                     elif (drop.id == "heart" or drop.id == "bigHeart") and self.player.hp == INV["max_hp"]:
-                        drop = n.getMoney()
+                        drop = n.get_money()
                         if drop != None:
                             self.drops.append(drop)
                     else:
                         self.drops.append(drop)
                     self.dropCount += 1
-            if n.increaseCount():
-                self.enemyCounter += 1
-        elif n.fakeDead:
-            if self.dropCount < 5:
-                drop = n.getDrop()
-                if drop != None:
-                    self.drops.append(drop)
-                    self.dropCount += 1
-            else:
-                n.readyToDrop = False
+            self.enemyCounter += 1
+
+        #   Fake dead ? #
+        # elif n.fakeDead:
+        #     if self.dropCount < 5:
+        #         drop = n.get_drop()
+        #         if drop != None:
+        #             self.drops.append(drop)
+        #             self.dropCount += 1
+        #     else:
+        #         n.readyToDrop = False
         
         
         if not self.ignoreClear and not self.room_clear and self.enemyCounter == self.max_enemies:
@@ -1739,9 +1757,10 @@ class AE(object):
             for o in self.obstacles:
                 o.draw(drawSurface)
 
-        for n in self.npcs:
-            if n.belowDrops:
-                n.draw(drawSurface)
+        #   Want to draw enemies below drops?   #
+        # for n in self.npcs:
+        #     if n.belowDrops:
+        #         n.draw(drawSurface)
 
         if self.drops:
             for n in self.drops:
@@ -1756,8 +1775,9 @@ class AE(object):
 
         if self.npcs:
             for n in self.npcs:
-            #Consider making enemies appear right before the player
-                if not n.top and not n.belowDrops:
+                if not n.drawn:
+                #Consider making enemies appear right before the player
+                # if not n.top and not n.belowDrops:
                     n.draw(drawSurface)
         
     def drawProjectiles(self, drawSurface):

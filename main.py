@@ -28,7 +28,7 @@ def main():
     pygame.joystick.init()
 
     #   (2.) Initialize the Screen
-    flags = pygame.SCALED #| pygame.NOFRAME | pygame.FULLSCREEN
+    flags = pygame.SCALED #| pygame.FULLSCREEN#| pygame.NOFRAME | pygame.FULLSCREEN
     screen = pygame.display.set_mode(list(map(int, UPSCALED)), flags=flags)
     drawSurface = pygame.Surface(list(map(int, RESOLUTION)))
     transparentSurface = drawSurface.subsurface(drawSurface.get_rect())
@@ -114,12 +114,12 @@ def main():
         
             #   (i)  Calculate FPS each second
             #Should be as close to 60 as possible per the tick(60)
-            """ frame_count += 1
+            frame_count += 1
             if time.time() - start_time > 1:
                 fps = frame_count / (time.time() - start_time)
                 print(f"FPS: {fps:.2f}")
                 frame_count = 0
-                start_time = time.time() """
+                start_time = time.time()
 
         
 

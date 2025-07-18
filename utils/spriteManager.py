@@ -40,7 +40,7 @@ class SpriteManager(object):
       
 
       # Static information about the sprite sizes of particular image sheets.
-      _SPRITE_SIZES = {"text_components.png":(16,16),"buttons.png":(20,16),"chars.png":(20,20), "rocker.png":(16,16),"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),"mofos.png":(18,28),"npc_boner.png":(18,28),"laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
+      _SPRITE_SIZES = {"text_components.png":(16,16),"buttons.png":(20,16),"chars.png":(20,20), "rocker.png":(16,16),"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),"boner.png":(18,28),"npc_boner.png":(18,28),"laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
                        "TextBox2.png": (244,64), "indicator.png":(58,32),
                        "icon.png": (32,32), "blockP.png":(16,16), "fire.png":(18,18), "black.png": (304, 208), 
                        "bar.png":(16,16), "ammo.png": (16,16), "torch.png": (16,16), 
@@ -54,8 +54,8 @@ class SpriteManager(object):
                        "mapRooms.png":(8,8), "light.png":(64,64),
                        "knight.png":(32,32), "bullshot.png":(32,32),
                        "shiver.png":(20,26), "shortcut.png":(32,32),
-                       "gremlin.png":(18,36),"boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32)
-         
+                       "gremlin.png":(18,36),"boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
+                       "stinger.png":(100,49), "ice_boner.png":(18,28)
       }
       
       # A default sprite size
@@ -65,12 +65,12 @@ class SpriteManager(object):
       _TRANSPARENCY = ["text_components.png","buttons.png", "chars.png", "rocker.png", "shop_display.png","shop_items.png","npc_boner.png","lock.png","TextBox3.png","bone.png","laser.png","gleemer.png","keys.png","freeze.png","target.png","firi.png","stardust.png","heart.png","walls.png","light_2.png","shadow.png","shadow_1.png","shadow_2.png","shadow_3.png","shadow_4.png","shadow_5.png","shadow_6.png","npcBopper.png", "boulder.png","ammo.png", "title_screen.png", "pointer.png", "portal.png", "Objects.png", "KeyCount.png", "numbers.png", "Bullet.png", "null.png", 
                        "icon.png", "TextBox.png", "TextBox2.png", "geemer.png", "item.png", "fire.png", "black.png", "blessing.png",
                        "thunder.png", "energy.png", "gale.png", "indicator.png",
-                       "gremlin_blue.png", "mofos.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies
+                       "gremlin_blue.png", "boner.png", "david.png", "flapper.png", "gremlin.png", "dummy.png", "heater.png",#Enemies
                        "exclamation.png", "z.png", "fireIcon.png", "shotsfired.png", "drops.png",
                        "baller.png", "stunner.png", "mage.png", "barrier.png", "pixels.png",
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
-                       "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png"
+                       "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png"
                        ]
       
       # A list of images that require to be loaded with a color key
@@ -122,10 +122,11 @@ class SpriteManager(object):
             return self[fileName][offset[1]][offset[0]]
          return self[fileName]
       
-      def getEnemy(self, fileName, direction):
+      def getEnemy(self, fileName, offset: tuple):
+         """Load an enemy sprite from the enemy directory"""
          if fileName not in self._surfaces.keys():
             self._loadImage(fileName, sheet = True, enemy = True)
-         return self[fileName][direction][0]
+         return self[fileName][offset[0]][offset[1]]
       
       def _loadImage(self, fileName, sheet=False, level = False, enemy = False):
          # Load the full image
@@ -144,8 +145,6 @@ class SpriteManager(object):
           self._loadRoutine(fullImage, fileName, sheet, True)
 
       def _loadRoutine(self, fullImage, fileName, sheet = False, transparent = False):
-
-
          if not transparent:
             # Look up some information about the image to be loaded
             transparent = fileName in SpriteManager._SM._TRANSPARENCY

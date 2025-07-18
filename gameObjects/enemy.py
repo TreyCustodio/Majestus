@@ -1,5 +1,7 @@
-from . import (Drawable, Animated, Bullet, Element, Blizzard, Heart, BigHeart, 
+from . import (Drawable, Animated, Bullet, Blizzard, Heart, BigHeart, 
                 Buck, FireShard, GreenHeart, Buck_B, Buck_R, Bombodrop, LargeBombo, GiantBombo)
+
+from .types import *
 from utils import SoundManager, SpriteManager, SCALE, RESOLUTION, vec
 from random import randint
 import pygame
@@ -13,7 +15,8 @@ class Enemy(Animated):
     """
     Abstract Enemy Class
     """
-    def __init__(self, position = vec(0,0), fileName: str ="", direction: int =0, nFrames: int = 6, hurtRow: int = 4, hp: int = 5, speed: int = 50, name: str = "", id: str = "", spawn = False, projectile: bool = False, damage: int = 1, type: Element = Element(0)):
+    def __init__(self, position = vec(0,0), fileName: str ="", direction: int =0, nFrames: int = 6, hurtRow: int = 4, hp: int = 5, speed: int = 50, name: str = "", id: str = "", spawn = False, projectile: bool = False, damage: int = 1,
+                 type = Non):
         if fileName != "":
             self.image = SpriteManager.getInstance().getEnemy(fileName, direction)
         
@@ -178,7 +181,7 @@ class Enemy(Animated):
             self.hp = self.maxHp
 
     def draw(self, drawSurface, drawHitbox=False, use_camera=True, drawFreeze = True):
-        super().draw(drawSurface)
+        super().draw(drawSurface, drawHitbox)
         if drawFreeze and self.frozen:
             Drawable(vec(self.position[0] + self.getSize()[0] // 2 - 8, self.position[1] + self.getSize()[1] // 2 - 8), "freeze.png").draw(drawSurface)
     """
@@ -1018,7 +1021,8 @@ class LavaKnight(Enemy):
 Regular Enemies
 """        
 class Shiver(Enemy):
-    def __init__(self, position = vec(0,0), direction = 0):
+    def __init__(self, position = vec(0,0), direction = 0,
+                 type = Ice):
         if direction == 2:
             super().__init__(position, "shiver.png", 2)
         else:
@@ -1032,7 +1036,6 @@ class Shiver(Enemy):
         self.totalFrames = 4
         self.framesPerSecond = 4
         self.damage = 2
-        self.type = Element(2)
         self.hurtRow = 1
     
     def setSpeed(self, row):
@@ -1493,7 +1496,7 @@ class FireBall(Enemy):
         self.nFrames = 4
         self.maxHp = 1
         self.hp = 1
-        self.type = Element(1)
+        self.type = Fire
         self.arrowShield = True
         self.lifeTimer = 0.0
         self.lifeTime = 1.25
@@ -1707,7 +1710,7 @@ class Heater(Enemy):
         self.totalFrames = 3
         self.maxHp = 10
         self.hp = self.maxHp
-        self.type = Element(1)
+        self.type = Fire
         self.fireBallTimer = 0.0
         self.fireBallTime = 0.5
         self.objects = [FireBall(vec(self.position[0]-2, self.position[1]))]
@@ -1823,7 +1826,8 @@ Cute little walking fireball.
 Requires Ice to damage it.
 """
 class Baller(Enemy):
-    def __init__(self, position=vec(0,0), direction = 3, hp = 10, speed = 50, type: Element = Element(1), fileName: str = "baller.png"):
+    def __init__(self, position=vec(0,0), direction = 3, hp = 10, speed = 50,
+                 type = Fire, fileName: str = "baller.png"):
         super().__init__(position, fileName, direction, hp = hp, speed = speed)
         self.indicatorRow = 8
         self.row = direction
@@ -1876,7 +1880,7 @@ Cute little walking rock.
 Requires Bombofauns to damage it.
 """
 class Rocker(Baller):
-    def __init__(self, position=vec(0, 0), direction=3, hp = 20, speed = 35, type = Element(0)):
+    def __init__(self, position=vec(0, 0), direction=3, hp = 20, speed = 35, type = Stone):
         super().__init__(position, direction, hp, speed, fileName="rocker.png")
         self.row = 1
         self.rot = 0
@@ -2007,7 +2011,7 @@ class Flapper(Enemy):
 class FireFlapper(Flapper):
     def __init__(self, position = vec(0,0), direction = 0):
         super().__init__(position, 1, direction)
-        self.type = Element(1)
+        self.type = Fire
         self.arrowShield = True
     
     def getDrop(self):
@@ -2023,17 +2027,17 @@ class FireFlapper(Flapper):
 class IceFlapper(Flapper):
     def __init__(self, position = vec(0,0), direction = 0):
         super().__init__(position, 2, direction)
-        self.type = Element(2)
+        self.type = Ice
     
 class ThunderFlapper(Flapper):
     def __init__(self, position = vec(0,0), direction = 0):
         super().__init__(position, 3, direction)
-        self.type = Element(3)
+        self.type = Thunder
 
 class WindFlapper(Flapper):
     def __init__(self, position = vec(0,0), direction = 0):
         super().__init__(position, 4, direction)
-        self.type = Element(4)
+        self.type = Wind
 
 class AlphaFlapper(Enemy):
     def __init__(self, position=vec(0,0), typeRow = 0, direction = 0, boss = False):

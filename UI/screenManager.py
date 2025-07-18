@@ -84,7 +84,7 @@ class ScreenManager(object):
         """
         Play the title theme.
         """
-        SoundManager.getInstance().playBGM("Fontaines.mp3")
+        SoundManager.getInstance().playBGM("01_Title.wav")
 
     
     def setController(self, text):

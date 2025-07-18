@@ -150,11 +150,17 @@ class EventManager(object):
             ##Set up joystick
             joysticks = pygame.joystick.get_count()
             for i in range(joysticks):
-                joystick = pygame.joystick.Joystick(i)
+                #   Strange error here when pro controller isn't fully connected to the device  #
+                try:
+                    joystick = pygame.joystick.Joystick(i)
+                except:
+                    return
                 print(joystick.get_name())
+
                 if joystick.get_name() == "Generic USB Joystick":
                     self.controller = "Gamecube"
                     pygame.joystick.Joystick(i).init()
+
                 elif joystick.get_name() == "Nintendo Switch Pro Controller":
                     self.controller = "Switch"
                     pygame.joystick.Joystick(i).init()

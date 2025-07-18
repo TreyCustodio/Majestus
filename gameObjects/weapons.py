@@ -1,46 +1,21 @@
 import pygame
 from utils import SoundManager, SpriteManager, SCALE, RESOLUTION, vec, INV
 from . import Drawable, Animated, ShotParticle, Trigger
+
+from .types import *
 """
 This file contains everything pertenent to dealing
 damage to enemies. Each weapon is instantiated
 in the Player Class and stored in the engine's self.projectiles list.
 """
 
-class Element(object):
-    """
-    Elemental types:
-    0 -> None,
-    1 -> Fire,
-    2 -> Ice,
-    3 -> Thunder,
-    4 -> Wind
-    """
-    def __init__(self, integer = 0):
-        self.type = integer
-    
-    def getValue(self):
-        return self.type
-
-    def beats(self, otherInt = 0):
-        """
-        Returns True if this element beats the specified value
-        Fire (1) beats Ice (2)
-        Ice (2) beats Fire (1)
-        Thunder (3) beats Wind(4)
-        Wind (4) beats Thunder (3)
-        """
-        return (otherInt == 1 and self.type == 2) or (otherInt == 2 and self.type == 1) or (otherInt == 3 and self.type == 4) or (otherInt == 4 and self.type == 3)
-    
-    """
-    Returns True if this element is weak to the specified value.
-    """
-    def weakTo(self, otherInt = 0):
-        return (self.type == 1 and otherInt == 2) or (self.type == 2 and otherInt == 1) or (self.type == 3 and otherInt == 4) or (self.type == 4 and otherInt == 3)
-    
 class AbstractWeapon(Animated):
-    def __init__(self, position = vec(0,0), fileName = "", column = 0, direction = 0, setid = True):
+    def __init__(self, position = vec(0,0), fileName = "",
+                 column = 0, direction = 0, setid = True,
+                 type = Non):
+        
         super().__init__(position, fileName, (column, direction))
+        self.type = type
         self.hit = False
         self.direction = direction
         self.vel = vec(0,0)
@@ -151,7 +126,6 @@ class Bombo(AbstractWeapon):
         damage = self.setArrowProperties(hp)
         super().__init__(position, "Bullet.png", self.column, direction, setid = False)
         self.setArrowVelocity(self.direction, self.speed)
-        self.type = 0
         self.damage = damage
         
 
@@ -208,7 +182,6 @@ class Bullet(AbstractWeapon):
         super().__init__(position, "Bullet.png", self.column, direction, setid=False)
         self.damage = damage
         self.setVelocity(self.direction, self.speed)
-        self.type = 0
         self.frame = 0
         self.collisionObj= None
         self.collisionPoint = vec(0,0)
@@ -269,7 +242,7 @@ class Bullet(AbstractWeapon):
                 engine.disappear(self)
             else:
                 if self.collisionObj:
-                    if self.collisionObj.dead or self.collisionObj.attacking:
+                    if self.collisionObj.dead:
                         engine.disappear(self)
                     else:
                         if not self.collisionObj.frozen:
@@ -285,12 +258,12 @@ class Hook(AbstractWeapon):
     This attack mimics the hookshot as implemented in
     ALTTP and Link's Awakening
     """
-    def __init__(self, position = vec(0,0), direction = 0):
+    def __init__(self, position = vec(0,0), direction = 0,
+                 type=Thunder):
         super().__init__(position, "Objects.png", 0, direction)
         self.direction = direction
         self.nFrames = 1
         self.setVelocity(direction, 200)
-        self.type = 2
 
 
 
@@ -324,7 +297,8 @@ class Slash(AbstractWeapon):
     """
     Only check collision for enemies. If it goes out of bounds, pop it
     """
-    def __init__(self, position = vec(0,0), direction = 0, chargeMultiplier = 0):
+    def __init__(self, position = vec(0,0), direction = 0, chargeMultiplier = 0,
+                 type=Wind):
         super().__init__(position, "slash.png", 0, 0)
         self.id = "slash"
         if chargeMultiplier == 1:
@@ -341,7 +315,6 @@ class Slash(AbstractWeapon):
         self.setVelocity(direction, 200)
         
         self.direction = direction
-        self.type = 4
         
 
     def handleCollision(self, engine):
@@ -367,8 +340,9 @@ class Sword(AbstractWeapon):
     """
     Flame C attack
     """
-    def __init__(self, position = vec(0,0), direction = 0):
-        super().__init__(position, "fire.png", 0,direction)
+    def __init__(self, position = vec(0,0), direction = 0,
+                 type=Fire):
+        super().__init__(position, "fire.png", 0, direction, type=type)
         
         self.id = "flame"
         self.lifetime = 0.2#Seconds the swing lasts
@@ -396,7 +370,6 @@ class Sword(AbstractWeapon):
 
 
         self.nFrames = 5
-        self.type = 1
         
         
     def collides(self, blocks):
@@ -423,8 +396,9 @@ class Sword(AbstractWeapon):
         
 
 class Blizzard(AbstractWeapon):
-    def __init__(self, position = vec(0,0), direction=0):
-        super().__init__(position, "blizz.png", 0, direction)
+    def __init__(self, position = vec(0,0), direction=0,
+                 type=Ice):
+        super().__init__(position, "blizz.png", 0, direction, type=type)
         
         self.id = "blizz"
         self.row = direction
@@ -444,7 +418,6 @@ class Blizzard(AbstractWeapon):
         elif direction == 3:
             self.position[0] -= 30
 
-        self.type = 2
         self.framesPerSecond = 32
     
 
@@ -468,7 +441,8 @@ class Blizzard(AbstractWeapon):
 
 class Clap(AbstractWeapon):
     SOUND = "lightning.wav"
-    def __init__(self, position = vec(0,0)):
+    def __init__(self, position = vec(0,0),
+                 type=Thunder):
         super().__init__(position, "thunder.png")
         self.damage = 20
         self.lifetime = 0.2#Seconds the clap lasts
@@ -477,7 +451,6 @@ class Clap(AbstractWeapon):
         self.position[0] -= 28
         self.position[1] -= 16
     
-        self.type = 3
 
     def handleCollision(self, engine):
         pass

@@ -162,6 +162,8 @@ class Char(object):
                     if next_char == "~":
                         color = "default"
 
+                    elif next_char == "0":
+                        color = (0,0,0)
                     ## Red  ##
                     elif next_char == "r":
                         color = (255,50,50)
@@ -509,6 +511,10 @@ class TextEngine(object):
         elif type == 4:
             TextEngine.BOX = pygame.surface.Surface(vec(304,208), pygame.SRCALPHA)
             TextEngine.BOX.fill((0,0,0,0))
+
+            # black_surf = pygame.surface.Surface((vec(196, 128)), pygame.SRCALPHA)
+            # black_surf.fill((0,0,0,200))
+            # TextEngine.BOX.blit(black_surf, vec(64,32))
         
         ##  Small Box   ##
         elif type == 1:
