@@ -84,7 +84,7 @@ class ScreenManager(object):
         """
         Play the title theme.
         """
-        SoundManager.getInstance().playBGM("01_Title.wav")
+        SoundManager.getInstance().play_ost("01", has_intro=True)
 
     
     def setController(self, text):
@@ -166,7 +166,7 @@ class ScreenManager(object):
                             self.game.useSyringe()
                         
                         elif self.pauseEngine.promptFlag == "quit":
-                            SoundManager.getInstance().fadeoutBGM()
+                            SoundManager.getInstance().fadeout_bgm()
                             self.returningToMain = True
                             self.fadeOn(5)
                             #self.fading = True
@@ -408,13 +408,14 @@ class ScreenManager(object):
         """
         self.fade.setFrame(0)
         if choice == 0:
-            SoundManager.getInstance().fadeoutBGM()
+            # SoundManager.getInstance().fadeout_bgm()
             SoundManager.getInstance().playSFX("WW_PressStart.wav")
             self.startingGame = True
             self.fadeOn(4)
 
+
         elif choice == 1:
-            SoundManager.getInstance().fadeoutBGM()
+            SoundManager.getInstance().fadeout_bgm()
             self.continuingGame = True
             self.fadeOn(4)
             
@@ -631,18 +632,18 @@ class ScreenManager(object):
             #   (ii.) Starting a new game
             if self.startingGame:
                 if self.wipe.increasing == False:
-                    if not pygame.mixer.get_busy():
-                        self.fadeOff(5)
-                        self.game = Intro_Cut.getInstance()
-                        self.game.lockHealth()
-                        self.state = "game"
-                        #self.state.startGame()
-                        self.startingGame = False
+                    self.fadeOff(5)
+                    self.game = Intro_Cut.getInstance()
+                    self.game.lockHealth()
+                    self.state = "game"
+                    #self.state.startGame()
+                    self.startingGame = False
             
                     
             #   (iii.) Continuing a game
             elif self.continuingGame:
                 if self.wipe.increasing == False:
+                    #   Continue the game after the sound effects are done  #
                     if not pygame.mixer.get_busy():
                         self.fadeOff(5)
                         self.game = LOAD["room"].getInstance()

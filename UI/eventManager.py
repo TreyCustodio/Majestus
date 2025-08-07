@@ -1,4 +1,6 @@
 import pygame
+import sys
+
 """
 A module for managing events
 in the pygame event queue
@@ -204,17 +206,13 @@ class EventManager(object):
         def handleEvents(self, engine):
             if self.readyToFetch:
                 ##Handle events in the queue
+                
                 for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        return
-
                     ##Quit game
-                    if event.type == pygame.QUIT:
+                    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                         pygame.quit()
+                        sys.exit()
                         return
-                    
-                    
                         
 
                     ##  Controller plugged

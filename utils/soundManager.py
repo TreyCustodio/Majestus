@@ -26,26 +26,52 @@ class SoundManager(object):
         """An internal SoundManager class to contain the actual code."""
         
         _SFX_FOLDER = "sounds"
+        _OST_FOLDER = os.path.join("music", "ost")
         _MUSIC_FOLDER = "music"
+
         _VOICE_FOLDER = "sounds/voices"
         
         def __init__(self):
+            self.ost = {} # "track number": [intro, loop, end]
             self.BGMs = {}
             self.dict = {}
-            self.currentlyPlaying = None
+
+            #   Channels    #
+            pygame.mixer.set_reserved(5)
+            self.bgm_channel = pygame.mixer.Channel(5)
+
+            #   Booleans    #
+            self.currently_playing = False # True if currently playing a track
+            self.playing_intro = False # True if an intro to a track is playing
         
+        def play_ost(self, name, has_intro = False, has_outro = False):
+            """Play a track from the original soundtrack"""
+            if name not in self.ost:
+                self._load_ost(name, has_intro, has_outro)
+
+            if has_intro:
+                self.playing_intro = True
+                self.currently_playing = name
+                return self.bgm_channel.play(self.ost[name][0], 1)
+            else:
+                self.currently_playing = name
+                return self.bgm_channel.play(self.ost[name][1], -1)
+
+
         def playBGM(self, name):
-            if self.currentlyPlaying:
+            if self.currently_playing:
                 pygame.mixer.music.stop()
                 
-            self.currentlyPlaying = name
+            self.currently_playing = name
             pygame.mixer.music.load(os.path.join(SoundManager._SM._MUSIC_FOLDER,
                                                  name))        
             pygame.mixer.music.play(-1)
-        
-        def fadeoutBGM(self, fadeoutAmount=1000):
-            pygame.mixer.music.fadeout(fadeoutAmount)
-            self.currentlyPlaying = None
+
+
+
+        def fadeout_bgm(self, fadeoutAmount=1000):
+            self.bgm_channel.fadeout(fadeoutAmount)
+            self.currently_playing = None
         
     
         def playSFX(self, name, loops=0):
@@ -53,10 +79,11 @@ class SoundManager(object):
                 self._loadSFX(name)
             return self.dict[name].play(loops)
         
-        """
-        Play and load a voice file from the voice directory
-        """
+        
         def playVoice(self, name, loops=0):
+            """
+            Play and load a voice file from the voice directory
+            """
             if name not in self.dict:
                 self._loadVoice(name)
             return self.dict[name].play(loops)
@@ -77,10 +104,33 @@ class SoundManager(object):
                 
             self.dict[name] = sound
         
-        """
-        Load a voice file from the voice directory
-        """
+        
+        def _load_ost(self, name, has_intro = False, has_outro = False):
+            """Load up a track from the ost"""
+            track_number = name
+            fullname = os.path.join(SoundManager._SM._OST_FOLDER, name)
+
+            if has_intro:
+                name = fullname + "_intro.wav"
+                intro = pygame.mixer.Sound(name)
+            else:
+                intro = None
+
+            if has_outro:
+                name = fullname + "_outro.wav"
+                outro = pygame.mixer.Sound(name)
+            else:
+                outro = None
+
+            name = fullname + "_loop.wav"
+            loop = pygame.mixer.Sound(name)
+
+            self.ost[track_number] = [intro, loop, outro]
+
         def _loadVoice(self, name):
+            """
+            Load a voice file from the voice directory
+            """
             fullname = os.path.join(SoundManager._SM._VOICE_FOLDER, name)
             sound = pygame.mixer.Sound(fullname)
             self.dict[name] = sound
@@ -99,3 +149,10 @@ class SoundManager(object):
             for song, player in self.dict.items():
                 if song.endswith(".wav"):
                     player.stop()
+
+        def update(self, seconds):
+            if self.playing_intro:
+                #   Transition to the track's loop after the intro finishes #
+                if not self.bgm_channel.get_busy():
+                    self.playing_intro = False
+                    self.bgm_channel.play(self.ost[self.currently_playing][1], -1)

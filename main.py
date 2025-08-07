@@ -1,5 +1,5 @@
 import pygame
-from UI import ScreenManager, Xbox, EventManager
+from UI import ScreenManager, Xbox, EventManager, SoundManager
 from utils import RESOLUTION, UPSCALED
 from random import randint
 
@@ -114,12 +114,14 @@ def main():
         
             #   (i)  Calculate FPS each second
             #Should be as close to 60 as possible per the tick(60)
-            frame_count += 1
-            if time.time() - start_time > 1:
-                fps = frame_count / (time.time() - start_time)
-                print(f"FPS: {fps:.2f}")
-                frame_count = 0
-                start_time = time.time()
+            # frame_count += 1
+            # if time.time() - start_time > 1:
+            #     fps = frame_count / (time.time() - start_time)
+            #     print(f"FPS: {fps:.2f}")
+            #     frame_count = 0
+            #     start_time = time.time()
+        
+        SoundManager.getInstance().update(seconds)
 
         
 

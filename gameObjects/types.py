@@ -53,7 +53,7 @@ This file contains all type  and status data.
 #
 #
 #   --- Skeletal ---    #
-#   Skeletons that resist everything except
+#   Undead skeletons that resist everything except
 #   Non-elemental attacks.
 #   
 #   Resistance: All except Non-elemental (1/2x)
@@ -63,7 +63,7 @@ This file contains all type  and status data.
 #
 #
 #   --- Reptillian ---    #
-#   Strong, cold-blooded creatures that are easily frozen.
+#   Strong, durable, cold-blooded creatures that are easily frozen.
 #   They boast high strength, defense, and speed.
 #
 #   Resistance: Thunder (1/2x)
@@ -102,6 +102,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Fire ---    #
+#   Beings that carry the blessing of Fire.
+#
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Ice (2x)
 #   Immunity: Burn
@@ -109,6 +111,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Ice ---     #
+#   Beings that carry the blessing of Ice.
+#
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Fire (2x)
 #   Immunity:   Freeze

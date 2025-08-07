@@ -9,6 +9,10 @@ import pygame
 
 from abc import abstractmethod
 
+"""
+All yur favorite delinquits are scripted here!
+"""
+
 #   -----   Engine  -----   #
 #   Each frame, the Engine performs (3) Tasks.
 #   (1) Draw
@@ -27,15 +31,16 @@ from abc import abstractmethod
 #       - calls enemy.handleCollision()
 #
 #   *update_enemy()* updates the enemy after handling events
-#   - 
 
 
 
 
 
 #   -----   Enemies -----   #
+#   Each enemy has a type (or types) and specific behavior.
 #
 #   --- Ids --- #
+#   Ids tell the engine to handle the enemy in a specific way.
 #
 #   "spawn" -> spawn other objects
 #
@@ -50,22 +55,38 @@ from abc import abstractmethod
 #
 #
 #   --- Drops ---   #
-#   
-#   *enemy.getDrop()* returns the item(s) the enemy drops
+#   Each enemy drops something upon being killed.
+#
+#   *enemy.get_drop(full_health)* returns the item(s) the enemy drops
+#       - The drop may change depending on the player's health.
+#       - For example, at full health a Heart will be replaced by a Buck.
 #
 #
 #   ---------------------   #
 #
+#
 #   ----- Bosses -----  #
+#   Bosses provide the only way for the player to increase their maximum health.
+#   Each boss drops a Green Heart upon death.
+#   Each boss also says something to Kyro before they die. An homage to Link's Awakening.
+#   They are defined by 2 Boolean Flags:
+#   (1xx) Whether or not they are defeated
+#   (2xx) Whether or not their Heart has been picked up
+#
 #
 #   (1) Light Cloaker
+#   Your (not-so) flashy douchebag neighbor.
+#
 #   Flag: 100/200
 #   Type: Light
 #   Area: Wavering Grotto
-#   Gimmick: Teleport to 4 different locations
+#   Gimmicks: Teleport to 4 different locations, drain the player's health.
+#       Fought on 1 hp, so his attacks are easy to dodge.
 #
 #
 #   (2) Alpha Flapper
+#   Master of the one-eyed bats.
+#
 #   Flag: 101/201
 #   Type: Non-Elemental
 #   Area: Chapel Hall
@@ -73,13 +94,18 @@ from abc import abstractmethod
 #
 #
 #   (3) Smiler
+#   Who is this guy?
+#
 #   Flag: 102/202
 #   Type: Phantom
 #   Area: Stardust Quarry
-#   Gimmick: "Do you wanna know my real name? It's John." *Dies*
+#   Gimmick: 
+#   Death Quote: "Do you wanna know my real name? It's John." *Dies*
 #
 #
 #   (4) Lava Knight
+#   A member of the ancient king's royal guard.
+#
 #   Flag: 103/203
 #   Type: Fire
 #   Area: Scorching Fields
@@ -87,21 +113,21 @@ from abc import abstractmethod
 #
 #
 #   (5) Robert (Round 1)
+#   Chill guy who loves when people have a bone to pick with him.
+#
 #   Flag: 104/204
 #   Type: Skeletal
-#   Area: ???
+#   Area: Chapel Hall
 #   Gimmick: Extremely sturdy, but slow as hell. Faces one direction
-#   and tosses endless bones at you.
-
-
-class State(object):
-    def __init__(file_name, row, nFrames):
-        return
-
+#       and tosses endless bones at you. Can be fought multiple times, but
+#       gets stronger each time. Each fight is unlocked after certain
+#       story requirements are met.
 
     
-
+#   -----   Abstract Enemy Class   -----   #
 class Enemy(Drawable):
+    """Abstract Enemy Class"""
+
     def __init__(self, position=vec(0,0), fileName="",
                  frame=0, row=0, nFrames=1, fps=16,
                  max_hp = 5, hp=5, speed=50,
@@ -336,9 +362,10 @@ class Enemy(Drawable):
         #   Update Position #
         self.position += self.vel * seconds
 
-    
 
+#   -----   Tester Class   -----   #
 class Test_Boner(Enemy):
+    """Tester Class for the Enemy Class"""
     def __init__(self, position=vec(0, 0)):
         super().__init__(position, "boner.png",
                          nFrames=6, fps=12,
@@ -360,7 +387,9 @@ class Test_Boner(Enemy):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
     
 
+#   -----   Enemy Implementations   -----   #
 class Boner(Enemy):
+    """A walking skeleton that throws bones at you"""
     def __init__(self, position=vec(0, 0)):
         super().__init__(position, "boner.png",
                          nFrames=6, fps=8,
@@ -383,6 +412,7 @@ class Boner(Enemy):
 
 
 class Ice_Boner(Enemy):
+    """A Boner wielding Ice psowers"""
     def __init__(self, position=vec(0,0)):
         super().__init__(position, "ice_boner.png",
                          nFrames=6, fps=8,
@@ -406,10 +436,12 @@ class Ice_Boner(Enemy):
 
 
 class Stinger(Enemy):
+    """
+    Has a hitbox and a sting box.
+    Stings the player if it enters the sting box
+    """
+    
     def __init__(self, position=vec(0,0)):
-        """Has a hitbox and a sting box.
-        Stings the player if it enters the sting box"""
-
         super().__init__(position, "stinger.png",
                          nFrames=11, fps=8,
                          max_hp=30, hp=30,

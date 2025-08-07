@@ -412,7 +412,7 @@ class AE(object):
         if not keepBGM:
             #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
-                SoundManager.getInstance().playBGM(self.bgm)
+                SoundManager.getInstance().play_ost(self.bgm)
         if on_enter:
             self.on_enter()
 
@@ -956,8 +956,8 @@ class AE(object):
     def stopAllSounds(self):
         SoundManager.getInstance().stopAllSFX()
 
-    def playBgm(self, name):
-        SoundManager.getInstance().playBGM(name)
+    def play_ost(self, name):
+        SoundManager.getInstance().play_ost(name)
     
     def fadeBgm(self):
         SoundManager.getInstance().fadeoutBGM()
@@ -1535,7 +1535,7 @@ class AE(object):
                     self.player.keyUnlock()
                     self.pause_lock = False
                     if self.bossTheme != "None":
-                        self.playBgm(self.bossTheme)
+                        self.play_ost(self.bossTheme)
                     self.boss.moving = True
                     self.boss.ignoreCollision = False
             elif self.bossHealthbar.defeated and self.fightingBoss:

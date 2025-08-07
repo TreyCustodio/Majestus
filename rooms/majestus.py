@@ -53,7 +53,7 @@ class Intro_Cut(AbstractEngine):
             
 
         def playBgm(self):
-            SoundManager.getInstance().playBGM("02_Journal.wav")
+            SoundManager.getInstance().play_ost("02")
             self.playingBgm = True
 
         def displayText(self, text = "", icon = None, box = 4):
@@ -133,6 +133,7 @@ class Intro_Cut(AbstractEngine):
             if self.textInt == 0:
                 self.timer += seconds
                 if self.timer >= 1.0:
+                    SoundManager.getInstance().fadeout_bgm(3500)
                     self.displayText(SPEECH["intro_0"], box=4)
                     self.textInt += 1
                     self.timer = 0.0
@@ -144,7 +145,7 @@ class Intro_Cut(AbstractEngine):
                         self.timer = 0.0
                         self.textInt = 1.1
                         self.displayText(SPEECH["intro_1"], box=4)
-                    elif self.timer >= 1.0 and SoundManager.getInstance().currentlyPlaying == None:
+                    elif self.timer >= 1.0 and SoundManager.getInstance().currently_playing == None:
                         self.playBgm()
             
             #   Light   #
