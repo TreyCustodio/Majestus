@@ -569,8 +569,8 @@ The Gods won't choose you!\n\
 This path leads to death!\n",
 
 "lava_knight":
-"%0O, brave human...&&\n\
-.....................&&\n\
+"O, brave human...&&\n\
+.....................$$\n\
 Much of my men have you\n\
 chillingly slain...$$\n\
 Thoughtlessly bleak, my view\n\
@@ -578,11 +578,11 @@ lacks knowledge to feign...$$\n\
 This heart reacts so blue\n\
 to frivolous pain...$$\n\
 The tears pour for a few...&&\n\
-The rage boils their rain...&&\n\
+The rage boils their rain...$$\n\
 Take hold of my clue,&&\n\
 you pitiful stain!$$\n\
 This hatred you grew,&&\n\
-shall force you to wane!~\n",
+shall force you to wane!!\n",
 
 "lava_knight2":
 "Watch, heavenly brothers!\n\

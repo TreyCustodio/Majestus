@@ -5,7 +5,7 @@ May Myer have mercy on my feeble soul!
 
 import pygame
 
-from . import Drawable,  Animated, TextCursor, Highlight, Map, Number, IconManager
+from . import Drawable,  Animated, State, TextCursor, Highlight, Map, Number, IconManager
 
 from utils import  vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED
 
@@ -38,6 +38,195 @@ glowing characters for the intro,
 and other effects.
 
 """
+
+class Cube(object):
+
+    def __init__(self, position):
+        #   Positional data #
+        self.position = position
+
+        #   States  #
+        self.current_state = "chat"
+
+        self.states = {
+            "chat": State(starting_frame=0, row=0, nFrames=4, fps=24),
+            "wait": State(starting_frame=0, row=1, nFrames=6, fps=16),
+            "done": State(starting_frame=0, row=2, nFrames=6, fps=16),
+            "mad": State(starting_frame=0, row=3, nFrames=4, fps=16),
+
+        }
+
+
+        #   Animation Data  #
+        self.file_name = "cube.png"
+        self.animation_timer = 0.0
+        self.nFrames = 0
+        self.fps = 0
+        self.frame = 0
+        self.row = 0
+        self.image = None
+        self.set_state("chat")
+
+    def set_image(self) -> None:
+        """Set the enemy's image before drawing"""
+        self.image = SpriteManager.getInstance().getSprite(self.file_name, (self.frame, self.row))
+
+    def set_state(self, state: str = "") -> None:
+        """Set the enemy's state and animation data"""
+        if state in self.states:
+            #   Update the current State    #
+            self.current_state = state
+
+            #   Update Animation Data   #
+            data = self.states[state]
+            self.frame = data[0]
+            self.row = data[1]
+            self.nFrames = data[2]
+            self.fps = data[3]
+
+        self.set_image()
+    
+    def draw(self, surf):
+        surf.blit(self.image, self.position)
+
+    def update(self, seconds=None, increment=1):
+        #   Timer Animation #
+        if seconds:
+            self.animation_timer += seconds
+
+            if self.animation_timer > 1 / self.fps:
+                self.frame += 1
+                self.frame %= self.nFrames
+                self.animation_timer -= 1 / self.fps
+                self.set_image()
+            return
+
+        #   Frame Count Animation   #
+        self.frame += increment
+        self.frame %= self.nFrames
+        self.set_image()
+
+
+class Box:
+    """An Abstract cosmetic Box class"""
+    def __init__(self, position = vec(0,0), file_name = "TextBox2.png"):
+        self.position = position
+        self.file_name = file_name
+        self.image = SpriteManager.getInstance().getSprite(file_name, (4, 0))
+        
+        self.starting = False
+        self.closing = False
+        
+
+    def set_image(self):
+        self.image = SpriteManager.getInstance().getSprite(self.file_name, (self.frame, 0))
+    
+    def clean(self):
+        SpriteManager.getInstance().remove(self.file_name, (0,0))
+
+    def draw(self, surf):
+        surf.blit(self.image, self.position)
+
+    def get_size(self):
+        return self.image.get_size()
+    
+    def open(self):
+        self.starting = True
+
+    def close(self):
+        self.closing = True
+
+    def update(self, seconds):
+        return
+
+class TextBox(Box):
+    """The default textbox"""
+    def __init__(self, position = vec(0,0), file_name = "TextBox2.png"):
+        self.position = position
+        self.file_name = file_name
+        self.image = SpriteManager.getInstance().getSprite(file_name, (4, 0))
+        
+        self.starting = True
+        self.closing = False
+        
+        self.frame = 4
+
+    def set_image(self):
+        self.image = SpriteManager.getInstance().getSprite(self.file_name, (self.frame, 0))
+
+    def open(self):
+        self.frame == 4
+        self.set_image()
+        self.starting = True
+
+    def close(self):
+        self.closing = True
+
+    def update(self, seconds):
+        if self.starting:
+            self.frame -= 1
+            if self.frame == 0:
+                self.starting = False
+            self.set_image()
+
+        elif self.closing:
+            self.frame += 1
+            if self.frame == 4:
+                self.starting = False
+            self.set_image()
+            pass
+        return
+
+class BlackBox(Box):
+    def __init__(self, position=vec(0, 0), size=vec(*RESOLUTION), alpha=190, startup=True):
+        self.position = position
+        self.size = size
+        self.image = pygame.Surface(size, pygame.SRCALPHA)
+
+        self.max_alpha = alpha
+
+        if startup:
+            self.starting = True
+            self.image.fill((0, 0, 0, 0))
+            self.alpha = 0
+        else:
+            self.image.fill((0, 0, 0, alpha))
+            self.starting = False
+            self.alpha = self.max_alpha
+        
+        self.closing = False
+    
+    def set_image(self, alpha):
+        self.image = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.image.fill((0, 0, 0, alpha))
+    
+    def clean(self):
+        self.image = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.image.fill((0, 0, 0, self.alpha))
+
+    def open(self):
+        self.starting = True
+
+    def close(self):
+        self.closing = True
+
+    def update(self, seconds):
+        if self.starting:
+            self.alpha +=5
+            if self.alpha >= self.max_alpha:
+                self.alpha = self.max_alpha
+                self.set_image(self.alpha)
+                self.starting = False
+            else:
+                self.set_image(self.alpha)
+        
+        elif self.closing:
+            self.alpha -=5
+            if self.alpha <= 0:
+                self.set_image(0)
+                self.closing = False
+            else:
+                self.set_image(self.alpha)
 
 class Char(object):
     """
@@ -103,10 +292,11 @@ class Char(object):
     def getImage(self, char, fileName = "chars.png"):
         """Grab the character's image from a specified sprite sheet; chars.png by default"""
         color = Text.COLOR
+
         if color != "default":
             image = Text.FONT.render(char, False, color)
         else:
-            image = Text.FONT.render(char, False, (255, 255, 200))
+            image = Text.FONT.render(char, False, TextEngine.DEFAULT_COLOR)
 
         return image
     
@@ -142,7 +332,7 @@ class Char(object):
         speaker = Text.SPEAKER
 
         #   (1) Cutscene Type   #
-        if TextEngine.TYPE == 4:
+        if True:
 
             #  %c -> Color Coating    #
             if char == "%":
@@ -159,11 +349,13 @@ class Char(object):
                 else:
                     displayCommand = "colorSwap"
                     ##   Switch the text color ##
+
                     if next_char == "~":
                         color = "default"
 
                     elif next_char == "0":
                         color = (0,0,0)
+
                     ## Red  ##
                     elif next_char == "r":
                         color = (255,50,50)
@@ -324,7 +516,7 @@ class Text(object):
 
 
     #   The current color   #
-    COLOR = "default"
+    COLOR = (0,0,0)
 
 
     #   The current sound   #
@@ -349,7 +541,7 @@ class TextEngine(object):
     
     -------------- TEXT DISPLAY PROCESS --------------------
 
-    (0) TextEngine is initialized with setText(text, icon).
+    (0) TextEngine is initialized with set_text(text, icon).
 
     (1) Build the dialogue matrix,
     consisting of each character object.
@@ -393,10 +585,11 @@ class TextEngine(object):
     PROMPT = False      # Is there a Y/N prompt?
     ICON = None         # Icon Image
     BOX = None          # Box Image
-    DISPLAY_POS = vec(4, 4) # The text display pos relevant to the box
+    DISPLAY_POS = vec(4, 12) # The text display pos relevant to the box
 
 
     #   Character Display   #
+    BACKGROUND = None # Optional background (white space) do display under the chars
     SPACING = 8        # num of pixels to seperate each char image by
     BUFFER = -0.2       # timer that drives the buffer time between each character that is displayed
     CURRENT_LINE = 0    # the current line to examine for displayChars()
@@ -406,10 +599,13 @@ class TextEngine(object):
     INDEX_IMAGE = None  # Index Image; moves as each character is displayed
     INPUT_TICK = 0
     SOUND_TICK = 0
-
+    OBJECTS = []       # Additional surfaces to be drawn over the text box
+    BUFFING = True
 
     #   States that drive the draw routine  #
-    STATES = {"ready_to_continue": False,   # Wait for (interact) to continue text display
+    STATES = {
+              "starting" : False,
+              "ready_to_continue": False,   # Wait for (interact) to continue text display
               "end": False,                 # At the end of dialogue. Wait for box to close before DONE.
               "closing": False,             # The box is closing / downscaling in most cases
               "done": False,                # We're done. Time to reset and switch states.
@@ -434,17 +630,20 @@ class TextEngine(object):
         TextEngine.PROMPT = False
 
         #   Reset the display properties  #
-        TextEngine.DISPLAY_POS = vec(4, 4)
+        TextEngine.DISPLAY_POS = vec(4, 12)
         TextEngine.CURRENT_INDEX = 0
         TextEngine.CURRENT_LINE = 0
         TextEngine.BUFFER = -0.2
         TextEngine.SPACING = 8
+        TextEngine.BUFFING = True
 
         #   Reset alpha #
         TextEngine.A = 255
 
         #   Reset Text's color val  #
         Text.COLOR = "default"
+
+        TextEngine.OBJECTS = []       # Additional surfaces to be drawn over the text box
 
         
 
@@ -455,6 +654,9 @@ class TextEngine(object):
     def finished():
         """Is the current dialogue routine finished? Ready to switch states if so."""
         return TextEngine.STATES["done"]
+    
+    def starting():
+        return TextEngine.STATES["starting"]
     
     def closing():
         """Are we closing the box right now?"""
@@ -487,7 +689,7 @@ class TextEngine(object):
     (1) Set up the text and Dialogue Matrix at the start.
     (2) Perform draw() continuously.
     """
-    def setText(text = "", icon = None, prompt = False, type = 2):
+    def set_text(text = "", icon = None, prompt = False, type = 2, cube_state = "mad"):
         """
         Prepare the engine for text display.
         (1) Set the box image
@@ -498,20 +700,40 @@ class TextEngine(object):
         5 -> ???;
         """
 
+        #   Begin the startup Animation #
+        TextEngine.STATES["starting"] = True
+
         #   (1) Set the box image   #
-        ##  Default ##
+        ##  Default text boxes  ##
         if type == 2:
-            TextEngine.BOX = SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
-        
-        ##  Signpost    ##
+            TextEngine.BACKGROUND = TextBox()
+            # SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
+
+            TextEngine.BOX = pygame.Surface(TextEngine.BACKGROUND.get_size(), SRCALPHA)
+            cube = Cube(vec(116, 52))
+            cube.set_state(cube_state)
+
+            TextEngine.OBJECTS = [cube]
+            TextEngine.DEFAULT_COLOR = (50,0,0)
+            TextEngine.TYPE = 2
+
+        ##  Signposts    ##
         elif type == 3:
             TextEngine.BOX = SpriteManager.getInstance().getSprite("TextBox3.png", (0,0))
+            TextEngine.TYPE = 3
         
-        ##  Cutscene    ##
+        ##  Text over transparent black box    ##
         elif type == 4:
             TextEngine.BOX = pygame.surface.Surface(vec(304,208), pygame.SRCALPHA)
-            TextEngine.BOX.fill((0,0,0,0))
+            TextEngine.BACKGROUND = BlackBox()
+            TextEngine.DEFAULT_COLOR = (255,255,200)
+            TextEngine.TYPE = 4
 
+        elif type == 5:
+            TextEngine.BOX = pygame.surface.Surface(vec(304,208), pygame.SRCALPHA)
+            TextEngine.BACKGROUND = BlackBox(alpha=0, startup=False)
+            TextEngine.DEFAULT_COLOR = (255,255,200)
+            TextEngine.TYPE = 4
             # black_surf = pygame.surface.Surface((vec(196, 128)), pygame.SRCALPHA)
             # black_surf.fill((0,0,0,200))
             # TextEngine.BOX.blit(black_surf, vec(64,32))
@@ -521,11 +743,12 @@ class TextEngine(object):
             TextEngine.BOX = SpriteManager.getInstance().getSprite("TextBox.png", (0,0))
         
         ##  Finish by setting the type variable ##
-        TextEngine.TYPE = type
+        Text.COLOR = TextEngine.DEFAULT_COLOR
 
 
         #   (2) Is there a prompt involved with this dialogue?  #
         TextEngine.PROMPT = prompt
+        
         ##  If so, we need to omit the first 3 chars "Y/N" from the display ##
         if prompt:
             text = text[3:]
@@ -630,7 +853,14 @@ class TextEngine(object):
             return
         
         #   Otherwise we always draw the box    #
+        ##   Draw the Background first   #
+        TextEngine.BACKGROUND.draw(screen)
         screen.blit(TextEngine.BOX, vec(0,0))
+
+        ##  Draw any additional surfaces    #
+        for s in TextEngine.OBJECTS:
+            s.draw(screen)
+
 
 
         #   (Case 1) We're closing, so we do nothing else
@@ -659,6 +889,8 @@ class TextEngine(object):
         index = TextEngine.CURRENT_INDEX
         char = TextEngine.DIALOGUE[line][index]
 
+
+
         ##  To Next Line or Done Entirely ##
         if char.text == "\n":
             TextEngine.CURRENT_LINE += 1
@@ -667,8 +899,13 @@ class TextEngine(object):
             if TextEngine.CURRENT_LINE >= len(TextEngine.DIALOGUE):
                 ##  End of this dialogue box  ##
                 playSfx("text_done1.wav")
+                
                 TextEngine.STATES["end"] = True
                 TextEngine.STATES["ready_to_continue"] = True
+
+                #   Put the cube in wait mode   #
+                if TextEngine.TYPE == 2:
+                    TextEngine.OBJECTS[0].set_state("done")
 
                 ##  Disable the interact action to force player to lift their finger    ##
                 EventManager.getInstance().disableAction("interact")
@@ -693,12 +930,20 @@ class TextEngine(object):
                 TextEngine.STATES["ready_to_continue"] = True
                 TextEngine.STATES["$$"] = True
 
+                ##  Put the cube in wait mode   ##
+                if TextEngine.TYPE == 2:
+                    TextEngine.OBJECTS[0].set_state("wait")
+
                 ##  Disable the interact action to force player to lift their finger    ##
                 EventManager.getInstance().disableAction("interact")
 
             elif command == "wait":
                 ##  Wait for input  ##
                 TextEngine.STATES["ready_to_continue"] = True
+
+                ##   Put the cube in wait mode   ##
+                if TextEngine.TYPE == 2:
+                    TextEngine.OBJECTS[0].set_state("wait")
 
                 ##  Disable the interact action to force player to lift their finger    ##
                 EventManager.getInstance().disableAction("interact")
@@ -734,9 +979,11 @@ class TextEngine(object):
 
         #   Wait if buffering   #
         elif TextEngine.BUFFER < 0.0:
+            TextEngine.BUFFING = True
             return
         
         #   Perform the usuual routine  #
+        TextEngine.BUFFING = False
         TextEngine.displayRoutine()
 
 
@@ -752,7 +999,7 @@ class TextEngine(object):
         return char
     
     def display(image, sound="text_2.wav", silent=False, spacing=0):
-        """Helper func for the displayChars()"""
+        """Blit the char onto the BOX"""
         if not silent and sound != "":
             if EventManager.getInstance().isPressed("interact"):
                 if TextEngine.SOUND_TICK == 1 or TextEngine.SOUND_TICK == 4 or TextEngine.SOUND_TICK == 7:
@@ -773,15 +1020,14 @@ class TextEngine(object):
                 return
             
             color = char.color
+
             
             index = TextEngine.INDEX_IMAGE
 
             #   (2.) Set the color of the index image
             if color == "default":
-                index.fill((255,255,200))
-
-            else:
-                index.fill(color)
+                color = TextEngine.DEFAULT_COLOR
+            index.fill(color)
 
 
             #   (3.) Display the index image; flashing when buffering
@@ -811,7 +1057,25 @@ class TextEngine(object):
     """
     Handling Events
     """
+
+    def close():
+        ### Reset the Display Pos   ###
+        TextEngine.DISPLAY_POS = vec(4, -4) # y is 0 because the \n will increment it during parsing
+        
+        ### Play the continue sfx   ###
+        playSfx("text_close1.wav")
+
+        ### Reset relevant states   ###
+        TextEngine.STATES["ready_to_continue"] = False
+        TextEngine.STATES["closing"] = True
+
+        if TextEngine.TYPE == 2:
+            TextEngine.BACKGROUND.close()
+
     def handleEvent():
+        if TextEngine.starting():
+            return
+        
         #   (Case x) Waiting for Input  #
         if TextEngine.waiting():
 
@@ -820,15 +1084,8 @@ class TextEngine(object):
 
                 ##  Trigger shutdown sequence if at the end  ##
                 if TextEngine.atEnd():
-                    ### Reset the Display Pos   ###
-                    TextEngine.DISPLAY_POS = vec(4, -4) # y is 0 because the \n will increment it during parsing
                     
-                    ### Play the continue sfx   ###
-                    playSfx("text_close1.wav")
-
-                    ### Reset relevant states   ###
-                    TextEngine.STATES["ready_to_continue"] = False
-                    TextEngine.STATES["closing"] = True
+                    TextEngine.close()
 
                 ##  Clear the box if clearing   ##
                 elif TextEngine.clearing():
@@ -841,20 +1098,32 @@ class TextEngine(object):
                     ### Reset relevant states   ###
                     TextEngine.STATES["ready_to_continue"] = False
                     TextEngine.STATES["closing"] = True
+
+                    
                 
                 ##  Continue the display otherwise  ##
                 else:
+                    
+
                     playSfx("text_next1.wav")
                     TextEngine.STATES["ready_to_continue"] = False
+                    if TextEngine.TYPE == 2:
+                        TextEngine.OBJECTS[0].set_state("chat")
+
 
                     ##  Wait a little bit before displaying again   ##
                     TextEngine.BUFFER = -0.4
 
+            
         else:
             #   Speed up text display   #
             if EventManager.getInstance().isPressed("interact"):
                 TextEngine.BUFFER = 0.0
-    
+
+            if EventManager.getInstance().isPressed("map"):
+                TextEngine.STATES["end"] = True
+                TextEngine.close()
+
 
 
     """
@@ -863,17 +1132,76 @@ class TextEngine(object):
     def updateBuffer(seconds):
         if TextEngine.BUFFER < 0.0:
             TextEngine.BUFFER += seconds
+    
+    @classmethod
+    def update(cls, seconds):
+        #   (Case 1) Startup    #
+        if TextEngine.starting():
+            if TextEngine.TYPE == 2:
+                background = TextEngine.BACKGROUND
+                background.update(seconds)
+                if background.starting == False:
+                    TextEngine.STATES["starting"] = False
+
+            elif cls.TYPE == 4:
+                background = cls.BACKGROUND
+                background.update(seconds)
+                if background.starting == False:
+                    TextEngine.STATES["starting"] = False
+
+            else:
+                TextEngine.STATES["starting"] = False
+
+            return
         
-    def update(seconds):
         TextEngine.updateBuffer(seconds)
 
-        #   (Case 1) Startup    #
 
 
 
         #   (Case 2) Closing    #
         if TextEngine.closing():
             if TextEngine.TYPE == 4:
+                
+                #   Finished fading out and reset #
+                if TextEngine.A == -255:
+
+                    ##  Finish clearing the box and prepare for the next line    ##
+                    if TextEngine.clearing():
+                        TextEngine.STATES["$$"] = False
+                        TextEngine.STATES["closing"] = False
+                        TextEngine.BOX = pygame.surface.Surface(vec(304,208), pygame.SRCALPHA)
+                        TextEngine.A = 255
+
+                    ##  Reset closing state ##
+                    elif TextEngine.atEnd():
+                        background = cls.BACKGROUND
+                        background.update(seconds)
+                        if background.closing == False:
+                            TextEngine.STATES["closing"] = False
+                            TextEngine.STATES["done"] = True
+                            ##  Reset transparency alpha    ##
+                            TextEngine.A = 255
+                        return
+
+                else:
+                    #   Fade out by making the box increasingly more transparent  #
+                    TextEngine.BOX.set_alpha(TextEngine.A)
+                    TextEngine.A -= 10
+
+                    #   Ensure the box is faded completely for 1 frame #
+                    if TextEngine.A <= 0:
+                        TextEngine.BOX.set_alpha(0)
+                        TextEngine.A = -255
+                        if TextEngine.atEnd():
+                            cls.BACKGROUND.close()
+                        return
+
+                    
+            
+            elif TextEngine.TYPE == 2:
+                TextEngine.OBJECTS[0].update(seconds)
+                
                 #   Make the box increasingly more transparent  #
                 TextEngine.BOX.set_alpha(TextEngine.A)
                 TextEngine.A -= 10
@@ -881,28 +1209,42 @@ class TextEngine(object):
 
                 #   Once completely transparent #
                 if TextEngine.A <= 0:
-                    ##  Reset transparency alpha    ##
-                    TextEngine.A = 255
-
                     ##  Reset clearing state    ##
+                    TextEngine.A = 255
                     if TextEngine.clearing():
                         TextEngine.STATES["$$"] = False
                         TextEngine.STATES["closing"] = False
-                        TextEngine.BOX = pygame.surface.Surface(vec(304,208))
+                        TextEngine.OBJECTS[0].set_state("chat")
+
+                        #   Set a new background for the chars  #
+                        # TextEngine.BACKGROUND.clean()
+
+                        TextEngine.BOX = pygame.Surface(TextEngine.BACKGROUND.get_size(), SRCALPHA)
+                        # TextEngine.BOX = SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
+        
+
                     
                     ##  Reset closing state ##
                     elif TextEngine.atEnd():
-                        TextEngine.STATES["closing"] = False
-                        TextEngine.STATES["done"] = True
-        
-        
+                        background = TextEngine.BACKGROUND
+                        background.update(seconds)
+                        if background.closing == False:
+                            TextEngine.STATES["closing"] = False
+                            TextEngine.STATES["done"] = True
+
         #   (Case 3) Waiting for input  #
         elif TextEngine.waiting():
             TextEngine.CURSOR.update(seconds)
-            
+            for o in TextEngine.OBJECTS:
+                o.update(seconds)
 
         #   (Case x) Other Animations   #
         else:
+            #   Update Objects  #
+            if not TextEngine.BUFFING:
+                for o in TextEngine.OBJECTS:
+                    o.update()
+
             TextEngine.INPUT_TICK += 1
             TextEngine.INPUT_TICK %= 20
             if EventManager.getInstance().isPressed("interact"):

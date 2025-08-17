@@ -55,7 +55,10 @@ class SpriteManager(object):
                        "knight.png":(32,32), "bullshot.png":(32,32),
                        "shiver.png":(20,26), "shortcut.png":(32,32),
                        "gremlin.png":(18,36),"boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
-                       "stinger.png":(100,49), "ice_boner.png":(18,28)
+                       "stinger.png":(100,49), "ice_boner.png":(18,28),
+
+                       #   Text Images #
+                       "cube.png":(12,12)
       }
       
       # A default sprite size
@@ -71,11 +74,18 @@ class SpriteManager(object):
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
                        "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png"
+                       
+                       #   Text Images #
+                     #   "cube.png"
                        ]
       
       # A list of images that require to be loaded with a color key
       _COLOR_KEY = ["Link.png", "Stalfos.png", "blizz.png", "slash.png", "spinner.png",
-                    "knight.png", "Pause.png"]
+                    "knight.png", "Pause.png",
+                    
+                    #   Text Images #
+                    "cube.png"
+                    ]
       
       def __init__(self):
          # Stores the surfaces indexed based on file name
@@ -94,6 +104,9 @@ class SpriteManager(object):
                                              SpriteManager._SM._DEFAULT_SPRITE)
          return spriteSize
       
+      def remove(self, fileName, offset):
+         del self._surfaces[fileName]
+
       def getSprite(self, fileName, offset=None, enemy = False):
          # If this sprite has not already been loaded, load the image from memory
          if fileName not in self._surfaces.keys():

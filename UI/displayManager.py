@@ -17,10 +17,10 @@ import os
 
 """
 Original ScreenManager written by Dr. Liz Matthews.
-Modified by Trey Custodio 1/23/2025
+Modified DisplayManager class written by Trey Custodio 1/23/2025
 """
-class ScreenManager(object):
-      
+class DisplayManager(object):
+    """Manage the display of the game"""
     def __init__(self):
 
         #   Start the music
@@ -298,7 +298,7 @@ class ScreenManager(object):
             self.game.draw(drawSurf)
 
             #   Initiate the TextEngine when prompted   #
-            if self.game.textBox:
+            if self.game.text_box:
                 self.state = "textBox"
                 if "Y/N" in self.game.text:
                     TextEngine.set_text(self.game.text, self.game.icon, prompt = True)
@@ -308,8 +308,6 @@ class ScreenManager(object):
             #   Draw transition effects (fade outs, white outs, etc.)   #
             if self.game.whiting:
                 self.white.draw(drawSurf)
-            if self.game.area_fading:
-                self.game.drawArea(drawSurf)
 
 
         #   (Case 2) We're on the pause menu    #
@@ -428,20 +426,7 @@ class ScreenManager(object):
         other engines handle events or not.
         """
         if self.state == "game":
-            if self.game.cutscene:
-                self.game.handleEvent()
-                return
-            
-            ##  Pause the game if the window is moved   ##
-            if not self.game.pause_lock:
-                ##  Handle events once the healthbar is initialized   ##
-                if self.game.getHealthbarInitialized():
-                    if not self.game.fading:
-                        if EventManager.getInstance().performAction("pause"):
-                            self.pause()
-                            return
-
-                    self.game.handleEvent()
+            self.game.handle_events()
 
         elif self.state == "paused":
             if self.returningToMain:
@@ -488,9 +473,8 @@ class ScreenManager(object):
         Decide whether to have the
         game engine handle collision or not.
         """
+        return
         if self.state == "game":
-            if self.game.cutscene:
-                return
             self.game.handleCollision()
     
     
@@ -535,15 +519,11 @@ class ScreenManager(object):
 
         #   (2.) Update the room
         if self.state == "game":
-            #   (i.) In cutscenes + Transition
-            if self.game.cutscene:
-                self.game.update(seconds)
-                
-                if self.game.readyToTransition:
-                    self.transition()
-                return
             
-            #   (ii.) Quitting to title
+
+            #   Transition  #
+            
+            #   Quit to Title   #
             if self.returningToMain:
                 if self.wipe.increasing == False:
                     self.fadeOff(20)
@@ -552,52 +532,22 @@ class ScreenManager(object):
                     self.fadingIn = True
                 return
             
-            #   (iii.) Dead
-            if self.game.dead:
+            #   Death   #
+            elif self.game.dead:
                 self.wipe.setColor((255,0,0))
                 self.fadeOn(5)
                 self.fading = True
                 self.returningToMain = True
                 return
             
-            #   (iv.) Fading in
-            if self.fadingIn:
-                self.game.updatingPlayer = False
-            
-            #   (v.) Update as usual
-            else:
-                if not self.game.updatingPlayer:
-                    self.game.updatingPlayer = True
-                self.game.update(seconds)
-
-            #   (vi.) Game Engine triggers screen wipe
-            if self.game.fading:
+            #   Fading Out  #
+            elif self.game.fading:
                 if not self.fading:
                     self.fadeOn(15)
                     self.fading = True
 
-            #   (vii.) Room transition
-            if self.game.readyToTransition:
-                self.transition()
-
-            #   (viii.) White fadeout
-            elif self.game.whiting:
-                if self.white.alpha == 255:
-                    if self.game.transporting_area:
-                        self.game.readyToTransition = True
-                    elif self.game.areaIntro.fading_out:
-                        self.white.alpha = 0
-                        self.white.setAlpha()
-                        self.game.whiting = False
-                else:
-                    self.white.update(seconds)
-            
-            #   (ix.) Transition to Mobster
-            if self.game.startingMobster:
-                self.game.reset()
-                self.state = "mobster"
-                self.mobsterEngine.initialize()
-
+            else:
+                self.game.update(seconds)
 
         #   (3.) Update the textbox
         elif self.state == "textBox":
@@ -644,19 +594,17 @@ class ScreenManager(object):
                 if self.wipe.increasing == False:
                     #   Continue the game after the sound effects are done  #
                     self.fadeOff(5)
-                    self.game = LOAD["room"].getInstance()
-                    self.game.lockHealth()
+                    self.game = LOAD["room"]()
 
                     if LOAD["area"]:
-                        self.game.initializeArea(pos=LOAD["position"])
+                        self.game.initialize_area(position=LOAD["position"])
                     else:
-                        self.game.initializeRoom(pos=(LOAD["position"]))
+                        self.game.initialize_room(position=(LOAD["position"]))
 
                     self.state = "game"
                     #self.state.startGame()
                     self.continuingGame = False
-                    self.game.unlockHealth()
-                    self.game.stopFadeIn()
+                    # self.game.stopFadeIn()
                     return
 
         #   (6.) Update monster mobster

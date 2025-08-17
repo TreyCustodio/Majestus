@@ -37,6 +37,8 @@ class Intro_Cut(AbstractEngine):
             self.alphaDown = False
             self.a = 0
             self.frame = 0
+
+            self.cube_state = ""
         
         def reset(self):
             self.playingBgm = False
@@ -53,7 +55,7 @@ class Intro_Cut(AbstractEngine):
             
 
         def playBgm(self):
-            SoundManager.getInstance().play_ost("02")
+            SoundManager.getInstance().play_ost("02", True)
             self.playingBgm = True
 
         def displayText(self, text = "", icon = None, box = 4):
@@ -65,7 +67,7 @@ class Intro_Cut(AbstractEngine):
             self.boxType = box
         
         def draw(self, drawSurface):
-            drawSurface.blit(self.black,vec(0,0))
+            drawSurface.blit(self.black, vec(0,0))
 
             if self.textInt == 1.2:
                 self.light.set_alpha(self.a)
@@ -96,7 +98,7 @@ class Intro_Cut(AbstractEngine):
                     self.a = 255
                     self.alphaUp = False
                     if self.textInt == 1.2:
-                        self.displayText(SPEECH["intro_1l"], box=4)
+                        self.displayText(SPEECH["intro_1l"], box=5)
                     self.frame=0
                     
                 return
@@ -111,11 +113,11 @@ class Intro_Cut(AbstractEngine):
 
                     #   Display the next Dialogue chunk
                     if self.textInt == 1.2:
-                        self.displayText(SPEECH["intro_1d"], box=4)
+                        self.displayText(SPEECH["intro_1d"], box=5)
                         self.textInt = 1.3
 
                     elif self.textInt == 1.3:
-                        self.displayText(SPEECH["intro_1f"], box=4)
+                        self.displayText(SPEECH["intro_1f"], box=5)
                         self.textInt = 1.4
 
                     elif self.textInt == 1.4:
@@ -134,7 +136,7 @@ class Intro_Cut(AbstractEngine):
                 self.timer += seconds
                 if self.timer >= 1.0:
                     SoundManager.getInstance().fadeout_bgm(3500)
-                    self.displayText(SPEECH["intro_0"], box=4)
+                    self.displayText(SPEECH["intro_0"], box=5)
                     self.textInt += 1
                     self.timer = 0.0
             
@@ -144,7 +146,7 @@ class Intro_Cut(AbstractEngine):
                     if self.timer >= 1.5:
                         self.timer = 0.0
                         self.textInt = 1.1
-                        self.displayText(SPEECH["intro_1"], box=4)
+                        self.displayText(SPEECH["intro_1"], box=5)
                     elif self.timer >= 1.0 and SoundManager.getInstance().currently_playing == None:
                         self.playBgm()
             
@@ -188,24 +190,24 @@ class Intro_Cut(AbstractEngine):
             #   Nonnie   #
             elif self.textInt == 1.4:
                 if self.text == "":
-                    self.displayText(SPEECH["intro_1n"], box=4)
+                    self.displayText(SPEECH["intro_1n"], box=5)
                     self.alphaDown = True
 
 
             elif self.textInt == 2:
                 if self.text == "":
                     self.textInt += 1
-                    self.displayText(SPEECH["intro_2"], box=4)
+                    self.displayText(SPEECH["intro_2"], box=5)
             
             elif self.textInt == 3:
                 if self.text == "":
                     self.textInt += 1
-                    self.displayText(SPEECH["intro_3"], box=4)
+                    self.displayText(SPEECH["intro_3"], box=5)
             
             elif self.textInt == 4:
                 if self.text == "":
                     self.textInt += 1
-                    self.displayText(SPEECH["intro_4"], box=4)
+                    self.displayText(SPEECH["intro_4"], box=5)
             
             elif self.textInt == 5:
                 if self.text == "":
@@ -214,63 +216,36 @@ class Intro_Cut(AbstractEngine):
 
 
 
-class Test(AbstractEngine):
-
-    @classmethod
-    def getInstance(cls):
-        if cls._INSTANCE == None:
-         cls._INSTANCE = cls._T()
-        return cls._INSTANCE
+class Test(MajestusEngine):
+    """Test Room"""
     
-    class _T(AE):
-        def __init__(self):
-            super().__init__("test")
-            self.bgm = None #"MSM_Castle.mp3"
-            self.ignoreClear = True
-            self.max_enemies = 0
-            self.enemyPlacement = 0
-            self.firi = Firi(vec(16*9, 16*6), 1)
-            self.npcs = [
-                Test_Boner(vec(16*6, 16*5)),
-                Ice_Boner(vec(16*8, 16*5)),
-                Stinger(vec(16*5, 16*1))
-                # Stinger(vec(16*6, 16*3)),
-                # Mofos(vec(16*6, 16*5)),
-                # Flapper(vec(16*6, 16*7)),
-                # Gremlin(vec(16*6, 16*9)),
-                # Baller(vec(16*3, 16*3)),
-                # Heater(vec(16*12, 16*3)),
-            ]
+    def __init__(self):
+        enemies = [
+            Test_Boner(vec(16*6, 16*8)),
+            Ice_Boner(vec(16*8, 16*8)),
+            Stinger(vec(16*5, 16*1)),
+            Stinger(vec(16*6, 16*3)),
+            # Mofos(vec(16*6, 16*5)),
+            # Flapper(vec(16*6, 16*7)),
+            # Gremlin(vec(16*6, 16*9)),
+            # Baller(vec(16*3, 16*3)),
+            # Heater(vec(16*12, 16*3)),
+        ]
 
-            self.doors = [0]
-            self.trigger1 = Trigger(door = 0)
-            self.spawning = [ 
-                Geemer(vec(16*5, 16*9), text=SPEECH["lava_knight"],mobster=True)#GreenHeart(vec(16*2, 16*10))
-                ]
+        super().__init__(enemies = enemies, bgm="03")
+        
+        # self.firi = Firi(vec(16*9, 16*6), 1)
+        # self.doors = [0]
+        # self.trigger1 = Trigger(door = 0)
+        # self.spawning = [ 
+        #     Geemer(vec(16*5, 16*9), text=SPEECH["lava_knight"],mobster=True)#GreenHeart(vec(16*2, 16*10))
+        #     ]
 
-            self.obstacles = [
-            ]
+        # self.obstacles = [
+        # ]
 
-        def initializeRoom(self, player=None, pos=None, keepBGM=False, placeEnemies=True):
-            super().initializeRoom(player, pos, keepBGM, placeEnemies)
-           
-        #override
-        def blockCollision(self):
-            for b in self.blocks:
-                for n in self.npcs:
-                    if n.doesCollide(b):
-                        n.bounce(b)
-
-                self.projectilesOnBlocks(b)
-                if self.player.doesCollide(b):
-                    if b == self.trigger1:
-                        pass
-                        #self.transport(Flame_9, 2, keepBGM=True)
-                    else:
-                        self.player.handleCollision(b)
-
+            
                 
-                    
 """
 Testing
 """
@@ -287,7 +262,7 @@ class Knight(AbstractEngine):
     class _Kn(AE):
         def __init__(self):
             super().__init__("knight")
-            self.bgm = "tension.mp3"
+            self.bgm = "09"
             self.ignoreClear = True
             self.max_enemies = 0
             self.enemyPlacement = 0
@@ -295,10 +270,10 @@ class Knight(AbstractEngine):
             self.knight.ignoreCollision = True
             self.enemies = [
                 
-                Bopper(COORD[2][2]),
-                Bopper(COORD[16][2]),
-                Bopper(COORD[2][10]),
-                Bopper(COORD[16][10]),
+                # Bopper(COORD[2][2]),
+                # Bopper(COORD[16][2]),
+                # Bopper(COORD[2][10]),
+                # Bopper(COORD[16][10]),
             ]
             self.doors = [0, 2]
             self.trigger1 = Trigger(door = 0)
@@ -409,13 +384,13 @@ class Knight(AbstractEngine):
                 if self.textInt == 1:
                     if self.textBox == False:
                         if self.knight.moving:
-                            self.bsl(self.knight, "megalomania.mp3")
+                            self.bsl(self.knight, "06")
                         else:
                             super().update(seconds)
 
                 elif self.textInt == 0:
                     self.knight.ignoreCollision = False
-                    self.displayText(SPEECH["lava_knight"], icon=ICON["knight"])
+                    self.displayText(SPEECH["lava_knight"], icon=ICON["knight"], box=4)
                     self.textInt += 1
                 
                 elif self.textInt == -1:
@@ -431,7 +406,7 @@ class Knight(AbstractEngine):
                 elif self.textInt == -2:
                     self.player.stop()
                     self.player.keyLock()
-                    SoundManager.getInstance().fadeoutBGM()
+                    SoundManager.getInstance().fadeout_bgm()
                     self.textInt += 1
             else:
                 super().update(seconds)

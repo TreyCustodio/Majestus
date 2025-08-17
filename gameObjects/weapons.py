@@ -54,19 +54,19 @@ class AbstractWeapon(Animated):
         """
         if self.direction == 0:
             if (self.position[1]) >= engine.size[1]:
-                engine.disappear(self)
+                engine.remove(self)
                 return
         elif self.direction == 1:
             if (self.position[0]) >= engine.size[0]:
-                engine.disappear(self)
+                engine.remove(self)
                 return
         elif self.direction == 2:
             if (self.position[1] + width) <= 0:
-                engine.disappear(self)
+                engine.remove(self)
                 return
         elif self.direction == 3:
             if (self.position[0] + width) <= 0:
-                engine.disappear(self)
+                engine.remove(self)
                 return
         
         self.position += self.vel * seconds
@@ -143,9 +143,9 @@ class Bombo(AbstractWeapon):
     
     def handleCollision(self, engine):
         self.hit = True
-        engine.playSound("SM_missile.wav")
-        #engine.playSound("OOT_DekuSeed_Hit.wav")
-        #engine.disappear(self)
+        engine.play_sound("SM_missile.wav")
+        #engine.play_sound("OOT_DekuSeed_Hit.wav")
+        #engine.remove(self)
         engine.player.arrowCount += 1
         engine.player.shooting = False
 
@@ -153,11 +153,11 @@ class Bombo(AbstractWeapon):
     def handleOtherCollision(self, engine):
         if not self.hit:
             self.hit = True
-            engine.playSound("SM_missile.wav")
-            #engine.playSound("OOT_DekuSeed_Hit.wav")
+            engine.play_sound("SM_missile.wav")
+            #engine.play_sound("OOT_DekuSeed_Hit.wav")
             
             
-            #engine.disappear(self)
+            #engine.remove(self)
             engine.player.arrowCount += 1
             engine.player.shooting = False
 
@@ -166,7 +166,7 @@ class Bombo(AbstractWeapon):
         if self.hit:
             super().updateShotParticle(seconds)
             if self.frame == 6:
-                engine.disappear(self)
+                engine.remove(self)
         else:
             self.vanish(seconds, engine, 16)
             
@@ -218,7 +218,7 @@ class Bullet(AbstractWeapon):
                 return
         
         self.hit = True
-        engine.playSound("dink.wav")
+        engine.play_sound("dink.wav")
         engine.player.arrowCount += 1
         engine.player.shooting = False
     
@@ -239,11 +239,11 @@ class Bullet(AbstractWeapon):
         if self.hit:
             self.animationTimer += seconds
             if self.animationTimer >= 0.2:
-                engine.disappear(self)
+                engine.remove(self)
             else:
                 if self.collisionObj:
                     if self.collisionObj.dead:
-                        engine.disappear(self)
+                        engine.remove(self)
                     else:
                         if not self.collisionObj.frozen:
                             self.position += self.collisionObj.vel * seconds
@@ -291,7 +291,7 @@ class Hook(AbstractWeapon):
         self.position += self.vel * seconds
         if self.hit:
             self.movePlayer(engine.player)
-            engine.disappear(self)
+            engine.remove(self)
 
 class Slash(AbstractWeapon):
     """
@@ -390,7 +390,7 @@ class Sword(AbstractWeapon):
     def update(self, seconds, engine):
         super().updateWeapon(seconds)
         if self.frame == 4:
-            engine.disappear(self)
+            engine.remove(self)
         else:
             self.timer += seconds
         
@@ -436,7 +436,7 @@ class Blizzard(AbstractWeapon):
             self.frame = 5
         super().updateWeapon(seconds)
         if not engine.player.freezing:
-            engine.disappear(self)
+            engine.remove(self)
 
 
 class Clap(AbstractWeapon):
@@ -461,7 +461,7 @@ class Clap(AbstractWeapon):
     def update(self,seconds, engine):
         super().updateWeapon(seconds)
         if self.frame == 4:
-            engine.disappear(self)
+            engine.remove(self)
         else:
             self.timer += seconds
 

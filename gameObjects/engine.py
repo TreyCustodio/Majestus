@@ -96,6 +96,7 @@ class AE(object):
         self.ignoreClear = False
         self.dropCount = 0
         self.pause_lock = False
+        self.cube_state = ""
 
         #Death
         self.dead = False
@@ -409,10 +410,11 @@ class AE(object):
         self.createBlocks()
         if placeEnemies:
             self.placeEnemies(self.enemies)
+
         if not keepBGM:
-            #SoundManager.getInstance().fadeoutBGM()
             if self.bgm != None:
                 SoundManager.getInstance().play_ost(self.bgm)
+        
         if on_enter:
             self.on_enter()
 
@@ -804,7 +806,7 @@ class AE(object):
                 self.transporting = True
                 self.readyToTransition = True
                 self.tra_room = room
-                SoundManager.getInstance().fadeoutBGM()
+                SoundManager.getInstance().fadeout_bgm()
                 self.tra_pos = position
                 return
             
@@ -829,7 +831,7 @@ class AE(object):
                 
             self.tra_keepBGM = keepBGM
             if not keepBGM:
-                SoundManager.getInstance().fadeoutBGM()
+                SoundManager.getInstance().fadeout_bgm()
             
 
     def transportArea(self, room = None, spec_pos = False, position= None):
@@ -854,7 +856,7 @@ class AE(object):
                     self.tra_pos = position
                 
             self.tra_keepBGM = False
-            SoundManager.getInstance().fadeoutBGM()
+            SoundManager.getInstance().fadeout_bgm()
             
 
     """
@@ -871,10 +873,10 @@ class AE(object):
                 
             self.tra_keepBGM = keepBGM
             if not keepBGM:
-                SoundManager.getInstance().fadeoutBGM()
+                SoundManager.getInstance().fadeout_bgm()
             
 
-    def displayText(self, text = "", icon = None, box = 4):
+    def displayText(self, text = "", icon = None, box = 2, cube_state="normal"):
         """
         Display text
         """
@@ -908,6 +910,7 @@ class AE(object):
         self.textBox = True
         self.text = text
         self.boxType = box
+        self.cube_state = cube_state
         
         if self.player != None:
             self.player.stop()
@@ -956,11 +959,11 @@ class AE(object):
     def stopAllSounds(self):
         SoundManager.getInstance().stopAllSFX()
 
-    def play_ost(self, name):
-        SoundManager.getInstance().play_ost(name)
+    def play_ost(self, name, intro=False):
+        SoundManager.getInstance().play_ost(name, intro)
     
     def fadeBgm(self):
-        SoundManager.getInstance().fadeoutBGM()
+        SoundManager.getInstance().fadeout_bgm()
 
     """
     Event control methods
@@ -1466,7 +1469,7 @@ class AE(object):
             self.player.die()
             self.pause_lock = True
             self.dying = True
-            SoundManager.getInstance().fadeoutBGM()
+            SoundManager.getInstance().fadeout_bgm()
             self.player.update(seconds)
         elif not self.fading:
             self.player.update(seconds)
@@ -1535,7 +1538,7 @@ class AE(object):
                     self.player.keyUnlock()
                     self.pause_lock = False
                     if self.bossTheme != "None":
-                        self.play_ost(self.bossTheme)
+                        self.play_ost(self.bossTheme, True)
                     self.boss.moving = True
                     self.boss.ignoreCollision = False
             elif self.bossHealthbar.defeated and self.fightingBoss:

@@ -2,6 +2,13 @@ from . import Drawable
 import pygame
 from utils import SpriteManager, SoundManager, EQUIPPED, vec, RESOLUTION, INV, EQUIPPED, SHORTCUTS, ACTIVE_SHORTCUT
 
+class State(object):
+    def __init__(self, starting_frame, row, nFrames, fps):
+        self._list = (starting_frame, row, nFrames, fps)
+
+    def __getitem__(self, key):
+        return self._list[key]
+
 class Animated(Drawable):
     
     def __init__(self, position=(0,0), fileName="", offset = (0,0), nFrames = 1, fps = 16):
@@ -528,7 +535,7 @@ class BossHealth(object):
 
     def draw(self, drawSurf, health):
         if health <= 0 and not self.defeated:
-            SoundManager.getInstance().fadeoutBGM()
+            SoundManager.getInstance().fadeout_bgm()
             self.defeated = True
         self.currentHealth = health
         drawSurf.blit(self.skullImage, self.position)

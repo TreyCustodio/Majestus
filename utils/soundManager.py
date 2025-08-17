@@ -21,7 +21,6 @@ class SoundManager(object):
         
         return cls._INSTANCE
     
-    # Do not directly instantiate this class!
     class _SM(object):
         """An internal SoundManager class to contain the actual code."""
         
@@ -44,18 +43,21 @@ class SoundManager(object):
             self.currently_playing = False # True if currently playing a track
             self.playing_intro = False # True if an intro to a track is playing
         
-        def play_ost(self, name, has_intro = False, has_outro = False):
+        def play_ost(self, name, has_intro = False, has_outro = False, volume = 1.0, fade_in = 0):
             """Play a track from the original soundtrack"""
             if name not in self.ost:
                 self._load_ost(name, has_intro, has_outro)
 
+            self.bgm_channel.set_volume(volume)
+
             if has_intro:
                 self.playing_intro = True
                 self.currently_playing = name
-                return self.bgm_channel.play(self.ost[name][0], 1)
+                
+                return self.bgm_channel.play(self.ost[name][0], 0, fade_ms=fade_in)
             else:
                 self.currently_playing = name
-                return self.bgm_channel.play(self.ost[name][1], -1)
+                return self.bgm_channel.play(self.ost[name][1], -1, fade_ms=fade_in)
 
 
         def playBGM(self, name):
@@ -72,6 +74,7 @@ class SoundManager(object):
         def fadeout_bgm(self, fadeoutAmount=1000):
             self.bgm_channel.fadeout(fadeoutAmount)
             self.currently_playing = None
+            self.playing_intro = False
         
     
         def playSFX(self, name, loops=0):

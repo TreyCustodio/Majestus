@@ -470,7 +470,7 @@ class Player(Animated):
                 ACTIVE_SHORTCUT[0] += 1
         
 
-    def handleEvent(self, interactableObject = None, engine = None):
+    def handle_events(self, interactableObject = None, engine = None):
         if not self.key_lock:
             if interactableObject != None:
                 if EventManager.getInstance().performAction("interact"):

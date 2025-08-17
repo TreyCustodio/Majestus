@@ -1,5 +1,5 @@
 import pygame
-from UI import ScreenManager, Xbox, EventManager, SoundManager
+from UI import ScreenManager, DisplayManager, Xbox, EventManager, SoundManager
 from utils import RESOLUTION, UPSCALED
 from random import randint
 
@@ -57,13 +57,16 @@ def main():
     pygame.display.set_icon(iconSurf)
     
     #   (4.) Main Engines
-    gameEngine = ScreenManager()
+    gameEngine = DisplayManager()
     eventManager = EventManager.getInstance()
     
     #   (5.) Runtime / FPS Analysis
     start_time = time.time()
     frame_count = 0
-
+    
+    #   (6.) Set the music volume
+    # pygame.mixer.Channel(5).set_volume(0.05)
+    
     """
     Run Loop
     """
@@ -121,6 +124,7 @@ def main():
             #     frame_count = 0
             #     start_time = time.time()
         
+        #   Update the SoundManager each frame  #
         SoundManager.getInstance().update(seconds)
 
         

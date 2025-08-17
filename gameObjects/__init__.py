@@ -17,6 +17,7 @@ from .enemy_new import *
 from .player import *
 from .map import *
 from .engine import *
+from .engine_new import *
 from .textEngine import *
 from .subEngines import *
 from .mobster import *
