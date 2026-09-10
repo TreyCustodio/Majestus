@@ -23,6 +23,9 @@ class Intro_Cut(AbstractEngine):
             """
             Does not call super().__init()
             """
+            self.dead = False
+            self.fading = False
+
             AE.initializeIntro(self)
             self.textInt = 0
             
@@ -62,7 +65,7 @@ class Intro_Cut(AbstractEngine):
             """
             Display text
             """
-            self.textBox = True
+            self.speaking = True
             self.text = text
             self.boxType = box
         
@@ -77,11 +80,9 @@ class Intro_Cut(AbstractEngine):
                 self.dark.set_alpha(self.a)
                 drawSurface.blit(self.dark,vec(0,0))
 
-
-
             return
         
-        def handleEvent(self):
+        def handle_events(self):
             pass
 
         def handleCollision(self):
@@ -130,15 +131,17 @@ class Intro_Cut(AbstractEngine):
             #   Darken and Lighten the background
             ##  Decrease for 30 frames, increase for 30 frames
             
-            
             #   Display the Narration
             if self.textInt == 0:
                 self.timer += seconds
                 if self.timer >= 1.0:
                     SoundManager.getInstance().fadeout_bgm(3500)
+                    #   Not displaying text 
                     self.displayText(SPEECH["intro_0"], box=5)
                     self.textInt += 1
                     self.timer = 0.0
+                    self.textInt = 5
+
             
             elif self.textInt == 1:
                 if self.text == "":
@@ -147,6 +150,7 @@ class Intro_Cut(AbstractEngine):
                         self.timer = 0.0
                         self.textInt = 1.1
                         self.displayText(SPEECH["intro_1"], box=5)
+                        print("Display")
                     elif self.timer >= 1.0 and SoundManager.getInstance().currently_playing == None:
                         self.playBgm()
             
@@ -211,11 +215,17 @@ class Intro_Cut(AbstractEngine):
             
             elif self.textInt == 5:
                 if self.text == "":
-                    self.transport(Tutorial_1, (16*9, 16*9), intro=True)
+                    self.textInt += 1
+                    print("Trans")
+                    self.transport(Tutorial_1N, (16*9, 16*9), intro=True)
+                    # self.transport(Test, (16*9, 16*9), intro=True)
+
             return
 
 
-
+"""
+Testing
+"""
 class Test(MajestusEngine):
     """Test Room"""
     
@@ -232,7 +242,7 @@ class Test(MajestusEngine):
             # Heater(vec(16*12, 16*3)),
         ]
 
-        super().__init__(enemies = enemies, bgm="03")
+        super().__init__(enemies = enemies, bgm="05", room_dir="test")
         
         # self.firi = Firi(vec(16*9, 16*6), 1)
         # self.doors = [0]
@@ -244,14 +254,214 @@ class Test(MajestusEngine):
         # self.obstacles = [
         # ]
 
-            
+class Tutorial_1N(MajestusEngine):
+    """New version of the first room"""
+    def __init__(self):
+        super().__init__(enemies = [], bgm="05", room_dir="tut_1",
+                         roomId=4)
+
+        # super().__init__("tut_1", animate_walls=True, wall_frames=2)
+        # self.roomId = 4
+        # self.bgm = None
+        # self.ignoreClear = True
+        # self.max_enemies = 0
+        # self.enemyPlacement = 0
+        # self.doors = [2]
+        # self.trigger1 = Trigger(vec(16*8, -12), width=48)
+        # self.npcs = [
+        #     #Rocker(vec(16*9, 16*7))
+        # ]
+
+
+    #override
+    def createBlocks(self):
+        self.blocks.append(self.trigger1)
+
+    def setDoors(self):
+        self.setDoors_square()
+
+    def createBounds(self):
+        """
+        Creates boundaries on the outer edge of the map
+        """
+        self.createSquare()
+
+    #override
+    def blockCollision(self):
+        for b in self.blocks:
+            self.projectilesOnBlocks(b)
+            if self.player.doesCollide(b):
+                if b == self.trigger1:
+                    if SoundManager.getInstance().currentlyPlaying:
+                        self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
+                    else:
+                        self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
+                else:
+                    self.player.handleCollision(b)
+
                 
-"""
-Testing
-"""
 
-class Knight(AbstractEngine):
+class Knight(MajestusEngine):
 
+    def __init__(self):
+        
+        bgm = "09"
+        self.ignoreClear = True
+        self.max_enemies = 0
+        self.enemyPlacement = 0
+        self.knight = LavaKnight(vec(RESOLUTION[0]//2-16, RESOLUTION[1]//2-16))
+        self.knight.ignoreCollision = True
+        enemies = [
+            
+            # Bopper(COORD[2][2]),
+            # Bopper(COORD[16][2]),
+            # Bopper(COORD[2][10]),
+            # Bopper(COORD[16][10]),
+        ]
+
+        super().__init__(enemies = enemies, bgm=bgm, room_dir="knight")
+
+        self.doors = [0, 2]
+        self.trigger1 = Trigger(door = 0)
+        self.spawning = [ 
+            #GreenHeart(vec(16*2, 16*10))
+            ]
+        self.playingMusic = False
+
+        # self.floor = Floor("knight", animate=True, nFrames=3)
+        
+        # self.effects_behind_walls = [
+        #     Floor("knight")
+        # ]
+        # self.textInt = -2
+        # self.tileFrame = 0
+
+    def reset(self):
+        super().reset()
+        self.textInt = -2
+        self.tileFrame = 0
+        self.effects_behind_walls = [
+                Floor("knight")
+            ]
+        if not FLAGS[111]:
+            self.knight.reset()
+            self.vanishObstacles()
+            
+    def on_enter(self):
+        if not FLAGS[111]:
+            self.npcs.append(self.knight)
+    def renderObstacles(self):
+        for i in range(8,11):
+            self.blocks.append(IBlock(vec(16*i, 16*12), vanish=True))
+            self.blocks.append(IBlock(vec(16*i, 0), vanish=True))
+    
+    def vanishObstacles(self):
+        self.vanishBlocks()
+
+    #override
+    def createBlocks(self):
+        self.blocks.append(self.trigger1)
+        for i in range(1,12):
+            self.terrain.append(Lava(vec(16*3, 16*i), width=8))
+            self.terrain.append(Lava(vec(16*4 - 8, 16*i)))
+            self.terrain.append(Lava(vec(16*14 + 8, 16*i)))
+            self.terrain.append(Lava(vec(16*15 + 8, 16*i), width=8))
+        for i in range(3,10):
+            self.terrain.append(Lava(vec(16*2, 16*i)))
+            self.terrain.append(Lava(vec(16*2 - 8, 16*i), width=8))
+
+            self.terrain.append(Lava(vec(16*16, 16*i)))
+            self.terrain.append(Lava(vec(16*17, 16*i), width=8))
+        
+    #override
+    def blockCollision(self):
+        for b in self.blocks:
+            for n in self.npcs:
+                if n.doesCollide(b):
+                    n.bounce(b)
+
+            self.projectilesOnBlocks(b)
+            if self.player.doesCollide(b):
+                if b == self.trigger1:
+                    self.transport(Flame_9, 2, keepBGM=True)
+                else:
+                    self.player.handleCollision(b)
+
+    def bsl(self, enemy, bossTheme):
+        super().bsl(enemy, bossTheme)
+        self.renderObstacles()
+    
+    def bse(self):
+        super().bse()
+        FLAGS[111] = True
+
+    def draw(self, drawSurf):
+        self.knight.draw(drawSurf)
+        super().draw(drawSurf)
+        
+    def update(self, seconds, updateEnemies=False):
+        if FLAGS[111]:
+            if self.textInt == 3:
+                if self.timer >= 0.1:
+                    self.timer = 0.0
+                    self.effects_behind_walls[0] = Floor("knight", "ground_"+str(self.tileFrame-1))
+                    self.tileFrame -= 1
+                    if self.tileFrame == 1:
+                        self.textInt += 1
+                else:
+                    self.timer += seconds
+            elif self.textInt == 4:
+                self.textInt = -2
+                self.effects_behind_walls[0] = Floor("knight")
+
+            super().update(seconds)
+            return
+        if self.fightingBoss:
+            if self.knight.initializing and not self.bossHealthbar.initializing:
+                self.knight.initializing = False
+            if self.knight.desperate and self.textInt == 1:
+                self.knight.initializing = True
+                self.bsl(self.knight, "None")
+                self.displayText(SPEECH["lava_knight2"], icon=ICON["knight"])
+                self.textInt += 1
+            elif self.knight.dying and self.textInt == 2:
+                self.vanishObstacles()
+                self.displayText(SPEECH["lava_knight3"], icon=ICON["knight"])
+                self.textInt += 1
+            super().update(seconds)
+        elif self.knight.starting:
+
+            if self.textInt == 1:
+                if self.textBox == False:
+                    if self.knight.moving:
+                        self.bsl(self.knight, "06")
+                    else:
+                        super().update(seconds)
+
+            elif self.textInt == 0:
+                self.knight.ignoreCollision = False
+                self.displayText(SPEECH["lava_knight"], icon=ICON["knight"], box=4)
+                self.textInt += 1
+            
+            elif self.textInt == -1:
+                if self.timer >= 0.1:
+                    self.timer = 0.0
+                    self.effects_behind_walls[0] = Floor("knight", "ground_"+str(self.tileFrame+1))
+                    self.tileFrame += 1
+                    if self.tileFrame == 4:
+                        self.textInt += 1
+                else:
+                    self.timer += seconds
+
+            elif self.textInt == -2:
+                self.player.stop()
+                self.player.keyLock()
+                SoundManager.getInstance().fadeout_bgm()
+                self.textInt += 1
+        else:
+            super().update(seconds)
+
+class Knight_old(AbstractEngine):
     @classmethod
     def getInstance(cls):
         if cls._INSTANCE == None:
@@ -410,6 +620,9 @@ class Knight(AbstractEngine):
                     self.textInt += 1
             else:
                 super().update(seconds)
+
+
+
 
 class Tutorial_1(AbstractEngine):
     @classmethod

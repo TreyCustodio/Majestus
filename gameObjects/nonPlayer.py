@@ -1,4 +1,4 @@
-from . import Drawable, Animated, QuestIcon, IconManager, InteractIcon, HudImageManager
+from . import Drawable, Animated, QuestIcon, IconManager, InteractIcon, HudManager
 from utils import SpriteManager, SCALE, RESOLUTION, vec, rectAdd, SoundManager, SPEECH, ICON, INV, FLAGS
 import pygame
 
@@ -363,6 +363,7 @@ class Drop(NonPlayer):
     """
     def __init__(self, position=vec(0,0), row=0, lifeTime=5):
         super().__init__(position, "drops.png", (0,row))
+        self.position[0] -= self.get_width() // 2
         self.id = ""
         self.timer = 0
         self.row = row
@@ -376,6 +377,8 @@ class Drop(NonPlayer):
     def setInteractable(self):
         pass
     
+    def get_width(self):
+        return self.image.get_width()
     """
     param drawIcon should always be false
     """

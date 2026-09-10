@@ -1,5 +1,5 @@
 import gc
-from gameObjects import PauseEngine, TextEngine, HudImageManager
+from gameObjects import PauseEngine, TextEngine
 from UI import ACTIONS, EventManager
 from rooms import *
 

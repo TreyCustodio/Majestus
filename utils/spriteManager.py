@@ -55,7 +55,7 @@ class SpriteManager(object):
                        "knight.png":(32,32), "bullshot.png":(32,32),
                        "shiver.png":(20,26), "shortcut.png":(32,32),
                        "gremlin.png":(18,36),"boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
-                       "stinger.png":(100,49), "ice_boner.png":(18,28),
+                       "stinger.png":(100,49), "ice_boner.png":(18,28), "hud_arrows.png":(16,16),
 
                        #   Text Images #
                        "cube.png":(12,12)
@@ -73,7 +73,8 @@ class SpriteManager(object):
                        "baller.png", "stunner.png", "mage.png", "barrier.png", "pixels.png",
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
-                       "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png"
+                       "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png",
+                       "hud_arrows.png"
                        
                        #   Text Images #
                      #   "cube.png"
@@ -151,7 +152,7 @@ class SpriteManager(object):
             fullImage = image.load(join(SpriteManager._SM._IMAGE_FOLDER, fileName))
          
          self._loadRoutine(fullImage, fileName, sheet)
-         
+      
       def _loadFx(self, room_dir, fileName, sheet = False):
           effects_folder = join(SpriteManager._SM._ROOM_FOLDER, room_dir)
           fullImage = image.load(join(effects_folder, fileName))

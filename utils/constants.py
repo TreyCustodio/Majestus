@@ -312,7 +312,7 @@ Indicates what C attack and what type of arrow is equipped
 """
 EQUIPPED = {
 
-    "C": -1,
+    "C": 0,
     #0 -> fire sword, 1 -> blizzard, 2 -> clap, 3 -> slash
     
     "Arrow": 0,

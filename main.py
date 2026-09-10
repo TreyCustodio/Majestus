@@ -22,12 +22,12 @@ def main():
     The While loop runs until the game closes.
     """
 
-    #   (1.) Initialize Pygame
+    #   Initialize Pygame   #
     pygame.init()
     pygame.font.init()
     pygame.joystick.init()
 
-    #   (2.) Initialize the Screen
+    #   Initialize the Screen   #
     flags = pygame.SCALED #| pygame.FULLSCREEN#| pygame.NOFRAME | pygame.FULLSCREEN
     screen = pygame.display.set_mode(list(map(int, UPSCALED)), flags=flags)
     drawSurface = pygame.Surface(list(map(int, RESOLUTION)))
@@ -35,7 +35,7 @@ def main():
     textSurface = drawSurface.subsurface(drawSurface.get_rect())
     pygame.mouse.set_visible(False)
 
-    #   (3.) Window Icon and Message
+    #   Create Window Icon and Message #
     rand = randint(0,5)
     if rand == 1:
         pygame.display.set_caption("Majestus: I'll learn pixel art one day...")
@@ -56,16 +56,17 @@ def main():
     iconSurf.blit(image, (0,0))
     pygame.display.set_icon(iconSurf)
     
-    #   (4.) Main Engines
-    gameEngine = DisplayManager()
-    eventManager = EventManager.getInstance()
+    #   Instantiate Main Engines -- Only 1 of each Instantiated
+    display_manager = DisplayManager()
+    event_manager = EventManager.getInstance()
     
-    #   (5.) Runtime / FPS Analysis
+    #   Perform FPS Analysis  #
     start_time = time.time()
+    fps = 0.0
     frame_count = 0
     
-    #   (6.) Set the music volume
-    # pygame.mixer.Channel(5).set_volume(0.05)
+    #   Set the music volume for debugging   #
+    # pygame.mixer.Channel(5).set_volume(0.01)
     
     """
     Run Loop
@@ -73,59 +74,64 @@ def main():
     RUNNING = True
     while RUNNING:
         
-        #   (1.) Draw
+        #   Draw    #
         pygame.transform.scale(drawSurface,
                                list(map(int, UPSCALED)),
                                screen)
+        pygame.display.flip()
+        display_manager.draw(drawSurface)
+
+        # if display_manager.state == "textBox":
+            
+        #     pygame.transform.scale(textSurface,
+        #                        list(map(int, UPSCALED)),
+        #                        screen)
+        #     pygame.display.flip()
+        #     display_manager.drawText(textSurface)
+        #     display_manager.drawWipe(textSurface)
+
+        # elif display_manager.state == "mainMenu":
+        #     pygame.transform.scale(transparentSurface,
+        #                        list(map(int, UPSCALED)),
+        #                        screen)
+        #     pygame.display.flip()
+        #     display_manager.drawTitle(transparentSurface)
+        #     display_manager.drawWipe(drawSurface)
+            
+        # else:
+        #     pygame.display.flip()
+        #     display_manager.draw(drawSurface)
+        #     display_manager.drawWipe(drawSurface)
         
-        
+
+        #   Handle Events   #
+        event_manager.handleEvents(display_manager)
+
+        #   Update  #
         gameClock = pygame.time.Clock()
-        
-        
-        if gameEngine.state == "textBox":
-            
-            pygame.transform.scale(textSurface,
-                               list(map(int, UPSCALED)),
-                               screen)
-            pygame.display.flip()
-            gameEngine.drawText(textSurface)
-            gameEngine.drawWipe(textSurface)
 
-        elif gameEngine.state == "mainMenu":
-            pygame.transform.scale(transparentSurface,
-                               list(map(int, UPSCALED)),
-                               screen)
-            pygame.display.flip()
-            gameEngine.drawTitle(transparentSurface)
-            gameEngine.drawWipe(drawSurface)
-            
-        else:
-            pygame.display.flip()
-            gameEngine.draw(drawSurface)
-            gameEngine.drawWipe(drawSurface)
         
 
-        #   (2.) Handle events
-        eventManager.handleEvents(gameEngine)
-
-        #   (3.) Update
-        if gameEngine.state == "mainMenu" or eventManager.readyToUpdate():
+        if display_manager.state == "mainMenu" or event_manager.readyToUpdate():
             gameClock.tick(60)
             seconds = gameClock.get_time() / 1000
-            eventManager.updateBuffer(seconds)   
-            gameEngine.update(seconds)
+
+            #   Update the modules  #
+            event_manager.updateBuffer(seconds)
+            display_manager.update(seconds)
+            SoundManager.getInstance().update(seconds)
         
-            #   (i)  Calculate FPS each second
-            #Should be as close to 60 as possible per the tick(60)
-            # frame_count += 1
-            # if time.time() - start_time > 1:
-            #     fps = frame_count / (time.time() - start_time)
-            #     print(f"FPS: {fps:.2f}")
-            #     frame_count = 0
-            #     start_time = time.time()
+            #   Calculate and Display FPS   #
+            ##  Should be as close to 60 as possible per the tick(60)   ##
+            frame_count += 1
+            if time.time() - start_time > 1:
+                fps = frame_count / (time.time() - start_time)
+                print(f"FPS: {fps:.2f}")
+                frame_count = 0
+                start_time = time.time()
+            # display_manager.draw_fps(drawSurface, fps)
+
         
-        #   Update the SoundManager each frame  #
-        SoundManager.getInstance().update(seconds)
 
         
 

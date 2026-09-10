@@ -1,5 +1,5 @@
 import gc
-from gameObjects import PauseEngine, TextEngine, HudImageManager
+from gameObjects import PauseEngine, TextEngine
 from UI import ACTIONS, EventManager
 from rooms import *
 
@@ -27,7 +27,6 @@ class DisplayManager(object):
         self.playTheme()
 
         #   Initialize the Hud Manager
-        HudImageManager.initialize()
 
         #   Controller data
         self.controller = "key"
@@ -111,7 +110,7 @@ class DisplayManager(object):
         self.wipe.decrease(speed)
     
     
-    def drawWipe(self, drawSurf):
+    def draw_wipe(self, drawSurf):
         """
         Draw the screen wipe (black image).
         """
@@ -130,7 +129,6 @@ class DisplayManager(object):
     (2.) Drawing -----------------------------------
     """
     def drawText(self, drawSurf):
-
         #   (Case 1) The Current Dialogue is Over. Return to the previous state. #
         if TextEngine.finished():
 
@@ -180,13 +178,12 @@ class DisplayManager(object):
 
             #   Return to Intro   #
             elif self.inIntro:
-                self.intro.textBox = False
-                self.intro.text = ""
-                self.intro.icon = None
-                if self.intro.textInt == 11:
-                    self.intro.fading = True
-                
-                self.state = "intro"
+                self.game.speaking = False
+                self.game.text = ""
+                self.game.icon = None
+                if self.game.textInt == 6:
+                    self.game.fading = True
+                self.state = "game"
 
 
             #   Return to Game  #
@@ -223,19 +220,18 @@ class DisplayManager(object):
 
 
         #   (Case 3) Display Text during the Intro cutscene #
-        elif self.inIntro:
+        # elif self.inIntro:
+        #     #   Draw the intro background while the text display is closing #
+        #     # if self.textEngine.closing:
+        #     #     self.intro.draw(drawSurf)
 
-            #   Draw the intro background while the text display is closing #
-            # if self.textEngine.closing:
-            #     self.intro.draw(drawSurf)
+        #     #   Draw the intro background when prompted to do so    #
+        #     # elif self.textEngine.backgroundBool:
+        #     #     self.drawGame(drawSurf)
+        #     #     self.textEngine.setBackgroundBool()
 
-            #   Draw the intro background when prompted to do so    #
-            # elif self.textEngine.backgroundBool:
-            #     self.drawGame(drawSurf)
-            #     self.textEngine.setBackgroundBool()
-
-            #   Perform the TextEngine's draw routine   #
-            TextEngine.draw(self.intro.boxPos, drawSurf)
+        #     #   Perform the TextEngine's draw routine   #
+        #     TextEngine.draw(self.intro.boxPos, drawSurf)
 
 
 
@@ -269,7 +265,7 @@ class DisplayManager(object):
     def drawPause(self, drawSurf):
         self.pauseEngine.draw(drawSurf)
 
-    def drawTitle(self, drawSurf):
+    def draw_title(self, drawSurf):
         if self.mainMenu.initialized:
             self.mainMenu.draw(drawSurf)
             
@@ -291,14 +287,17 @@ class DisplayManager(object):
         """
         Drawing the game based on the state
         """
+        #   (1) Main Menu   #
+        if self.state == "mainMenu":
+            self.draw_title(drawSurf)
 
-        #   (Case 1) We're in the game  #
-        if self.state == "game":
+        #   (2) Playing the game  #
+        elif self.state == "game":
             #   Perform the gameEngine's draw routine   #
             self.game.draw(drawSurf)
 
             #   Initiate the TextEngine when prompted   #
-            if self.game.text_box:
+            if self.game.speaking:
                 self.state = "textBox"
                 if "Y/N" in self.game.text:
                     TextEngine.set_text(self.game.text, self.game.icon, prompt = True)
@@ -310,7 +309,7 @@ class DisplayManager(object):
                 self.white.draw(drawSurf)
 
 
-        #   (Case 2) We're on the pause menu    #
+        #   (3) Paused  #
         elif self.state == "paused":
 
             #   Resume Gameplay #
@@ -352,9 +351,11 @@ class DisplayManager(object):
             self.pauseEngine.draw(drawSurf)
 
 
-        
-        #   (Case 3) We're in the Intro cutscene    #
-        elif self.state == "intro":
+        elif self.state == "textBox":
+            self.drawText(drawSurf)
+
+        #   (4) In a special cutscene    #
+        elif self.state == "cutscene":
             #   Start the music if not already playing  #
             if not self.intro.playingBgm:
                 self.intro.playBgm()
@@ -367,12 +368,12 @@ class DisplayManager(object):
                 self.state = "textBox"
                 TextEngine.set_text(self.intro.text, icon = None, prompt = False, type = 4)
 
-
-        #   (Case 4) We're playing Monster Mobster  #
+        #   (5) Playing Monster Mobster  #
         elif self.state == "mobster":
             self.mobsterEngine.draw(drawSurf)
 
-       
+        #    Draw the Wipe   #
+        self.draw_wipe(drawSurf)
         
     """
     (3.) Handling Events ------------------------------
@@ -492,27 +493,41 @@ class DisplayManager(object):
         self.fadeOff(15)
         pos = self.game.tra_pos
         player = self.game.player
-        newGame = self.game.tra_room.getInstance()
         keepBGM = self.game.tra_keepBGM
-        if not self.game.transporting_area:
-            self.game.reset()
-            gc.collect()
-            self.game = newGame
-            self.game.initializeRoom(player, pos, keepBGM)
-            self.fadingIn = True
-            self.fade.frame = 9
+        room = self.game.tra_room
+
+        #   Reset the previous room
+        self.game.reset()
+        gc.collect()
+        self.fadingIn = True
+        self.fade.frame = 9
+
+        if issubclass(room, MajestusEngine):
+            self.game = room()
+            self.game.initialize_room(player, pos, keepBGM)
         else:
-            self.game.reset()
-            gc.collect()
-            self.game = newGame
-            self.game.initializeArea(player, pos, keepBGM)
+            self.game = room.getInstance()
+            self.game.initializeRoom(player, pos, keepBGM)
+
+
+        # if not self.game.transporting_area:
+        #     self.game.reset()
+        #     gc.collect()
+        #     self.game = newGame
+        #     self.game.initializeRoom(player, pos, keepBGM)
+        #     self.fadingIn = True
+        #     self.fade.frame = 9
+        # else:
+        #     self.game.reset()
+        #     gc.collect()
+        #     self.game = newGame
+        #     self.game.initializeArea(player, pos, keepBGM)
 
     
     def update(self, seconds):
         """
         Update all states.
         """
-
         #   (1.) Update the screen wipe
         self.wipe.update(seconds)
 
@@ -521,7 +536,7 @@ class DisplayManager(object):
         if self.state == "game":
             
 
-            #   Transition  #
+            
             
             #   Quit to Title   #
             if self.returningToMain:
@@ -539,7 +554,11 @@ class DisplayManager(object):
                 self.fading = True
                 self.returningToMain = True
                 return
-            
+
+            #   Transition  #
+            if self.game.readyToTransition:
+                self.transition()
+
             #   Fading Out  #
             elif self.game.fading:
                 if not self.fading:
@@ -585,8 +604,10 @@ class DisplayManager(object):
                     self.game = Intro_Cut.getInstance()
                     self.game.lockHealth()
                     self.state = "game"
-                    #self.state.startGame()
                     self.startingGame = False
+                    self.inIntro = True
+                    # self.state.startGame()
+
             
                     
             #   (iii.) Continuing a game

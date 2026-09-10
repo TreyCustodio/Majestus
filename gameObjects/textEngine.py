@@ -288,7 +288,9 @@ class Char(object):
         else:
             self.spacing = 0
 
-
+    def __str__(self):
+        return self.text
+    
     def getImage(self, char, fileName = "chars.png"):
         """Grab the character's image from a specified sprite sheet; chars.png by default"""
         color = Text.COLOR
@@ -535,8 +537,8 @@ class TextEngine(object):
     """
     ------------------- PURPOSE ----------------------------
 
-    This class is never instantiated, but it is
-    called upon and referenced when text needs to be displayed.
+    This class is never instantiated.
+    It is called upon when text needs to be displayed.
     
     
     -------------- TEXT DISPLAY PROCESS --------------------
@@ -603,6 +605,7 @@ class TextEngine(object):
     BUFFING = True
 
     #   States that drive the draw routine  #
+    IDLE = True
     STATES = {
               "starting" : False,
               "ready_to_continue": False,   # Wait for (interact) to continue text display
@@ -615,7 +618,6 @@ class TextEngine(object):
 
     def reset():
         """Reset the engine in preparation for the next dialogue routine"""
-
         #   Reset the States    #
         for k in TextEngine.STATES:
             TextEngine.STATES[k] = False
@@ -701,6 +703,7 @@ class TextEngine(object):
         """
 
         #   Begin the startup Animation #
+        print("set")
         TextEngine.STATES["starting"] = True
 
         #   (1) Set the box image   #
@@ -759,6 +762,7 @@ class TextEngine(object):
 
 
         #   (4) And now we can construct the dialogue matrix    #
+        print(text)
         TextEngine.buildDialogue(text)
 
 
@@ -885,8 +889,12 @@ class TextEngine(object):
     def displayRoutine(silent=False):
         #   Draw the next character to display and buffer   #
         ##  Obtain the current char ##
+        if len(TextEngine.DIALOGUE) == 0:
+            return
+        
         line = TextEngine.CURRENT_LINE
         index = TextEngine.CURRENT_INDEX
+        # print("Display\nLine: " + str(line) +"\nIndex: " + str(index))
         char = TextEngine.DIALOGUE[line][index]
 
 

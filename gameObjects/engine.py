@@ -2,7 +2,7 @@ import pygame
 from math import ceil
 from UI import EventManager, ACTIONS
 from utils import SpriteManager
-from . import (Drawable, HudImageManager, HudButtons, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, AmmoBar, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
+from . import (Drawable, HudManager, HudButtons, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, Equipped, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
@@ -87,7 +87,7 @@ class AE(object):
         self.roomId = 0
         self.itemsToCollect = 0
         self.mapCondition = False #True if pink, False if green
-        self.textBoxBackground = SpriteManager.getInstance().getSprite("TextBox2.png", (0,7))
+        self.text_boxBackground = SpriteManager.getInstance().getSprite("TextBox2.png", (0,7))
 
         self.damageNums = DamageNumberManager()
         self.player = None
@@ -119,7 +119,7 @@ class AE(object):
         self.intro = False
 
         #Speaking
-        self.textBox = False
+        self.speaking = False
         self.text = ""
         self.icon = None
         self.boxPos = vec(30,64)
@@ -177,9 +177,9 @@ class AE(object):
         self.cutscene = False
 
         #HUD
-        self.healthBar = HealthBar.getInstance()
-        self.ammoBar = AmmoBar.getInstance()
-        self.elementIcon = ElementIcon.getInstance()
+        self.healthBar = HealthBar()
+        self.ammoBar = Equipped()
+        self.elementIcon = ElementIcon()
         self.energyBar = EnergyBar()
     
     def initializeIntro(self):
@@ -197,7 +197,7 @@ class AE(object):
         self.readyToTransition = False
         self.transporting = False
         self.transLock = False
-        self.textBox = False
+        self.speaking = False
         self.tra_keepBGM = False
         self.transporting_area = False
 
@@ -907,7 +907,7 @@ class AE(object):
             elif self.boxPos[1]+64 > self.size[1]-16:
                 self.boxPos[1] = (self.size[1] - 16)-64
 
-        self.textBox = True
+        self.speaking = True
         self.text = text
         self.boxType = box
         self.cube_state = cube_state
@@ -1008,10 +1008,10 @@ class AE(object):
         if self.spawning:
             for n in self.spawning:
                 if not n.drop and self.player.interactable(n):
-                    self.player.handleEvent(n, self)
+                    self.player.handle_event(n, self)
                     return 
-        if not self.textBox:       
-            self.player.handleEvent()
+        if not self.speaking:
+            self.player.handle_event()
 
     def stopShop(self):
         self.selectedItem = "quit"
@@ -1062,10 +1062,8 @@ class AE(object):
                     self.playSound("pause_cursor.wav")
                     self.highlight.position[0] = 16*4
 
-    def handleEvent(self):
-        if self.startingMobster:
-            return
-        elif self.inShop:
+    def handle_events(self):
+        if self.inShop:
             self.shopEvents()
             return
         self.interactableEvents()
@@ -1751,7 +1749,7 @@ class AE(object):
                     else:
                         if n.interactable:
                             n.interactable = False
-                    if self.inShop or self.textBox:
+                    if self.inShop or self.speaking:
                         n.draw(drawSurface, drawIcon = False)
                     else:
                         n.draw(drawSurface)

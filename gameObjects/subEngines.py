@@ -1,6 +1,6 @@
 import pygame
 
-from . import Drawable,  Animated, Text, Highlight, Map, Number, AmmoBar
+from . import Drawable,  Animated, Text, Highlight, Map, Number, Equipped
 
 from utils import vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED, SHORTCUTS, ACTIVE_SHORTCUT
 

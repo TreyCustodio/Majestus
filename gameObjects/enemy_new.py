@@ -236,16 +236,33 @@ class Enemy(Drawable):
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_size[0] // 2, self.position[1] + self.image.get_size[1] // 2))
     
+    def play_no_damage(self):
+        """PLay the enemy's no damage sound"""
+        SoundManager.getInstance().playSFX("dink.wav")
+
+    def play_heal(self):
+        """Play the enemy's heal sound"""
+        return
+    
+    def play_damaged(self):
+        SoundManager.getInstance().playLowSFX("enemyhit.wav", volume=0.5)
+
+    def play_death(self):
+        SoundManager.getInstance().playLowSFX("enemydies.wav", volume=0.2)
+
     def play_hurt_sound(self, damage):
+        #   No Damage = Dink Sound  #
         if damage == 0:
-            return
+            self.play_no_damage()
+        
+        #   Negative damage = Heal Sound   #
         elif damage < 0:
-            return
-        elif self.hp > 0: 
-            SoundManager.getInstance().playLowSFX("enemyhit.wav", volume=0.5)
+            self.play_heal()
+        
+        #   Normal Damage Sound #
         else:
-            self.dead = True
-            SoundManager.getInstance().playLowSFX("enemydies.wav", volume=0.2)
+            self.play_damaged()
+
 
     #   ----- Collision Detection ----- #
     def bounds_safety(self) -> bool:
@@ -268,9 +285,11 @@ class Enemy(Drawable):
         """Handle collision with a projectile"""
         #   I-Frame Checker #
         if self.damaged:
+            self.play_hurt_sound(0)
             return
         
         #   Calculate Damage based on Types  #
+        proj.set_hit()
         other_type = proj.type.NAME
         damage = proj.damage
 
@@ -299,8 +318,14 @@ class Enemy(Drawable):
         self.hp -= damage
         self.set_injury(damage)
 
+        #   Check if dead   #
+        if self.hp <= 0:
+            self.dead = True
+            self.play_death()
+
         #   Play a sound effect #
-        self.play_hurt_sound(damage)
+        else:
+            self.play_hurt_sound(damage)
 
         #   Start I-Frames  #
         self.damaged = True

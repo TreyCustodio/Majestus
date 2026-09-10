@@ -23,6 +23,9 @@ class AbstractWeapon(Animated):
         if setid:
             self.id = ""
 
+    def set_hit(self):
+        self.hit = True
+        
     def setDrunk(self):
         self.damage = int(self.damage * 1.5)
     
@@ -185,7 +188,6 @@ class Bullet(AbstractWeapon):
         self.frame = 0
         self.collisionObj= None
         self.collisionPoint = vec(0,0)
-        SoundManager.getInstance().playSFX("shoot.wav")
 
     def setVelocity(self, direction, speed):
         if direction == 0:
