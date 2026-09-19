@@ -134,7 +134,7 @@ class MajestusEngine():
         self.player = None
         self.hud = HudManager.getInstance()
 
-        #   Object Lists #
+        #   === Object Lists === #
         ##  Interactable Entities   ##
         self.npcs = []
         
@@ -150,15 +150,24 @@ class MajestusEngine():
         ##  Drops to Pickup ##
         self.drops = []
 
+        ##  Collision Blocks ##
+        self.blocks = []
+
+        ##  Doors   ##
+        self.doors = []
+
         ##  Additional Layers to Draw   ##
         self.layer_1 = []
         self.layer_2 = []
         self.layer_3 = []
         self.layer_4 = []
         self.layer_5 = []
-
         return
-    
+
+
+    """
+    === Auxiliary Functions ===
+    """
     def remove(self, obj):
         if obj in self.loaded_enemies:
             del self.loaded_enemies[self.loaded_enemies.index(obj)]
@@ -184,6 +193,122 @@ class MajestusEngine():
     def load_enemies(self):
         self.loaded_enemies = self.enemies
 
+    def createSquare(self):
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+            self.blocks.append(IBlock((0, i*16 + 16*7), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
+
+        """
+    param squares -> number of quadrants to place door collision in
+    """
+        
+    def set_doors(self, shape: str ="square", num_shapes: int = 1):
+        if shape == "sqaure":
+            ###  Quadrant 1
+            ##  Bottom
+            if 0 not in self.doors:
+                self.blocks.append(IBlock((16*8, 19*10 - 8 - 16), height=42))
+                self.blocks.append(IBlock((16*9, 19*10 - 8 - 16), height=42))
+                self.blocks.append(IBlock((16*10, 19*10 - 8 - 16), height=42))
+    
+            ##  Right - Also Middle
+            if 1 not in self.doors:
+                self.blocks.append(IBlock((16*16 + 6, 5*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6, 6*16), width=42))
+                self.blocks.append(IBlock((16*16 + 6, 7*16), width=42))
+    
+            ##  Top
+            if 2 not in self.doors:
+                self.blocks.append(IBlock((16*8, 0), height=42))
+                self.blocks.append(IBlock((16*9, 0), height=42))
+                self.blocks.append(IBlock((16*10, 0), height=42))
+    
+            ##  Left
+            if 3 not in self.doors:
+                self.blocks.append(IBlock((0, 5*16), width=42))
+                self.blocks.append(IBlock((0, 6*16), width=42))
+                self.blocks.append(IBlock((0, 7*16), width=42))
+            
+            ###  Quadrant 2
+            if num_shapes > 1:
+                ##  Bottom
+                if 4 not in self.doors:
+                    self.blocks.append(IBlock((16*8 + 304, 19*10 - 8 - 16), height=42))
+                    self.blocks.append(IBlock((16*9 + 304, 19*10 - 8 - 16), height=42))
+                    self.blocks.append(IBlock((16*10 + 304, 19*10 - 8 - 16), height=42))
+    
+                ##  Right - Middle
+                if 5 not in self.doors:
+                    self.blocks.append(IBlock((16*16 + 6 + 304, 5*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + 304, 6*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + 304, 7*16), width=42))
+    
+                ##  Top
+                if 6 not in self.doors:
+                    self.blocks.append(IBlock((16*8 + 304, 0), height=42))
+                    self.blocks.append(IBlock((16*9 + 304, 0), height=42))
+                    self.blocks.append(IBlock((16*10 + 304, 0), height=42))
+    
+                ##  Left - Middle
+                if 7 not in self.doors:
+                    self.blocks.append(IBlock((0+ 304, 5*16), width=42))
+                    self.blocks.append(IBlock((0+ 304, 6*16), width=42))
+                    self.blocks.append(IBlock((0+ 304, 7*16), width=42))
+                
+                ##  Right - End
+                if 8 not in self.doors:
+                    self.blocks.append(IBlock((16*16 + 6 + 608, 5*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + 608, 6*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + 608, 7*16), width=42))
+                
+                ##  Left - End
+                if 9 not in self.doors:
+                    self.blocks.append(IBlock((0 + 608, 5*16), width=42))
+                    self.blocks.append(IBlock((0 + 608, 6*16), width=42))
+                    self.blocks.append(IBlock((0 + 608, 7*16), width=42))
+
+        elif shape == "vertical":
+            if 0 not in self.doors:
+                self.blocks.append(IBlock((8*16, self.size[1]-42), width = 48,height = 48))
+            
+            if 1 not in self.doors:        
+                self.blocks.append(IBlock((self.size[0]-42, 5*16), width = 42, height = 48))
+            
+            if 2 not in self.doors:
+                self.blocks.append(IBlock((8*16, 0), width = 48, height = 42))
+            
+            if 3 not in self.doors:
+                self.blocks.append(IBlock((0, 5*16), width = 42, height = 48))
+            
+            if 5 not in self.doors:
+                self.blocks.append(IBlock((self.size[0]-42, 16*12), width = 42, height = 48))
+            
+            if 7 not in self.doors:
+                self.blocks.append(IBlock((0, 16*12), width = 42, height = 48))    
+
+
+    """
+    === Abstract Methods ===
+    """      
+    def create_blocks(self):
+        return
+
     def initialize_room(self, player = None, position=vec(0,0), keep_bgm=False, place_enemies=True):
         if keep_bgm:
             pass
@@ -199,6 +324,7 @@ class MajestusEngine():
             self.player = player
 
         self.load_enemies()
+        self.create_blocks()
     
     def check_memory(self):
         print("Enemies: " + str(len(self.loaded_enemies)) + "\n" + str(self.loaded_enemies), end="\n\n")
@@ -233,6 +359,10 @@ class MajestusEngine():
 
         #   Player  #
         self.player.draw(surf)
+
+        #   Blocks  #
+        for b in self.blocks:
+            b.draw(surf)
 
         #   HUD #
         self.hud.draw(surf, self.player)
@@ -279,20 +409,40 @@ class MajestusEngine():
         self.handle_weapons()
         self.handle_collision()
     
+
+    """
+    === Collision Detection ===
+    """
+    def block_collision(self):
+        for b in self.blocks:
+            if b.popProjectiles:
+                for w in self.weapons:
+                    if not w.hit:
+                        if w.doesCollide(b):
+                            if w.id == "arrow":
+                                w.handleCollision(self, b)
+                            else:
+                                w.handleCollision(self)
+
+            if self.player.doesCollide(b):
+                self.player.handleCollision(b)
+
+    def trigger_collision(self):
+        return
     
     def handle_collision(self):
-        #   Player on Enemies   #
+        #   Enemies   #
         for e in self.loaded_enemies:
             if self.player.doesCollide(e):
                 if e.handle_player_collision(self.player):
                     self.player.handleCollision(e)
 
-            #   Weapons on Enemies  #
+            ##   Weapons on Enemies  #
             for w in self.weapons:
                 if e.collides_with_projectile(w):
                     e.handle_projectile_collision(w)
                     if w.hit:
-                        ##   Display Damage  ##
+                        ###   Display Damage  #
                         damage = e.get_injury()
 
                         if damage == 0:
@@ -306,6 +456,17 @@ class MajestusEngine():
 
                     w.handleCollision(self)
 
+
+        #   Terrain #
+        #   Blocks  #
+        self.block_collision()
+        # AE.lockCollision(self)
+
+
+
+    """
+    === Updating ===
+    """
     def bsl(self, enemy, bossTheme):
         """
         Boss script load (bsl) para Cave Story.

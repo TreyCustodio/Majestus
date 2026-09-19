@@ -140,7 +140,6 @@ class Intro_Cut(AbstractEngine):
                     self.displayText(SPEECH["intro_0"], box=5)
                     self.textInt += 1
                     self.timer = 0.0
-                    self.textInt = 5
 
             
             elif self.textInt == 1:
@@ -217,7 +216,7 @@ class Intro_Cut(AbstractEngine):
                 if self.text == "":
                     self.textInt += 1
                     print("Trans")
-                    self.transport(Tutorial_1N, (16*9, 16*9), intro=True)
+                    self.transport(Wavering_1, (16*9, 16*9), intro=True)
                     # self.transport(Test, (16*9, 16*9), intro=True)
 
             return
@@ -254,11 +253,14 @@ class Test(MajestusEngine):
         # self.obstacles = [
         # ]
 
-class Tutorial_1N(MajestusEngine):
+class Wavering_1(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
-        super().__init__(enemies = [], bgm="05", room_dir="tut_1",
+        super().__init__(enemies = [], bgm="03", room_dir="tut_1",
                          roomId=4)
+
+        self.trigger1 = Trigger(door = 2)
+        self.doors = [2]
 
         # super().__init__("tut_1", animate_walls=True, wall_frames=2)
         # self.roomId = 4
@@ -266,7 +268,6 @@ class Tutorial_1N(MajestusEngine):
         # self.ignoreClear = True
         # self.max_enemies = 0
         # self.enemyPlacement = 0
-        # self.doors = [2]
         # self.trigger1 = Trigger(vec(16*8, -12), width=48)
         # self.npcs = [
         #     #Rocker(vec(16*9, 16*7))
@@ -274,11 +275,12 @@ class Tutorial_1N(MajestusEngine):
 
 
     #override
-    def createBlocks(self):
-        self.blocks.append(self.trigger1)
+    def create_blocks(self):
+        # self.blocks.append(self.trigger1)
+        self.createSquare()
 
-    def setDoors(self):
-        self.setDoors_square()
+    def create_doors(self):
+        self.set_doors("square")
 
     def createBounds(self):
         """
@@ -287,17 +289,17 @@ class Tutorial_1N(MajestusEngine):
         self.createSquare()
 
     #override
-    def blockCollision(self):
-        for b in self.blocks:
-            self.projectilesOnBlocks(b)
-            if self.player.doesCollide(b):
-                if b == self.trigger1:
-                    if SoundManager.getInstance().currentlyPlaying:
-                        self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
-                    else:
-                        self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
-                else:
-                    self.player.handleCollision(b)
+    # def blockCollision(self):
+    #     for b in self.blocks:
+    #         self.projectilesOnBlocks(b)
+    #         if self.player.doesCollide(b):
+    #             if b == self.trigger1:
+    #                 if SoundManager.getInstance().currentlyPlaying:
+    #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
+    #                 else:
+    #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
+    #             else:
+    #                 self.player.handleCollision(b)
 
                 
 
@@ -2459,7 +2461,7 @@ class Flame_1(AbstractEngine):
     class _Flame_1(AE):
         def __init__(self):
             super().__init__()
-            self.bgm = "pun.mp3"
+            self.bgm = "03"
             self.ignoreClear = False
             self.max_enemies = 8
             self.enemyPlacement = 2

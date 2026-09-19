@@ -106,9 +106,11 @@ class EventMenu(AbstractMenu):
                 return
         elif self.titleTimer >= 6.5:
             Text((16*6,16*4+8), "Designed with PyGame", color = (220,190,0)).draw(drawSurf)
+
         elif self.titleTimer >= 4:
             drawSurf.fill((0,0,0))
             return
+
         elif self.titleTimer >= 1.0:
             Text((16*5,16*4+8), "YungTrey Games Presents...", color = (220,0,0)).draw(drawSurf)
         

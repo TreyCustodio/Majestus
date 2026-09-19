@@ -59,7 +59,7 @@ class DisplayManager(object):
 
         #   Title Screen
         self.titleTimer = 0.0
-        self.mainMenu = EventMenu("title_screen.png", fontName="zelda")
+        self.mainMenu = EventMenu("title_screen_m.png", fontName="zelda")
 
         self.mainMenu.addOption("start", "New Game",
                                 RESOLUTION // 2 + vec(0,5),
@@ -534,10 +534,6 @@ class DisplayManager(object):
 
         #   (2.) Update the room
         if self.state == "game":
-            
-
-            
-            
             #   Quit to Title   #
             if self.returningToMain:
                 if self.wipe.increasing == False:
@@ -615,12 +611,22 @@ class DisplayManager(object):
                 if self.wipe.increasing == False:
                     #   Continue the game after the sound effects are done  #
                     self.fadeOff(5)
-                    self.game = LOAD["room"]()
-
-                    if LOAD["area"]:
-                        self.game.initialize_area(position=LOAD["position"])
-                    else:
+                    room = LOAD["room"]
+                    if issubclass(room, MajestusEngine):
+                        self.game = room()
                         self.game.initialize_room(position=(LOAD["position"]))
+                    else:
+                        self.game = room.getInstance()
+                        self.game.initializeRoom(pos=(LOAD["position"]))
+                    
+                    # self.game = LOAD["room"]()
+                    # if LOAD["area"]:
+                    #     self.game.initialize_area(position=LOAD["position"])
+                    # else:
+                    #     if issubclass(self.game, MajestusEngine):
+                    #         self.game.initialize_room(position=(LOAD["position"]))
+                    #     else:
+                    #         self.game.initializeRoom(position=(LOAD["position"]))
 
                     self.state = "game"
                     #self.state.startGame()

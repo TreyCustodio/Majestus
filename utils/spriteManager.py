@@ -74,7 +74,8 @@ class SpriteManager(object):
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
                        "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
                        "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png",
-                       "hud_arrows.png"
+                       "hud_arrows.png",
+                       "title_screen_m.png"
                        
                        #   Text Images #
                      #   "cube.png"

@@ -53,8 +53,6 @@ class AE(object):
         #   (1.) Initialize the effects
         self.name = None
         if room_dir != "":
-            self.room_dir = room_dir
-
             #   (i.) Walls
             if animate_walls:
                 self.walls = Walls(room_dir, animate=True, nFrames=wall_frames)
@@ -69,7 +67,9 @@ class AE(object):
 
             #   (iii.) Room Name
             self.name = Name(room_dir)
-        
+
+        self.room_dir = room_dir
+
         #   (iv.) Camera
         if camera:
             self.camera = Camera()
@@ -394,9 +394,6 @@ class AE(object):
                 self.name.position = (self.camera.position[0] + (RESOLUTION[0]//2 - self.name.width // 2), self.camera.position[1]+200)
             Drawable.updateOffset(self.camera, self.size)
        
-        self.moneyImage = HudImageManager.getMoney()
-        self.keyImage = HudImageManager.getKeys()
-        self.bomboImage = HudImageManager.getBombos()
         #SoundManager.getInstance().stopAllSFX()
         EQUIPPED["room"] = self.roomId
         if player != None:
@@ -1066,15 +1063,13 @@ class AE(object):
         if self.inShop:
             self.shopEvents()
             return
+        
         self.interactableEvents()
 
     
     """
     Collision methods
     """
-   
-
-
     def despawnOnPress(self, obj, switch):
         """
         Despawns object if the switch is pressed
@@ -1776,10 +1771,10 @@ class AE(object):
 
         if self.npcs:
             for n in self.npcs:
-                if not n.drawn:
+                # if not n.drawn:
                 #Consider making enemies appear right before the player
                 # if not n.top and not n.belowDrops:
-                    n.draw(drawSurface)
+                n.draw(drawSurface)
         
     def drawProjectiles(self, drawSurface):
         #Projectiles/weapons
@@ -1826,6 +1821,8 @@ class AE(object):
                 n.drawTop(drawSurface)
         
     def drawHud(self, drawSurface):
+        HudManager.getInstance().draw(drawSurface)
+        return
         """
         Money
         """
@@ -1955,8 +1952,11 @@ class AE(object):
             return
         
         #Background/Tiles
-        self.floor.draw(drawSurface)
-        self.drawTiles(drawSurface)
+        if self.room_dir == "":
+            self.background.draw(drawSurface)
+        else:
+            self.floor.draw(drawSurface)
+            self.drawTiles(drawSurface)
         
         #Switches
         self.drawSwitches(drawSurface)
@@ -1965,7 +1965,8 @@ class AE(object):
             for e in self.effects_behind_walls:
                 e.draw(drawSurface)
 
-        self.walls.draw(drawSurface)
+        if self.room_dir != "":
+            self.walls.draw(drawSurface)
         
         if self.locks:
             for l in self.locks:
