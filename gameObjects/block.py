@@ -64,7 +64,10 @@ class Trigger(IBlock):
     """
     Triggers activate when the player collides with them
     """
-    def __init__(self, position = vec(0,0), text="", door = -1, width = 16, height = 16):
+    def __init__(self, position = vec(0,0), text="", door = -1, width = 16, height = 16,
+                 id = 0):
+        self.id = id
+
         if door == 0:
             super().__init__((16*9, (16*12 + 8)))
         elif door == 3:

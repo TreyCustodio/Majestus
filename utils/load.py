@@ -1,8 +1,8 @@
-from rooms import majestus
+from rooms import majestus, grotto
 
 LOAD = {
     #   First Room of the Game  #
-    "room": majestus.Wavering_1,
+    "room": grotto.Wavering_1,
     "position": (16*9, 16*9),
     "area": False
     

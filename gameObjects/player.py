@@ -1,5 +1,5 @@
 from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block,  LockBlock, \
-HealthBar
+HudManager
 
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec, SHORTCUTS, ACTIVE_SHORTCUT
 from UI import ACTIONS, EventManager
@@ -105,7 +105,9 @@ class Player(Animated):
         self.attacking = False
 
         
-        
+    def set_position(self, pos):
+        self.position = pos
+
     def drink(self):
         self.drunkTimer += 30
         self.speed = 60
@@ -148,7 +150,7 @@ class Player(Animated):
                 self.hp -= integer
                 SoundManager.getInstance().playSFX("hurt.wav")
                 self.invincible = True
-            HealthBar.getInstance().drawHurt(self.hp, integer)
+            HudManager.getInstance().health.drawHurt(self.hp, integer)
     
     def hurtSyringe(self, integer):
         SoundManager.getInstance().playSFX("hurt.wav")
@@ -156,14 +158,19 @@ class Player(Animated):
         if self.hp <= 0:
             damage = integer - (self.hp * -1 + 1)
             self.hp = 1
-            HealthBar.getInstance().drawHurt(self.hp, damage)
+            HudManager.getInstance().health.drawHurt(self.hp, damage)
         else:
-            HealthBar.getInstance().drawHurt(self.hp, integer)
+            HudManager.getInstance().health.drawHurt(self.hp, integer)
     """
     Getter methods
     """
     ###Get weapon instances###
 
+    def get_width(self):
+        return self.getSize()[0]
+
+    def get_height(self):
+        return self.getSize()[1]
 
     def getBullet(self):
         return self.bullet
@@ -802,7 +809,7 @@ class Player(Animated):
                 self.pushing = (not self.targeting and not self.movingDiagonal())
                 self.preventCollision(enemy, side)
         else:
-            self.hurt(enemy.getDamage())
+            self.hurt(enemy.get_damage())
             if not enemy.id == "noStop":
                 if self.running:
                     self.stop_run(enemy)

@@ -3,6 +3,7 @@ from gameObjects import *
 from .player import *
 from utils import vec, RESOLUTION, INV
 
+from abc import ABC, abstractmethod
 import os
 import re
 
@@ -18,7 +19,7 @@ class LevelElement:
         self.room_dir = room_dir
     
     def draw(self, surf):
-        surf.blit(self.image, self.position)
+        surf.blit(self.image, self.position - Drawable.CAMERA_OFFSET)
 
     def set_image(self):
         return
@@ -74,6 +75,7 @@ class Walls(LevelElement):
         matches = [f for f in files if pattern.match(f)]
         count = len(matches)
 
+
         if count > 1:
             self.animate = True
             self.fps = fps
@@ -95,7 +97,7 @@ class Walls(LevelElement):
 """
 Engine Class
 """
-class MajestusEngine():
+class MajestusEngine(ABC):
     """An Abstract engine that controls the game's objects"""
     def __init__(self, size = RESOLUTION, enemies = [], max_enemies = 0, bgm = "01", room_dir = "",
                  roomId = -1):
@@ -106,6 +108,7 @@ class MajestusEngine():
         self.walls = Walls(room_dir=room_dir)
         self.roomId = -1
         self.bgm = bgm
+        self.camera = Camera.getInstance()
 
         #   General States  #
         self.dead = False
@@ -119,6 +122,7 @@ class MajestusEngine():
 
         #   Transition States   #
         self.readyToTransition = False
+        self.lock_transition = False
         self.transporting = False
         self.transporting_area = False
         self.tra_room = None
@@ -152,6 +156,7 @@ class MajestusEngine():
 
         ##  Collision Blocks ##
         self.blocks = []
+        self.triggers = []
 
         ##  Doors   ##
         self.doors = []
@@ -164,11 +169,91 @@ class MajestusEngine():
         self.layer_5 = []
         return
 
+    """
+    === Abstract Methods ===
+    """
+    @abstractmethod
+    def load_blocks(self):
+        return
 
+    @abstractmethod
+    def trigger_collision(self, trigger_id):
+        """Handle trigger collision based on the trigger's id"""
+        return
+
+    @abstractmethod
+    def load_progress(self):
+        """Load any additional data that is subject to change based on 
+        the player's save data, such as puzzle completion, unlocked doors,
+        one-time enemies, and collectable items"""
+        return
+
+    
     """
     === Auxiliary Functions ===
     """
+    def reset(self):
+        """Reset the room"""
+        return
+    
+    def initialize_room(self, player = None, position=vec(0,0), keep_bgm=False, place_enemies=True):
+        """Initialize the room's objects, including the player, collision blocks, and enemies"""
+        #   Play the next song or keep playing the same one #
+        if keep_bgm:
+            pass
+        else:
+            SoundManager.getInstance().play_ost(self.bgm)
+
+        if place_enemies:
+            pass
+
+        #   Initialize a new player if their is not one loaded  #
+        if player is None:
+            self.player = Player(position)
+        else:
+            self.player = player
+        self.player.set_position(position)
+
+        #   Load the enmies #
+        self.load_enemies()
+
+        #   Load the blocks #
+        self.load_blocks()
+
+        #   Load anything else  #
+        self.load_progress()
+
+    def transport(self, room=None, position=vec(0,0), position_int = -1, keepBGM = False):
+        """
+        Transport the player to a different room.
+        position -> 0-3 representing cardinal direction, or a specific coordinate
+        keepBgm -> keeps the bgm
+        """
+        if not self.transporting and not self.lock_transition:
+            self.fade()
+
+            self.transporting = True
+            self.tra_room = room
+
+            if position_int == -1:
+                self.tra_pos = position
+            elif position_int == 0:
+                self.tra_pos = vec(16*9, 16*11)
+            elif position_int == 1:
+                self.tra_pos = vec(16*16, 16*6 - 8)
+            elif position_int == 2:
+                self.tra_pos = vec(16*9, 8)
+            elif position_int == 3:
+                self.tra_pos = vec(16*2, 16*6-8)
+            else:
+                self.tra_pos = position
+                
+            self.tra_keepBGM = keepBGM
+            if not keepBGM:
+                SoundManager.getInstance().fadeout_bgm()
+
     def remove(self, obj):
+        """Remove an object from the room's references"""
         if obj in self.loaded_enemies:
             del self.loaded_enemies[self.loaded_enemies.index(obj)]
 
@@ -177,7 +262,23 @@ class MajestusEngine():
         return
     
     def play_sound(self, sound):
+        """Play a sound effect"""
         SoundManager.getInstance().playSFX(sound)
+
+    def fade(self):
+        """
+        Initializes fadeout by locking
+        player and setting self.fading to True
+        """
+        if self.player:
+            self.player.keyLock()
+        self.fading = True
+
+    def finish_fade(self):
+        """Finish fade and transition.
+        Lets DisplayManager know to switch rooms"""
+        self.fading = False
+        self.readyToTransition = True
 
     def stopFadeIn(self):
         """
@@ -191,6 +292,7 @@ class MajestusEngine():
         self.player.keyDownUnlock()
 
     def load_enemies(self):
+        """Load the room's enemies"""
         self.loaded_enemies = self.enemies
 
     def createSquare(self):
@@ -214,11 +316,94 @@ class MajestusEngine():
             self.blocks.append(IBlock((i*16, 0), height=42))
             self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
 
-        """
-    param squares -> number of quadrants to place door collision in
-    """
+    def createVertical(self):
+        ###Quadrant 1
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
         
-    def set_doors(self, shape: str ="square", num_shapes: int = 1):
+        ##Gap in range(5-8)
+        ##Middle section
+        for i in range(8,12):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
+        ##Gap in range(12-15)
+        ##Bottom section
+        for i in range(15,19):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+        
+        
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*16 - 8 - 18), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*16 - 8 - 18), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
+    
+    
+    def createHorizontal(self, gap = False):
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0, i*16), width=42))
+            self.blocks.append(IBlock((0, i*16 + 16*7), width=42))
+
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11, 0), height=42))
+
+        ### Quadrant 2
+        ##Left, Right
+        for i in range(1,5):
+            #Left
+            self.blocks.append(IBlock((0 + 304, i*16), width=42))
+            self.blocks.append(IBlock((0 + 304, i*16 + 16*7), width=42))
+
+            #Right
+            self.blocks.append(IBlock((18*16 - 8 - 18 + 304, i*16), width=42))
+            self.blocks.append(IBlock((18*16 - 8 - 18 + 304, i*16 + 16*7), width=42))
+
+        ##Bottom, Top
+        for i in range(8):
+            #Bottom
+            self.blocks.append(IBlock((i*16 + 304, 19*10 - 8 - 16), height=42))
+            self.blocks.append(IBlock((i*16 +16*11 + 304, 19*10 - 8 - 16), height=42))
+
+            #Top
+            self.blocks.append(IBlock((i*16 + 304, 0), height=42))
+            self.blocks.append(IBlock((i*16 +16*11 + 304, 0), height=42))
+
+    def set_doors(self, shape: str ="square", quadrants: int = 1):
+        """(WIP)
+        quadrants -> the number of square quandrants the room will have"""
+
+        #   Build Square Quadrants  #
         if shape == "sqaure":
             ###  Quadrant 1
             ##  Bottom
@@ -246,7 +431,7 @@ class MajestusEngine():
                 self.blocks.append(IBlock((0, 7*16), width=42))
             
             ###  Quadrant 2
-            if num_shapes > 1:
+            if quadrants > 1:
                 ##  Bottom
                 if 4 not in self.doors:
                     self.blocks.append(IBlock((16*8 + 304, 19*10 - 8 - 16), height=42))
@@ -283,6 +468,7 @@ class MajestusEngine():
                     self.blocks.append(IBlock((0 + 608, 6*16), width=42))
                     self.blocks.append(IBlock((0 + 608, 7*16), width=42))
 
+        #   Build Vertical Quadrants    #
         elif shape == "vertical":
             if 0 not in self.doors:
                 self.blocks.append(IBlock((8*16, self.size[1]-42), width = 48,height = 48))
@@ -302,29 +488,41 @@ class MajestusEngine():
             if 7 not in self.doors:
                 self.blocks.append(IBlock((0, 16*12), width = 42, height = 48))    
 
-
-    """
-    === Abstract Methods ===
-    """      
-    def create_blocks(self):
-        return
-
-    def initialize_room(self, player = None, position=vec(0,0), keep_bgm=False, place_enemies=True):
-        if keep_bgm:
-            pass
+        #   Build Default Quadrants #
         else:
-            SoundManager.getInstance().play_ost(self.bgm)
+            if 0 not in self.doors:
+                self.blocks.append(IBlock((8*16, self.size[1]-16)))
+                self.blocks.append(IBlock((9*16, self.size[1]-16)))
+                self.blocks.append(IBlock((10*16, self.size[1]-16)))
+            else:
+                self.blocks.append(IBlock((16*8-8, self.size[1]-16)))
+                self.blocks.append(IBlock((16*10+8, self.size[1]-16)))
+            
+            if 1 not in self.doors:        
+                self.blocks.append(IBlock((self.size[0]-24, 5*16)))
+                self.blocks.append(IBlock((self.size[0]-24, 6*16)))
+                self.blocks.append(IBlock((self.size[0]-24, 7*16)))
+            else:
+                self.blocks.append(IBlock((self.size[0]-24, 16*7+8)))
+                self.blocks.append(IBlock((self.size[0]-24, 16*5-8)))
+            if 2 not in self.doors:   
+                self.blocks.append(IBlock((8*16, 0)))
+                self.blocks.append(IBlock((9*16, 0)))
+                self.blocks.append(IBlock((10*16, 0)))
+            else:
+                self.blocks.append(IBlock((8*16-8, 0)))
+                self.blocks.append(IBlock((16*10+8, 0)))
+            if 3 not in self.doors:
+                self.blocks.append(IBlock((8, 5*16)))
+                self.blocks.append(IBlock((8, 6*16)))
+                self.blocks.append(IBlock((8, 7*16)))
+                
+            else:
+                self.blocks.append(IBlock((8, 16*7+8)))
+                self.blocks.append(IBlock((8, 16*5-8)))
 
-        if place_enemies:
-            pass
+    
 
-        if player is None:
-            self.player = Player(position)
-        else:
-            self.player = player
-
-        self.load_enemies()
-        self.create_blocks()
     
     def check_memory(self):
         print("Enemies: " + str(len(self.loaded_enemies)) + "\n" + str(self.loaded_enemies), end="\n\n")
@@ -415,6 +613,7 @@ class MajestusEngine():
     """
     def block_collision(self):
         for b in self.blocks:
+            #   Projectile Collision    #
             if b.popProjectiles:
                 for w in self.weapons:
                     if not w.hit:
@@ -424,11 +623,17 @@ class MajestusEngine():
                             else:
                                 w.handleCollision(self)
 
+            #   Player Collision    #
             if self.player.doesCollide(b):
-                self.player.handleCollision(b)
+                #   Trigger Collision   #
+                if isinstance(b, Trigger):
+                    self.trigger_collision(b.id)
 
-    def trigger_collision(self):
-        return
+                #   Block Collision #
+                else:
+                    self.player.handleCollision(b)
+
+    
     
     def handle_collision(self):
         #   Enemies   #
@@ -480,6 +685,23 @@ class MajestusEngine():
         self.fightingBoss = True
         self.drawBossHealth = True
 
+    def update_camera(self, seconds) -> None:
+        """ 
+        if self.camera.position[0] == 0:
+            return
+        elif self.camera.position[0] == 912:m
+            return """
+        # self.camera.position[0] = self.player.position[0] - (self.camera.getSize()[0] // 2)
+        # self.camera.position[1] = self.player.position[1] - (self.camera.getSize()[1] // 2)
+
+        # self.camera.position[0] = int(self.player.position[0]) + (self.player.get_width() // 2)
+        # self.camera.position[1] = int(self.player.position[1]) + (self.player.get_height() // 2)
+
+        self.camera.position[0] = int(self.player.position[0]) - (self.camera.getSize()[0] // 2)
+        self.camera.position[1] = int(self.player.position[1]) - (self.camera.getSize()[1] // 2)
+
+        Drawable.updateOffset(self.camera, self.size)
+
     def update(self, seconds) -> None:
         #   Floor   #
         self.floor.update(seconds)
@@ -500,6 +722,7 @@ class MajestusEngine():
 
         #   Numbers + Hud   #
         self.hud.update(seconds, self.player)
+        self.update_camera(seconds)
 
         #   Player's Weapons    #
         for w in self.weapons:

@@ -228,6 +228,9 @@ class Enemy(Drawable):
         """Reset the injur value to 0"""
         self.injury = 0
 
+    def get_damage(self):
+        return 1
+    
     @abstractmethod
     def get_drop(self):
         return Heart(vec(self.position[0] + self.image.get_size[0] // 2, self.position[1] + self.image.get_size[1] // 2))
@@ -279,7 +282,7 @@ class Enemy(Drawable):
 
     def handle_player_collision(self, player) -> bool:
         """Determine whether or not to handle player collison"""
-        return False
+        return True
     
     def handle_projectile_collision(self, proj) -> None:
         """Handle collision with a projectile"""
@@ -351,18 +354,18 @@ class Enemy(Drawable):
                     for c in self.pallet:
                         if color == c:
                             temp_image.set_at((x, y), self.pallet[c])
-                            
-                    
-
 
             temp_image.unlock()
-            drawSurface.blit(temp_image, self.position)
+            drawSurface.blit(temp_image, self.position - Drawable.CAMERA_OFFSET)
         else:
             super().draw(drawSurface, drawHitbox, use_camera)
         # self.drawn = True
     
 
     #   ----- Updating -----    #
+    def update_movement(self, seconds, player) -> None:
+        return
+    
     def update(self, seconds, player=None) -> None:
         super().update(seconds)
 
@@ -386,6 +389,7 @@ class Enemy(Drawable):
                 self.ignore_pallet = False
 
         #   Update Position #
+        self.update_movement(seconds, player)
         self.position += self.vel * seconds
 
 
@@ -459,6 +463,73 @@ class Ice_Boner(Enemy):
     
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+
+class Slimer(Enemy):
+    """A sentient mass of slime. Gross.
+    These guys always drop 1 Buck. When at full health, they drop more."""
+    def __init__(self, position=vec(0,0), direction = 1):
+        super().__init__(position, "gremlin.png",
+                         nFrames=6, fps=8,
+                         max_hp = 15, hp = 15,
+                         type=Non)
+        self.direction = direction
+        self.row = self.direction
+
+        self.motion_timer = 0.0
+        self.motion_tick = 1.0
+        self.moving = False
+
+        self.pallet = {
+            (71,148,0) : (201, 0, 0),
+            (49, 102, 0) : (139, 0, 0),
+            (25, 58, 0) : (58, 0, 0),
+            (28, 58, 0) : (58, 0, 0),
+        }
+
+        self.set_image()
+
+    def get_hit_box(self):
+        newRect = pygame.Rect(0,0,12,34)
+        newRect.left = int(self.position[0]+3)
+        newRect.top = int(self.position[1]+1)
+        return newRect
+    
+    def get_drop(self):
+            return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+        
+    def get_money(self):
+        return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+    def update_movement(self, seconds, player):
+        if not self.moving:
+            if self.direction == 1:
+                self.vel[0] = self.speed
+            elif self.direction == 3:
+                self.vel[0] = -self.speed
+            self.moving = True
+
+        else:
+            self.motion_timer += seconds
+            if self.motion_timer >= self.motion_tick:
+                self.motion_timer = 0.0
+                self.moving = False
+
+                if self.direction == 1:
+                    self.direction = 3
+
+                elif self.direction == 0:
+                    self.direction = 2
+
+                elif self.direction == 2:
+                    self.direction = 0
+
+                elif self.direction == 3:
+                    self.direction = 1
+
+                self.row = self.direction
+                self.set_image()
+                self.vel = vec(0,0)
 
 
 class Stinger(Enemy):

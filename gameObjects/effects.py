@@ -12,11 +12,20 @@ the Camera.
 """
 
 class Camera(object):
-    def __init__(self, position = vec(0,0)):
-        self.position = position
-    
-    def getSize(self):
-        return vec(304,208)
+    _INSTANCE = None
+
+    @classmethod
+    def getInstance(cls):
+        if cls._INSTANCE == None:
+            cls._INSTANCE = cls._CAM()
+        return cls._INSTANCE
+
+    class _CAM:
+        def __init__(self, position = vec(0,0)):
+            self.position = position
+        
+        def getSize(self):
+            return vec(304,208)
 
 class Name(Drawable):
     def __init__(self, room_dir: str):
@@ -126,7 +135,10 @@ class Floor(Drawable):
             self.image = SpriteManager.getInstance().getFx(self.roomDir, self.prefix  + "_" + str(self.frame+1)+".png")
         else:
             self.image = SpriteManager.getInstance().getFx(room_dir, prefix + ".png")
-        
+
+    # def draw(self, drawSurf):
+    #     super().draw(drawSurf, use_camera = False)
+
     def update(self, seconds):
         if self.animate:
             ##Update frame
@@ -158,6 +170,9 @@ class Walls(Drawable):
             self.image = SpriteManager.getInstance().getFx(self.roomDir, self.prefix  + "_" + str(self.frame+1)+".png")
         else:
             self.image = SpriteManager.getInstance().getFx(room_dir, prefix + ".png")
+
+    # def draw(self, drawSurf):
+    #     super().draw(drawSurf, use_camera = False)
 
     def update(self, seconds):
         if self.animate:

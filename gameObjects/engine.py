@@ -1587,7 +1587,7 @@ class AE(object):
             self.promptResult = False
             self.selectedItem = ""
 
-    def finishFade(self):
+    def finish_fade(self):
         """
         Sets self.readyToTransition to True.
         This lets the ScreenManager know

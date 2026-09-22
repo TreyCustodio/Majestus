@@ -137,7 +137,7 @@ class Number:
         #   Display the single digit number #
         else:
             self.image = SpriteManager.getInstance().getSprite("numbers.png",(self.number,self.row))
-            surf.blit(self.image, (self.position[0] - self.get_size()[0] // 2, self.position[1]))
+            surf.blit(self.image, (self.position[0] - self.get_size()[0] // 2, self.position[1]) - Drawable.CAMERA_OFFSET)
 
 class NumberManager:
     def __init__(self):
@@ -1059,7 +1059,7 @@ class HudManager(object):
 
             #   Health  #
             self.health.draw(surf, player)
-            self.draw_number(vec(8,0) + Drawable.CAMERA_OFFSET, player.hp, surf)
+            self.draw_number(vec(8,0), player.hp, surf)
 
             #   Equipped Shortcuts  #
             self.equipped.draw(surf, player)

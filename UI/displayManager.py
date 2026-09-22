@@ -496,12 +496,13 @@ class DisplayManager(object):
         keepBGM = self.game.tra_keepBGM
         room = self.game.tra_room
 
-        #   Reset the previous room
+        #   Reset the previous room #
         self.game.reset()
         gc.collect()
         self.fadingIn = True
         self.fade.frame = 9
 
+        #   Finish the transition and load the next room    #
         if issubclass(room, MajestusEngine):
             self.game = room()
             self.game.initialize_room(player, pos, keepBGM)
@@ -663,4 +664,4 @@ class DisplayManager(object):
                             self.returningToMain = False 
             else:
                 if self.game and self.game.transporting and self.wipe.increasing == False:
-                    self.game.finishFade()
+                    self.game.finish_fade()

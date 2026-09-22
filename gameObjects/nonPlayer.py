@@ -537,6 +537,7 @@ class GreenHeart(NonPlayer):
     
 
 class Buck(Drop):
+    """The agreed upon currency used inside Majestus"""
     def __init__(self, position = vec(0,0)):
         super().__init__(position, 1)
     
@@ -553,6 +554,7 @@ class Buck(Drop):
                     INV["money"] = INV["wallet"]
 
 class Buck_R(Drop):
+    """Worth 10 Bucks"""
     def __init__(self, position = vec(0,0)):
         super().__init__(position, 7)
     
@@ -569,6 +571,7 @@ class Buck_R(Drop):
                     INV["money"] = INV["wallet"]
 
 class Buck_B(Drop):
+    """Worth 5 Bucks"""
     def __init__(self, position = vec(0,0)):
         super().__init__(position, 6)
     

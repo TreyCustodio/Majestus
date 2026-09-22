@@ -253,53 +253,53 @@ class Test(MajestusEngine):
         # self.obstacles = [
         # ]
 
-class Wavering_1(MajestusEngine):
-    """New version of the first room"""
-    def __init__(self):
-        super().__init__(enemies = [], bgm="03", room_dir="tut_1",
-                         roomId=4)
+# class Wavering_1(MajestusEngine):
+#     """New version of the first room"""
+#     def __init__(self):
+#         super().__init__(enemies = [], bgm="03", room_dir="tut_1",
+#                          roomId=4)
 
-        self.trigger1 = Trigger(door = 2)
-        self.doors = [2]
+#         self.trigger1 = Trigger(door = 2)
+#         self.doors = [2]
 
-        # super().__init__("tut_1", animate_walls=True, wall_frames=2)
-        # self.roomId = 4
-        # self.bgm = None
-        # self.ignoreClear = True
-        # self.max_enemies = 0
-        # self.enemyPlacement = 0
-        # self.trigger1 = Trigger(vec(16*8, -12), width=48)
-        # self.npcs = [
-        #     #Rocker(vec(16*9, 16*7))
-        # ]
+#         # super().__init__("tut_1", animate_walls=True, wall_frames=2)
+#         # self.roomId = 4
+#         # self.bgm = None
+#         # self.ignoreClear = True
+#         # self.max_enemies = 0
+#         # self.enemyPlacement = 0
+#         # self.trigger1 = Trigger(vec(16*8, -12), width=48)
+#         # self.npcs = [
+#         #     #Rocker(vec(16*9, 16*7))
+#         # ]
 
 
-    #override
-    def create_blocks(self):
-        # self.blocks.append(self.trigger1)
-        self.createSquare()
+#     #override
+#     def create_blocks(self):
+#         # self.blocks.append(self.trigger1)
+#         self.createSquare()
 
-    def create_doors(self):
-        self.set_doors("square")
+#     def create_doors(self):
+#         self.set_doors("square")
 
-    def createBounds(self):
-        """
-        Creates boundaries on the outer edge of the map
-        """
-        self.createSquare()
+#     def createBounds(self):
+#         """
+#         Creates boundaries on the outer edge of the map
+#         """
+#         self.createSquare()
 
-    #override
-    # def blockCollision(self):
-    #     for b in self.blocks:
-    #         self.projectilesOnBlocks(b)
-    #         if self.player.doesCollide(b):
-    #             if b == self.trigger1:
-    #                 if SoundManager.getInstance().currentlyPlaying:
-    #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
-    #                 else:
-    #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
-    #             else:
-    #                 self.player.handleCollision(b)
+#     #override
+#     # def blockCollision(self):
+#     #     for b in self.blocks:
+#     #         self.projectilesOnBlocks(b)
+#     #         if self.player.doesCollide(b):
+#     #             if b == self.trigger1:
+#     #                 if SoundManager.getInstance().currentlyPlaying:
+#     #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), True)
+#     #                 else:
+#     #                     self.transportPos(Tutorial_2, vec(16*28, 16*11), False)
+#     #             else:
+#     #                 self.player.handleCollision(b)
 
                 
 
