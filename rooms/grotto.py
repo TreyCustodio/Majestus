@@ -24,7 +24,7 @@ class Template(MajestusEngine):
     def load_progress(self):
         return
 
-    def create_doors(self):
+    def load_doors(self):
         return
 
 
@@ -32,11 +32,16 @@ class Template(MajestusEngine):
 class Wavering_1(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
-        super().__init__(enemies = [Boner(vec(16*8, 16*2)),
-                                    Boner(vec(16*9, 16*2)),
-                                    Boner(vec(16*10, 16*2))
+        super().__init__(enemies = [
+                                    Flapper(vec(16*8, 16*3)),
+                                    Fire_Flapper(vec(16*10, 16*3)),
+
+                                    # Ice_Boner(vec(16*8, 16*4)),
+                                    # Boner(vec(16*9, 16*4)),
+                                    # Ice_Boner(vec(16*10, 16*4))
                                     ],
-                         bgm="03", room_dir="tut_1",
+                         bgm="03",
+                         room_dir="tut_1",
                          roomId=4
                         )
 
@@ -54,7 +59,7 @@ class Wavering_1(MajestusEngine):
     def load_progress(self):
         return
     
-    def create_doors(self):
+    def load_doors(self):
         self.set_doors("square")
 
 
@@ -79,9 +84,14 @@ class Wavering_2(MajestusEngine):
         self.triggers = [
             Trigger(vec(16*27,208-2), width=48, id=1),
             Trigger(vec(16*8,-14), width=48, id=2),
-            Trigger(vec(16*27, -14), width = 48, id=3)
+            Trigger(vec(16*27, -14), width = 48, id=3),
+            # Trigger(door = 6, width = 48, id=4),
         ]
-        self.doors = [1,2,4,7,6]
+
+        self.doors = [
+                      1,2,
+                      4,6,7
+                      ]
 
     def load_blocks(self):
         self.blocks = self.triggers + self.blocks
@@ -94,13 +104,48 @@ class Wavering_2(MajestusEngine):
             self.transport(Wavering_3, vec(16*9, 16*18), keepBGM=True)
         elif trigger_id == 3:
             self.transport(Wavering_Shop, position_int=0, keepBGM=True)
+        elif trigger_id == 4:
+            self.transport(Wavering_Farm, position_int=3, keepBGM=True)
 
     def load_progress(self):
         return
     
-    def create_doors(self):
-        self.set_doors("square")
+    def load_doors(self):
+        self.set_doors("square", 2)
 
+
+
+class Wavering_Farm(MajestusEngine):
+    """New version of the first room"""
+    def __init__(self):
+        super().__init__(enemies = [Slimer(vec(16*7, 16*5 + 8)),
+                                    Slimer(vec(16*21, 16*5 + 8)),
+                                    Slimer(vec(16*14, 16*5 + 8)),
+                                    ],
+                         bgm="03", room_dir="tut_1",
+                         roomId=5
+                        )
+        
+        self.triggers = [
+            Trigger(door = 3, width=48, id=1),
+        ]
+        self.doors = [
+                      3
+                      ]
+
+    def load_blocks(self):
+        self.blocks = self.triggers + self.blocks
+        self.createSquare()
+
+    def trigger_collision(self, trigger_id):
+        if trigger_id == 1:
+            self.transport(Wavering_2, position_int=3, keepBGM=True)
+
+    def load_progress(self):
+        return
+    
+    def load_doors(self):
+        self.set_doors("square")
 
 
 
@@ -136,7 +181,7 @@ class Wavering_Shop(MajestusEngine):
     def load_progress(self):
         return
     
-    def create_doors(self):
+    def load_doors(self):
         self.set_doors("square")
 
 
@@ -171,15 +216,14 @@ class Wavering_3(MajestusEngine):
         if trigger_id == 1:
             self.transport(Wavering_2, position_int=2, keepBGM=True)
         elif trigger_id == 2:
-            return
-            self.transport(Entrance, vec(16*9,16*9), keepBGM=False)
+            self.transport(Wavering_Boss, vec(16*9,16*9), keepBGM=False)
         elif trigger_id == 3:
             self.transport(Wavering_4, position_int=3, keepBGM=True)
 
     def load_progress(self):
         return
     
-    def create_doors(self):
+    def load_doors(self):
         self.set_doors("vertical")
 
 
@@ -213,5 +257,72 @@ class Wavering_4(MajestusEngine):
     def load_progress(self):
         return
     
-    def create_doors(self):
+    def load_doors(self):
         self.set_doors("square")
+
+
+
+
+
+
+class Wavering_Boss(MajestusEngine):
+    """Example Boss Room"""
+    def __init__(self):
+        super().__init__(enemies = [
+                                    # Ice_Boner(vec(16*8, 16*4)),
+                                    # Boner(vec(16*9, 16*4)),
+                                    # Ice_Boner(vec(16*10, 16*4))
+                                    ],
+                         bgm="09",
+                         room_dir="knight",
+                         roomId=4, has_ground=True
+                        )
+
+        self.trigger1 = Trigger(door = 0, id=1)
+        self.doors = [0]
+        self.boss = IceAlphaFlapper(vec(16*8, 16*4))
+
+        self.text_int = 0
+
+    def load_blocks(self):
+        self.blocks.append(self.trigger1)
+        self.createSquare()
+
+    def trigger_collision(self, trigger_id):
+        if trigger_id == 1:
+            if self.fighting_boss:
+                self.player.handleCollision(self.trigger1)
+            else:
+                self.transport(Wavering_3, position=vec(140, 20), keepBGM=False)
+
+    def load_progress(self):
+        return
+    
+    def load_doors(self):
+        self.set_doors("square")
+
+    def update(self, seconds, update_enemies=True, update_weapons=True):
+        super().update(seconds, update_enemies, update_weapons)
+
+        if self.text_int == 0:
+            if self.player.position[1] <= 16*6:
+                self.display_text(SPEECH["alpha_flapper1"])
+                self.text_int = 1
+                SoundManager.getInstance().fadeout_bgm()
+                return
+
+        elif self.text_int == 1:
+            if not self.speaking:
+                self.bsl("06")
+                self.text_int = 2
+
+        elif self.text_int == 2:
+            if self.boss.dead:
+                self.display_text(SPEECH["alpha_flapper2"])
+                self.text_int = 3
+
+        elif self.text_int == 3:
+            if self.speaking == False:
+                FLAGS[110] = True
+                self.player.keyUnlock()
+                self.text_int = 4

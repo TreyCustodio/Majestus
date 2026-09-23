@@ -277,7 +277,6 @@ class Enemy(Drawable):
 
     def collides_with_projectile(self, proj) -> bool:
         """Determine whether or not to handle projectile collision."""
-        
         return not proj.hit and self.get_hit_box().colliderect(proj.getCollisionRect())
 
     def handle_player_collision(self, player) -> bool:
@@ -302,7 +301,7 @@ class Enemy(Drawable):
 
         #   Check Weakness  #
         elif other_type in self.type.WEAKNESS:
-            damage *= self.type.WEAK_FACTOR
+            damage = int(damage * self.type.WEAK_FACTOR)
 
         #   Check Immunity  #
         elif other_type in self.type.IMMUNITY:
@@ -311,7 +310,8 @@ class Enemy(Drawable):
         #   Check Absorption    #
         elif other_type in self.type.ABSORPTION:
             damage *= -1
-        
+
+        print(damage)
         #   Deal the damage / effect    #
         self.hurt(damage)
         
@@ -340,7 +340,7 @@ class Enemy(Drawable):
         return
     
     #   ----- Drawing ----- #
-    def draw(self, drawSurface, drawHitbox=False, use_camera=True) -> None:
+    def draw(self, drawSurface, drawHitbox=True, use_camera=True) -> None:
         #   Draw I-Frames   #
         if self.damaged and not self.ignore_pallet:
             temp_image = self.image.copy()
@@ -419,7 +419,8 @@ class Test_Boner(Enemy):
 
 #   -----   Regular Enemies   -----   #
 class Boner(Enemy):
-    """A walking skeleton that throws bones at you"""
+    """A walking skeleton that throws bones at you.
+    Always drops heart unless you're at full health."""
     def __init__(self, position=vec(0, 0)):
         super().__init__(position, "boner.png",
                          nFrames=6, fps=8,
@@ -441,6 +442,49 @@ class Boner(Enemy):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
 
 
+class Flapper(Enemy):
+    """Small flying enemies"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, "flapper.png",
+                         nFrames=6, fps=8,
+                         max_hp = 5, hp = 5,
+                         type=Avian)
+
+        self.pallet = {
+        }
+
+    def get_hit_box(self):
+        return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
+    
+    def get_drop(self):
+        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+    
+    def get_money(self):
+        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+class Fire_Flapper(Enemy):
+    """Small flying enemies"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, "flapper.png",
+                         nFrames=6, fps=8,
+                         max_hp = 5, hp = 5,
+                         type=Avian_Fire)
+
+        self.row = 1
+        self.pallet = {
+        }
+
+    def get_hit_box(self):
+        return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
+    
+    def get_drop(self):
+        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+    
+    def get_money(self):
+        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+
+    
 class Ice_Boner(Enemy):
     """A Boner wielding Ice psowers"""
     def __init__(self, position=vec(0,0)):
@@ -587,6 +631,25 @@ class Stinger(Enemy):
 
 
 #   -----   Bosses   -----   #
+class AlphaFlapper(Enemy):
+    def __init__(self, position = vec(0,0), file_name = "alphaflapper.png", type=Avian):
+        super().__init__(position, file_name,
+                         nFrames = 6, fps=16,
+                         max_hp=50, hp=50,
+                         speed = 50,
+                         type=type)
+
+        self.ignore_collision = True
+
+    def get_drop(self):
+        return GreenHeart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+    
+    def get_money(self):
+        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+class IceAlphaFlapper(AlphaFlapper):
+    def __init__(self, position = vec(0,0)):
+        super().__init__(position, "alphaflapper_ice.png", Avian_Ice)
 
 class LavaKnight(Enemy):
     def __init__(self, position=vec(0,0), fall = False, boss = True):

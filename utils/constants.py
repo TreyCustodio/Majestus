@@ -312,7 +312,7 @@ Indicates what C attack and what type of arrow is equipped
 """
 EQUIPPED = {
 
-    "C": 0,
+    "C": 1,
     #0 -> fire sword, 1 -> blizzard, 2 -> clap, 3 -> slash
     
     "Arrow": 0,
@@ -334,7 +334,7 @@ The Player's inventory
 INV = {
 
     ##Health, elements, arrows, currency
-    "max_hp": 7,
+    "max_hp": 3,
     "shoot": True,
     "hasBombo": True,
     "fire": True,
@@ -361,14 +361,14 @@ INV = {
     "lavaBoots": True,
     
     "syringe": True,
-    "potion": 9,
-    "smoothie": 9,
+    "potion": 0,
+    "smoothie": 0,
     "beer": 0,
     "joint":0,
     "speed":0,
     "wallet": 99,
-    "money": 99,
-    "keys": 1,
+    "money": 0,
+    "keys": 0,
 
     ##Upgrades
     "flameCost": 20,
@@ -390,8 +390,6 @@ SHORTCUTS = {
     5:[0,0]
 }
 
-##How come you cant change this global variable?
-##Why do you need to make it a list to mutate?
 ACTIVE_SHORTCUT = [0]
 
 
@@ -562,9 +560,13 @@ roomName_class#
 """
 
 SPEECH = {
-"alpha_flapper":
+"alpha_flapper1":
 "Skreeeeeeeeee!!&&\n\
-There is no treasure!&&\n\
+Outsider!&&Begone!\n",
+
+"alpha_flapper2":
+"Skreeeeeeeeee!!&&\n\
+There is nothing for you here!&&\n\
 The Gods won't choose you!\n\
 This path leads to death!\n",
 

@@ -33,7 +33,10 @@ class Player(Animated):
         self.key_delay = False
         self.drunkTimer = 0.0
         self.ignoreCollision = False
-        self.hp = INV["max_hp"]
+
+        # self.hp = INV["max_hp"]
+        self.hp = 1
+
 
         
         #   States------------------------------------------------------------------------
@@ -297,7 +300,7 @@ class Player(Animated):
     def run(self):
         SoundManager.getInstance().stopSFX("screwattack_loop.wav")
         self.running = True
-        self.vel *= 3
+        self.vel *= 2
         #SoundManager.getInstance().stopSFX("footsteps.wav")
         SoundManager.getInstance().playSFX("screwattack_loop.wav", -1)
 

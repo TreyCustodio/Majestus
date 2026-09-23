@@ -54,7 +54,11 @@ class SpriteManager(object):
                        "mapRooms.png":(8,8), "light.png":(64,64),
                        "knight.png":(32,32), "bullshot.png":(32,32),
                        "shiver.png":(20,26), "shortcut.png":(32,32),
-                       "gremlin.png":(18,36),"boulder.png":(32,32), "alphaflapper.png":(32,32), "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
+                       "gremlin.png":(18,36),"boulder.png":(32,32),
+
+                       "alphaflapper.png":(32,32), "alphaflapper_ice.png":(32,32),
+
+                       "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
                        "stinger.png":(100,49), "ice_boner.png":(18,28), "hud_arrows.png":(16,16),
 
                        #   Text Images #
@@ -72,7 +76,9 @@ class SpriteManager(object):
                        "exclamation.png", "z.png", "fireIcon.png", "shotsfired.png", "drops.png",
                        "baller.png", "stunner.png", "mage.png", "barrier.png", "pixels.png",
                        "map.png", "mapRooms.png", "bar.png", "cursor.png",
-                       "bopper.png", "stomper.png", "alphaflapper.png", "fireball.png", "bigcursor.png", "promptcursor.png",
+                       "bopper.png", "stomper.png",
+                       "alphaflapper.png", "alphaflapper_ice.png",
+                       "fireball.png", "bigcursor.png", "promptcursor.png",
                        "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png",
                        "hud_arrows.png",
                        "title_screen_m.png"

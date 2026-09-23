@@ -9,7 +9,7 @@ This file contains all type  and status data.
 #
 #   Burn: Deal 2 damage per second for 5 seconds
 #
-#   Stun: Stop moving for 5 seconds, then move slow for 5 seconds
+#   Stun: Stop moving for 2 seconds, then move slow for 5 seconds
 #
 #   Knock: Get pushed back until you hit a wall
 #   or until 5 seconds is up
@@ -72,6 +72,16 @@ This file contains all type  and status data.
 #   Absorption: None
 #
 #
+#   --- Avian ---    #
+#   Swift, powerful, warm-blooded creatures that are easily burned.
+#   They boast high strength, defense, and speed.
+#
+#   Resistance: Wind (1/2x)
+#   Weakness:   Fire (2x)
+#   Immunity:   Freeze, Stun, Ice
+#   Absorption: None
+#
+#
 #   --- Soulbender ---    #
 #   Mysterious beings who play with death and reanimation.
 #   They are masters at hunting Luminates and Darklings.
@@ -120,6 +130,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Thunder ---     #
+#   Beings that carry the blessing of Thunder.
+
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Wind (2x)
 #   Immunity:   Stun
@@ -127,6 +139,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Wind ---     #
+#   Beings that carry the blessing of Wind.
+
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Thunder (2x)
 #   Immunity:   Knockback
@@ -134,6 +148,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Light ---     #
+#   Luminates or creatures blessed by Light.
+
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Fire, Ice, Thunder, Wind (1.5x)
 #   Immunity:   Blind, Blight
@@ -141,6 +157,8 @@ This file contains all type  and status data.
 #
 #
 #   --- Dark ---     #
+#   Darklings or creatures blessed by Darkness.
+#
 #   Resistance: Non-elemental (1/2x)
 #   Weakness:   Fire, Ice, Thunder, Wind (1.5x)
 #   Immunity:   Blind, Wither
@@ -149,8 +167,7 @@ This file contains all type  and status data.
 #
 #  
 #   --- Multi-Types --- #
-#   Resistances and Weaknesses stack up
-#   Immunities remain the same
+#   Resistances, Weaknesses, and Immunities stack up
 #   Absorption is handled by case
 
 
@@ -181,7 +198,7 @@ class Skeletal:
 
 class Skeletal_Fire:
     """Skeletal Fire-based Enemies"""
-    NAME = "Skel"
+    NAME = "Skel_Fire"
 
     RESISTANCE = ["Thunder", "Wind", "Light", "Dark"]
     WEAKNESS = ["Non", "Ice"]
@@ -256,17 +273,133 @@ class Skeletal_Dark:
     WEAK_FACTOR = 1
 
 
+
+
+
+class Avian:
+    """Versatile flyers who fear the heat"""
+    NAME = "Avian"
+
+    RESISTANCE = ["Wind"]
+    WEAKNESS = ["Fire"]
+    IMMUNITY = ["Freeze", "Stun", "Ice"]
+    ABSORPTION = []
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 2
+
+class Avian_Ice:
+    """Doubly weak to their natural weakness to fire"""
+    NAME = "Avian_Ice"
+
+    RESISTANCE = ["Non", "Wind"]
+    WEAKNESS = ["Fire"]
+    IMMUNITY = ["Freeze", "Stun", "Ice"]
+    ABSORPTION = ["Ice"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 3 # Take triple fire damage
+
+class Avian_Thunder:
+    """Cancels out their wind resistance"""
+    NAME = "Avian_Thunder"
+
+    RESISTANCE = ["Non"]
+    WEAKNESS = ["Fire"]
+    IMMUNITY = ["Freeze", "Stun", "Ice"]
+    ABSORPTION = ["Thunder"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 2
+
+class Avian_Wind:
+    """Versatile flyers who fear the heat"""
+    NAME = "Avian_Wind"
+
+    RESISTANCE = ["Non"]
+    WEAKNESS = ["Fire", "Thunder"]
+    IMMUNITY = ["Freeze", "Stun", "Ice"]
+    ABSORPTION = ["Wind"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 2
+
+class Avian_Fire:
+    """The most powerful flyers who absorb their natural weakness"""
+    NAME = "Avian_Fire"
+
+    RESISTANCE = ["Non", "Wind"]
+    WEAKNESS = ["Ice"]
+
+    IMMUNITY = ["Freeze", "Stun", "Ice", "Burn"]
+    ABSORPTION = ["Fire"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 1.5
+
+
+
+
 class Reptillian:
     """Venomous Reptiles who fear the cold"""
     NAME = "Rept"
 
     RESISTANCE = ["Thunder"]
     WEAKNESS = ["Ice"]
-    IMMUNITY = ["Poison, Burn", "Stun", "Fire"]
+    IMMUNITY = ["Poison", "Burn", "Stun", "Fire"]
     ABSORPTION = []
 
     RES_FACTOR = 2
     WEAK_FACTOR = 2
+
+class Reptillian_Wind:
+    """Cancels out their Thunder Resistance"""
+    NAME = "Rept_Wind"
+
+    RESISTANCE = ["Non"]
+    WEAKNESS = ["Ice"]
+    IMMUNITY = ["Poison", "Burn", "Stun", "Fire"]
+    ABSORPTION = ["Wind"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 2
+
+class Reptillian_Thunder:
+    """Dangerous Reptiles charged by Thunder"""
+    NAME = "Rept_Thunder"
+    
+    RESISTANCE = ["Non"]
+    WEAKNESS = ["Ice", "Wind"]
+    IMMUNITY = ["Poison, Burn", "Stun", "Fire"]
+    ABSORPTION = ["Thunder"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 2
+
+class Reptillian_Ice:
+    """Reptiles who can channel their cold blood into frosty attacks"""
+    NAME = "Rept_Ice"
+    
+    RESISTANCE = ["Non", "Thunder"]
+    WEAKNESS = ["Fire"]
+    IMMUNITY = ["Poison, Burn", "Stun", "Fire", "Freeze"]
+    ABSORPTION = ["Ice"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 1.5 # Technically, their cold blood will still resist heat just a bit
+
+class Reptillian_Fire:
+    """Doubly weak to their natural weakness to ice"""
+    NAME = "Rept_Fire"
+    
+    RESISTANCE = ["Non"]
+    WEAKNESS = ["Ice"]
+    IMMUNITY = ["Poison, Burn", "Stun", "Fire"]
+    ABSORPTION = ["Fire"]
+
+    RES_FACTOR = 2
+    WEAK_FACTOR = 3
+
 
 
 class Soulbender:

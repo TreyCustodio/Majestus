@@ -64,6 +64,31 @@ class Floor(LevelElement):
     
     
     
+class Ground(LevelElement):
+    """A drawable Ground which lies above the Floor"""
+    def __init__(self, position = vec(0,0), size = RESOLUTION, room_dir = "", fps = 3, animate = False, nFrames = 0):
+        super().__init__(position, size, room_dir)
+        
+        files = os.listdir(os.path.join("images", "levels", room_dir))
+        pattern = re.compile(r'^ground_(\d+).png$')
+        matches = [f for f in files if pattern.match(f)]
+        count = len(matches)
+
+        if count > 1:
+            self.animate = True
+            self.fps = fps
+            self.nFrames = count
+            self.frame = 0
+            self.animation_timer = 0.0
+            self.image = SpriteManager.getInstance().getFx(room_dir, "ground_0.png")
+
+        else:
+            self.animate = False
+            self.image = SpriteManager.getInstance().getFx(room_dir, "ground.png")
+
+    def set_image(self):
+        self.image = SpriteManager.getInstance().getFx(self.room_dir, "ground_" + str(self.frame) + ".png")
+
 
 class Walls(LevelElement):
     """A drawable Wall Image"""
@@ -100,27 +125,38 @@ Engine Class
 class MajestusEngine(ABC):
     """An Abstract engine that controls the game's objects"""
     def __init__(self, size = RESOLUTION, enemies = [], max_enemies = 0, bgm = "01", room_dir = "",
-                 roomId = -1):
+                 roomId = -1, has_ground = False):
 
-        #   Metadata    #
+        #   == Metadata ==    #
+        self.room_dir = room_dir
         self.size = size
         self.floor = Floor(room_dir=room_dir)
+        if has_ground:
+            self.ground = Ground(room_dir=room_dir)
+        else:
+            self.ground = None
         self.walls = Walls(room_dir=room_dir)
         self.roomId = -1
         self.bgm = bgm
+        self.boss_theme = None
         self.camera = Camera.getInstance()
 
-        #   General States  #
+        #   == General States ==  #
         self.dead = False
         self.quitting = False
-        self.fightingBoss = False 
+        self.fighting_boss = False
+        self.draw_boss_health = False
 
-        #   Dialogue States and Objects #
+        #   == Dialogue States and Objects == #
         self.speaking = False
         self.text_box = None
+        self.icon = None
+        self.cube_state = None
+        self.box_pos = vec(0,0)
+        self.cutscene = False
         self.text = ""
 
-        #   Transition States   #
+        #   == Transition States ==   #
         self.readyToTransition = False
         self.lock_transition = False
         self.transporting = False
@@ -130,15 +166,17 @@ class MajestusEngine(ABC):
         self.tra_keepBGM = False
         self.enemyCounter = 0
 
-        #   Fading Data #
+        #   == Fading Data == #
         self.fading = False
         self.whiting = False
         
-        #   Standalone Objects and Managers #
+        #   == Standalone Objects and Managers == #
         self.player = None
+        self.boss = None
+        self.bossHealthbar = None
         self.hud = HudManager.getInstance()
 
-        #   === Object Lists === #
+        #   == Object Lists == #
         ##  Interactable Entities   ##
         self.npcs = []
         
@@ -167,6 +205,10 @@ class MajestusEngine(ABC):
         self.layer_3 = []
         self.layer_4 = []
         self.layer_5 = []
+
+        #   == Counters / Trackers ==   #
+        self.drop_count = 0
+
         return
 
     """
@@ -176,6 +218,10 @@ class MajestusEngine(ABC):
     def load_blocks(self):
         return
 
+    @abstractmethod
+    def load_doors(self):
+        return
+    
     @abstractmethod
     def trigger_collision(self, trigger_id):
         """Handle trigger collision based on the trigger's id"""
@@ -192,6 +238,25 @@ class MajestusEngine(ABC):
     """
     === Auxiliary Functions ===
     """
+    def display_text(self, text = "", icon = None, box = 4):
+        """
+        Display text
+        """
+        self.player.stop()
+        self.player.keyLock()
+        self.speaking = True
+        self.text = text
+        self.boxType = box
+        self.icon = icon
+
+    def stop_dialogue(self):
+        """
+        End the dialogue routine.
+        """
+        self.speaking = False
+        self.text = ""
+        self.icon = None
+        
     def reset(self):
         """Reset the room"""
         return
@@ -219,6 +284,9 @@ class MajestusEngine(ABC):
 
         #   Load the blocks #
         self.load_blocks()
+
+        #   Load the doors  #
+        self.load_doors()
 
         #   Load anything else  #
         self.load_progress()
@@ -259,8 +327,16 @@ class MajestusEngine(ABC):
 
         elif obj in self.weapons:
             del self.weapons[self.weapons.index(obj)]
+
+        elif obj in self.drops:
+            del self.drops[self.drops.index(obj)]
+
         return
-    
+
+    def play_ost(self, music, play_intro = False):
+        """Play a track from the ost"""
+        SoundManager.getInstance().play_ost(music, play_intro)
+
     def play_sound(self, sound):
         """Play a sound effect"""
         SoundManager.getInstance().playSFX(sound)
@@ -293,7 +369,11 @@ class MajestusEngine(ABC):
 
     def load_enemies(self):
         """Load the room's enemies"""
-        self.loaded_enemies = self.enemies
+        #   Insert the boss at the top of the list
+        if self.boss:
+            self.loaded_enemies = [self.boss] + self.enemies
+        else:
+            self.loaded_enemies = self.enemies
 
     def createSquare(self):
         ##Left, Right
@@ -404,69 +484,33 @@ class MajestusEngine(ABC):
         quadrants -> the number of square quandrants the room will have"""
 
         #   Build Square Quadrants  #
-        if shape == "sqaure":
-            ###  Quadrant 1
-            ##  Bottom
-            if 0 not in self.doors:
-                self.blocks.append(IBlock((16*8, 19*10 - 8 - 16), height=42))
-                self.blocks.append(IBlock((16*9, 19*10 - 8 - 16), height=42))
-                self.blocks.append(IBlock((16*10, 19*10 - 8 - 16), height=42))
-    
-            ##  Right - Also Middle
-            if 1 not in self.doors:
-                self.blocks.append(IBlock((16*16 + 6, 5*16), width=42))
-                self.blocks.append(IBlock((16*16 + 6, 6*16), width=42))
-                self.blocks.append(IBlock((16*16 + 6, 7*16), width=42))
-    
-            ##  Top
-            if 2 not in self.doors:
-                self.blocks.append(IBlock((16*8, 0), height=42))
-                self.blocks.append(IBlock((16*9, 0), height=42))
-                self.blocks.append(IBlock((16*10, 0), height=42))
-    
-            ##  Left
-            if 3 not in self.doors:
-                self.blocks.append(IBlock((0, 5*16), width=42))
-                self.blocks.append(IBlock((0, 6*16), width=42))
-                self.blocks.append(IBlock((0, 7*16), width=42))
-            
-            ###  Quadrant 2
-            if quadrants > 1:
+        if shape == "square":
+            for i in range(quadrants):
+                ###  Quadrant 1
                 ##  Bottom
-                if 4 not in self.doors:
-                    self.blocks.append(IBlock((16*8 + 304, 19*10 - 8 - 16), height=42))
-                    self.blocks.append(IBlock((16*9 + 304, 19*10 - 8 - 16), height=42))
-                    self.blocks.append(IBlock((16*10 + 304, 19*10 - 8 - 16), height=42))
-    
-                ##  Right - Middle
-                if 5 not in self.doors:
-                    self.blocks.append(IBlock((16*16 + 6 + 304, 5*16), width=42))
-                    self.blocks.append(IBlock((16*16 + 6 + 304, 6*16), width=42))
-                    self.blocks.append(IBlock((16*16 + 6 + 304, 7*16), width=42))
-    
+                if 0 + (i * 4) not in self.doors:
+                    self.blocks.append(IBlock((16*8 + RESOLUTION[0] * i, 19*10 - 8 - 16), height=42))
+                    self.blocks.append(IBlock((16*9 + RESOLUTION[0] * i, 19*10 - 8 - 16), height=42))
+                    self.blocks.append(IBlock((16*10 + RESOLUTION[0] * i, 19*10 - 8 - 16), height=42))
+        
+                ##  Right - Also Middle
+                if 1 + (i * 4) not in self.doors:
+                    self.blocks.append(IBlock((16*16 + 6 + RESOLUTION[0] * i, 5*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + RESOLUTION[0] * i, 6*16), width=42))
+                    self.blocks.append(IBlock((16*16 + 6 + RESOLUTION[0] * i, 7*16), width=42))
+        
                 ##  Top
-                if 6 not in self.doors:
-                    self.blocks.append(IBlock((16*8 + 304, 0), height=42))
-                    self.blocks.append(IBlock((16*9 + 304, 0), height=42))
-                    self.blocks.append(IBlock((16*10 + 304, 0), height=42))
-    
-                ##  Left - Middle
-                if 7 not in self.doors:
-                    self.blocks.append(IBlock((0+ 304, 5*16), width=42))
-                    self.blocks.append(IBlock((0+ 304, 6*16), width=42))
-                    self.blocks.append(IBlock((0+ 304, 7*16), width=42))
-                
-                ##  Right - End
-                if 8 not in self.doors:
-                    self.blocks.append(IBlock((16*16 + 6 + 608, 5*16), width=42))
-                    self.blocks.append(IBlock((16*16 + 6 + 608, 6*16), width=42))
-                    self.blocks.append(IBlock((16*16 + 6 + 608, 7*16), width=42))
-                
-                ##  Left - End
-                if 9 not in self.doors:
-                    self.blocks.append(IBlock((0 + 608, 5*16), width=42))
-                    self.blocks.append(IBlock((0 + 608, 6*16), width=42))
-                    self.blocks.append(IBlock((0 + 608, 7*16), width=42))
+                if 2 + (i * 4) not in self.doors:
+                    self.blocks.append(IBlock((16*8 + RESOLUTION[0] * i, 0), height=42))
+                    self.blocks.append(IBlock((16*9 + RESOLUTION[0] * i, 0), height=42))
+                    self.blocks.append(IBlock((16*10 + RESOLUTION[0] * i, 0), height=42))
+        
+                ##  Left
+                if 3 + (i * 4) not in self.doors:
+                    self.blocks.append(IBlock((0 + RESOLUTION[0] * i, 5*16), width=42))
+                    self.blocks.append(IBlock((0 + RESOLUTION[0] * i, 6*16), width=42))
+                    self.blocks.append(IBlock((0 + RESOLUTION[0] * i, 7*16), width=42))
+
 
         #   Build Vertical Quadrants    #
         elif shape == "vertical":
@@ -534,6 +578,10 @@ class MajestusEngine(ABC):
         #   Floor   #
         self.floor.draw(surf)
 
+        #   Ground  #
+        if self.ground:
+            self.ground.draw(surf)
+
         #   Walls   #
         self.walls.draw(surf)
 
@@ -542,7 +590,11 @@ class MajestusEngine(ABC):
         #   Draw Layer 3    #
         #   Draw Layer 4    #
         #   Draw Layer 5    #
+
         #   NPCs    #
+        for n in self.npcs:
+            n.draw(surf)
+
         #   Drops   #
         for d in self.drops:
             d.draw(surf)
@@ -564,6 +616,8 @@ class MajestusEngine(ABC):
 
         #   HUD #
         self.hud.draw(surf, self.player)
+        if self.draw_boss_health:
+            self.bossHealthbar.draw(surf, self.boss.hp)
 
     def handle_weapons(self):
         """Check if any of the player is using any of their weapons"""
@@ -603,9 +657,16 @@ class MajestusEngine(ABC):
 
 
     def handle_events(self) -> None:
+        for n in self.npcs:
+            if self.player.interactable(n):
+                self.player.handle_event(n, self)
+                return
+                    
         self.player.handle_events()
         self.handle_weapons()
         self.handle_collision()
+
+        
     
 
     """
@@ -620,6 +681,8 @@ class MajestusEngine(ABC):
                         if w.doesCollide(b):
                             if w.id == "arrow":
                                 w.handleCollision(self, b)
+                            elif w.id == "blizz":
+                                pass
                             else:
                                 w.handleCollision(self)
 
@@ -633,11 +696,29 @@ class MajestusEngine(ABC):
                 else:
                     self.player.handleCollision(b)
 
-    
-    
+    def weapon_collision(self, weapon, enemy):
+        """Called when a weapon collides with an enemy"""
+        enemy.handle_projectile_collision(weapon)
+        if weapon.hit:
+            ###   Display Damage  #
+            damage = enemy.get_injury()
+
+            if damage == 0:
+                self.hud.add_number(vec(enemy.getCenterX(), enemy.position[1]), damage, row=0)
+            elif damage < 0:
+                self.hud.add_number(vec(enemy.getCenterX(), enemy.position[1]), damage * -1, row=2)
+            else:
+                self.hud.add_number(vec(enemy.getCenterX(), enemy.position[1]), damage, row=3)
+
+            enemy.reset_injury()
+
+        weapon.handleCollision(self)
+
     def handle_collision(self):
         #   Enemies   #
         for e in self.loaded_enemies:
+            if e.ignore_collision:
+                continue
             if self.player.doesCollide(e):
                 if e.handle_player_collision(self.player):
                     self.player.handleCollision(e)
@@ -645,22 +726,18 @@ class MajestusEngine(ABC):
             ##   Weapons on Enemies  #
             for w in self.weapons:
                 if e.collides_with_projectile(w):
-                    e.handle_projectile_collision(w)
-                    if w.hit:
-                        ###   Display Damage  #
-                        damage = e.get_injury()
+                    self.weapon_collision(w, e)
+                    
 
-                        if damage == 0:
-                            self.hud.add_number(vec(e.getCenterX(), e.position[1]), damage, row=0)
-                        elif damage < 0:
-                            self.hud.add_number(vec(e.getCenterX(), e.position[1]), damage * -1, row=2)
-                        else:
-                            self.hud.add_number(vec(e.getCenterX(), e.position[1]), damage, row=3)
 
-                        e.reset_injury()
-
-                    w.handleCollision(self)
-
+        #   Drops / Pickups #
+        for d in self.drops:
+            if not d.ignoreCollision:
+                if self.player.doesCollide(d):
+                    self.remove(d)
+                    self.drop_count -= 1
+                    self.hud.addObject(d.image)
+                    d.interact(self.player)
 
         #   Terrain #
         #   Blocks  #
@@ -672,18 +749,19 @@ class MajestusEngine(ABC):
     """
     === Updating ===
     """
-    def bsl(self, enemy, bossTheme):
+    def bsl(self, music):
         """
         Boss script load (bsl) para Cave Story.
         Loads up the boss fight.
         """
         self.pause_lock = True
-        self.bossTheme = bossTheme
+        self.boss_theme = music
         self.player.keyLock()
-        self.boss = enemy
-        self.bossHealthbar = BossHealth(enemyHealth= enemy.hp)
-        self.fightingBoss = True
-        self.drawBossHealth = True
+        self.bossHealthbar = BossHealth(enemyHealth= self.boss.hp)
+        self.fighting_boss = True
+        self.draw_boss_health = True
+        if self.boss_theme != None:
+            self.play_ost(self.boss_theme, True)
 
     def update_camera(self, seconds) -> None:
         """ 
@@ -702,7 +780,7 @@ class MajestusEngine(ABC):
 
         Drawable.updateOffset(self.camera, self.size)
 
-    def update(self, seconds) -> None:
+    def update(self, seconds, update_enemies = True, update_weapons = True) -> None:
         #   Floor   #
         self.floor.update(seconds)
         
@@ -716,33 +794,53 @@ class MajestusEngine(ABC):
         #   Draw Layer 5    #
         
         #   NPCs    #
+        for n in self.npcs:
+            n.update(seconds)
+
         #   Drops   #
         for d in self.drops:
             d.update(seconds)
+            if d.disappear:
+                self.remove(d)
+                self.drop_count -= 1
 
         #   Numbers + Hud   #
         self.hud.update(seconds, self.player)
+
+        #   Start the boss fight
+        if self.draw_boss_health:
+            if self.bossHealthbar.initializing:
+                self.bossHealthbar.update(seconds)
+                if not self.bossHealthbar.initializing:
+                    self.player.keyUnlock()
+                    self.pause_lock = False
+                    # self.boss.moving = True
+                    self.boss.ignore_collision = False
         self.update_camera(seconds)
 
         #   Player's Weapons    #
-        for w in self.weapons:
-            w.update(seconds, self)
+        if update_weapons:
+            for w in self.weapons:
+                w.update(seconds, self)
 
         #   Enemies #
-        for e in self.loaded_enemies:
-            e.update(seconds, self.player)
+        if update_enemies:
+            for e in self.loaded_enemies:
 
-            ##  Enemy Death ##
-            if e.dead:
-                if self.player.hp == INV["max_hp"]:
-                    drop = e.get_money()
+                e.update(seconds, self.player)
 
-                else:
-                    drop = e.get_drop()
+                ##  Enemy Death ##
+                if e.dead:
+                    if self.player.hp == INV["max_hp"]:
+                        drop = e.get_money()
 
-                self.drops.append(drop)
+                    else:
+                        drop = e.get_drop()
 
-                del self.loaded_enemies[self.loaded_enemies.index(e)]
+                    self.drop_count += 1
+                    self.drops.append(drop)
+
+                    del self.loaded_enemies[self.loaded_enemies.index(e)]
 
         #   Player  #
         self.player.update(seconds)

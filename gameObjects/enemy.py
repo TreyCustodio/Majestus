@@ -1950,93 +1950,95 @@ class Spinner(Enemy):
 Small creatures that fly diagonally and bounce off walls.
 Come in different elemental flavors.
 """
-class Flapper(Enemy):
-    """
-    The direction refers to the direction it moves in,
-    not to be confused with the direction it faces,
-    which is how direction is used for Mofos.
-    Flappers always face down.
-    """
-    def __init__(self, position = vec(0,0), typeRow = 0, direction = 0, fileName = "flapper.png"):
-        super().__init__(position, fileName, typeRow)
-        self.indicatorRow = 1
-        self.typeRow = typeRow
-        self.row = self.typeRow
-        self.speed = 70
-        self.maxHp = 5
-        self.hp = self.maxHp
-        self.damage = 1
-        self.direction = direction
-        self.hurtRow = 5
-        ##Set velocity based on direction
-        self.setSpeed()
+# class Flapper(Enemy):
+#     """
+#     The direction refers to the direction it moves in,
+#     not to be confused with the direction it faces,
+#     which is how direction is used for Mofos.
+#     Flappers always face down.
+#     """
+#     def __init__(self, position = vec(0,0), typeRow = 0, direction = 0, fileName = "flapper.png"):
+#         super().__init__(position, fileName, typeRow)
+#         self.indicatorRow = 1
+#         self.typeRow = typeRow
+#         self.row = self.typeRow
+#         self.speed = 70
+#         self.maxHp = 5
+#         self.hp = self.maxHp
+#         self.damage = 1
+#         self.direction = direction
+#         self.hurtRow = 5
+#         ##Set velocity based on direction
+#         self.setSpeed()
 
 
-    def getCollisionRect(self):
-        return pygame.Rect((self.position[0], self.position[1]+3), (16,12))
+#     def getCollisionRect(self):
+#         return pygame.Rect((self.position[0], self.position[1]+3), (16,12))
     
 
-    def move(self, seconds):
-        if not self.frozen:
-            self.position += self.vel * seconds
+#     def move(self, seconds):
+#         if not self.frozen:
+#             self.position += self.vel * seconds
 
 
-    def setSpeed(self, direction=None):
-        if self.direction == 0:
-            self.vel[0] = self.speed
-            self.vel[1] = self.speed
-        elif self.direction == 1:
-            self.vel[0] = self.speed
-            self.vel[1] = -self.speed
-        elif self.direction == 2:
-            self.vel[0] = -self.speed
-            self.vel[1] = -self.speed
-        elif self.direction == 3:
-            self.vel[0] = -self.speed
-            self.vel[1] = self.speed
-        else:
-            return
+#     def setSpeed(self, direction=None):
+#         if self.direction == 0:
+#             self.vel[0] = self.speed
+#             self.vel[1] = self.speed
+#         elif self.direction == 1:
+#             self.vel[0] = self.speed
+#             self.vel[1] = -self.speed
+#         elif self.direction == 2:
+#             self.vel[0] = -self.speed
+#             self.vel[1] = -self.speed
+#         elif self.direction == 3:
+#             self.vel[0] = -self.speed
+#             self.vel[1] = self.speed
+#         else:
+#             return
 
 
-    def updateFlash(self, seconds):
-        if self.row == self.hurtRow:
-            self.flashTimer += seconds
-            if self.flashTimer >= 0.2:
-                self.row = self.typeRow
+#     def updateFlash(self, seconds):
+#         if self.row == self.hurtRow:
+#             self.flashTimer += seconds
+#             if self.flashTimer >= 0.2:
+#                 self.row = self.typeRow
 
-    def update(self, seconds, position = None, player = None):
-        super().update(seconds)
+#     def update(self, seconds, position = None, player = None):
+#         super().update(seconds)
 
-class FireFlapper(Flapper):
-    def __init__(self, position = vec(0,0), direction = 0):
-        super().__init__(position, 1, direction)
-        self.type = Fire
-        self.arrowShield = True
+# class FireFlapper(Flapper):
+#     def __init__(self, position = vec(0,0), direction = 0):
+#         super().__init__(position, 1, direction)
+#         self.type = Fire
+#         self.arrowShield = True
     
-    def getDrop(self):
-        integer = randint(0,5)
-        if integer == 0 or integer == 1:
-            return Heart((self.position[0]+3, self.position[1]+5))
-        elif integer == 2 or integer == 3:
-            return Buck((self.position[0]+3, self.position[1]+5))
-        elif integer == 4:
-            return FireShard((self.position[0]+3, self.position[1]+5))
-        elif integer == 5:
-            return Buck_B((self.position[0]+3, self.position[1]+5))
-class IceFlapper(Flapper):
-    def __init__(self, position = vec(0,0), direction = 0):
-        super().__init__(position, 2, direction)
-        self.type = Ice
-    
-class ThunderFlapper(Flapper):
-    def __init__(self, position = vec(0,0), direction = 0):
-        super().__init__(position, 3, direction)
-        self.type = Thunder
+#     def getDrop(self):
+#         integer = randint(0,5)
+#         if integer == 0 or integer == 1:
+#             return Heart((self.position[0]+3, self.position[1]+5))
+#         elif integer == 2 or integer == 3:
+#             return Buck((self.position[0]+3, self.position[1]+5))
+#         elif integer == 4:
+#             return FireShard((self.position[0]+3, self.position[1]+5))
+#         elif integer == 5:
+#             return Buck_B((self.position[0]+3, self.position[1]+5))
 
-class WindFlapper(Flapper):
-    def __init__(self, position = vec(0,0), direction = 0):
-        super().__init__(position, 4, direction)
-        self.type = Wind
+
+# class IceFlapper(Flapper):
+#     def __init__(self, position = vec(0,0), direction = 0):
+#         super().__init__(position, 2, direction)
+#         self.type = Ice
+    
+# class ThunderFlapper(Flapper):
+#     def __init__(self, position = vec(0,0), direction = 0):
+#         super().__init__(position, 3, direction)
+#         self.type = Thunder
+
+# class WindFlapper(Flapper):
+#     def __init__(self, position = vec(0,0), direction = 0):
+#         super().__init__(position, 4, direction)
+#         self.type = Wind
 
 class AlphaFlapper(Enemy):
     def __init__(self, position=vec(0,0), typeRow = 0, direction = 0, boss = False):

@@ -126,7 +126,12 @@ class SoundManager(object):
                 outro = None
 
             name = fullname + "_loop.wav"
-            loop = pygame.mixer.Sound(name)
+            try:
+                loop = pygame.mixer.Sound(name)
+            except:
+                name = fullname + "_loop.mp3"
+                loop = pygame.mixer.Sound(name)
+
 
             self.ost[track_number] = [intro, loop, outro]
 

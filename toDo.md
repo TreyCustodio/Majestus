@@ -13,8 +13,7 @@ Scorching Fields first version. Lava Knight Boss.
 - [ ] Textbox + font design
 - [ ] Icon manager for buttons
 - [ ] Shop / Dark Cloaker
-- [ ] Light Cloaker
-  - [ ] I Wonder boss theme
+- [ ] Alpha Flapper Boss Fight
   - [ ] Introduce health concept
 - [ ] Shortcuts
   - [ ] Next/Prev shortcuts

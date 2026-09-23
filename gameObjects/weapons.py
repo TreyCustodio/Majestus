@@ -424,7 +424,7 @@ class Blizzard(AbstractWeapon):
     
 
     def handleCollision(self, engine):
-        pass
+        self.hit = False
 
     def draw(self, drawSurface):
         super().draw(drawSurface)

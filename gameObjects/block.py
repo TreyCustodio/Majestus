@@ -71,15 +71,18 @@ class Trigger(IBlock):
         if door == 0:
             super().__init__((16*9, (16*12 + 8)))
         elif door == 3:
-            super().__init__((0, 6*16))
+            super().__init__((0 - 16, 6*16))
         elif door == 2:
-            super().__init__((16*9, (-6)))
+            super().__init__((16*9, (-16)))
         elif door == 1:
-            super().__init__((RESOLUTION[0]-16, 6*16))
+            super().__init__((RESOLUTION[0], 6*16))
         
         #Specific pos
         elif door == 5:
             super().__init__(position, (1,0))
+
+        elif door == 6:
+            super().__init__((RESOLUTION[0] * 2, 6*16))
 
         ##Quadrant 2
         elif door == 10:

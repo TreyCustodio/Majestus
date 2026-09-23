@@ -82,7 +82,7 @@ class DisplayManager(object):
         """
         Play the title theme.
         """
-        SoundManager.getInstance().play_ost("01", has_intro=True)
+        SoundManager.getInstance().play_ost("01", has_intro=False)
 
     
     def setController(self, text):
@@ -193,9 +193,7 @@ class DisplayManager(object):
                     self.game.promptResult = self.textEngine.promptResult
                 
                 ##  Reset gameEngine's text states  ##
-                self.game.textBox = False
-                self.game.text = ""
-                self.game.icon = None
+                self.game.stop_dialogue()
                 self.state = "game"
 
 
@@ -250,7 +248,7 @@ class DisplayManager(object):
             self.drawGame(drawSurf)
 
             #   Perform the TextEngine's draw routine   #
-            TextEngine.draw(self.game.boxPos, drawSurf)
+            TextEngine.draw(self.game.box_pos, drawSurf)
 
     
     def drawGame(self, drawSurf, drawBox = False):
@@ -571,7 +569,7 @@ class DisplayManager(object):
             if self.game.cutscene:
                 self.game.update(seconds)
             else:
-                self.game.update(seconds, updateEnemies=False)
+                self.game.update(seconds, update_enemies=False, update_weapons = False)
 
 
         #   (4.) Update the pause screen
