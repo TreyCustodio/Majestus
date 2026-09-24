@@ -1,4 +1,6 @@
-from . import Bullet, Bombo, Sword, Dummy, Drop, David, Blizzard, Clap, Hook, Slash, Animated, Enemy, Geemer, PushableBlock, NonPlayer, Block,  LockBlock, \
+from . import \
+Bullet, Bombo, Sword, Blizzard, Clap, Hook, Slash, \
+Animated, Enemy, PushableBlock, \
 HudManager
 
 from utils import SpriteManager, SoundManager, SCALE, RESOLUTION, INV, EQUIPPED, vec, SHORTCUTS, ACTIVE_SHORTCUT
@@ -35,7 +37,7 @@ class Player(Animated):
         self.ignoreCollision = False
 
         # self.hp = INV["max_hp"]
-        self.hp = 1
+        self.hp = 3
 
 
         
@@ -482,14 +484,7 @@ class Player(Animated):
 
     def handle_events(self, interactableObject = None, engine = None):
         if not self.key_lock:
-            if interactableObject != None:
-                if EventManager.getInstance().performAction("interact"):
-                    interactableObject.interact(engine)
-                    self.stop()
-                    return
-                elif interactableObject.mobster and EventManager.getInstance().performAction("element"):
-                    interactableObject.startMobster(engine)
-                    return
+            
 
             if not self.attacking and self.swordReady:
                 ##  Target
@@ -742,8 +737,7 @@ class Player(Animated):
     Collision detection
     """
     def interactable(self, object):
-        if object.id == "greenHeart" or not object.drop:
-            return self.getCollisionRect().colliderect(object.getInteractionRect())
+        return self.getCollisionRect().colliderect(object.getInteractionRect())
     
     def interactableObjects(self, object):
         return self.getCollisionRect().colliderect(object.getInteractionRect())

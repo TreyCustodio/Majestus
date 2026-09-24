@@ -1,5 +1,7 @@
 from gameObjects import *
 
+from . import *
+
 """
 This file contains all data pertaining
 to each room's engine. Each class represents
@@ -48,10 +50,10 @@ class Intro_Cut(AbstractEngine):
             self.fading = False
             self.player = None
             self.introDone = False
-            self.textBox = False
+            self.speaking = False
             self.text = ""
             self.icon = None
-            self.boxPos = vec(32,64)
+            self.box_pos = vec(32,64)
             self.textInt = 0
             self.timer = 0.0
 
@@ -216,7 +218,7 @@ class Intro_Cut(AbstractEngine):
                 if self.text == "":
                     self.textInt += 1
                     print("Trans")
-                    self.transport(Wavering_1, (16*9, 16*9), intro=True)
+                    self.transport(grotto.Wavering_1, (16*9, 16*9), intro=True)
                     # self.transport(Test, (16*9, 16*9), intro=True)
 
             return
@@ -1232,7 +1234,7 @@ class Intro_1(AbstractEngine):
 
         def drawText(self, drawSurface):
             self.draw(drawSurface)
-            image = Drawable(self.boxPos, "TextBox2.png", (0,7))
+            image = Drawable(self.box_pos, "TextBox2.png", (0,7))
             image.draw(drawSurface)
 
 

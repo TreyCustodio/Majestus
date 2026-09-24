@@ -202,7 +202,7 @@ class EventManager(object):
         def setSpecial(self, action: str):
             ACTIONS["special"] = action
 
-        def handleEvents(self, engine):
+        def handle_events(self, engine):
             """Handle events in the queue"""
             if self.readyToFetch:
                 for event in pygame.event.get():
@@ -533,8 +533,8 @@ class EventManager(object):
                             elif key == KEY["target_right"]:
                                 ACTIONS["target_right"] = False
                     
-                engine.handleCollision()
-                engine.handleEvent()
+                engine.handle_collision()
+                engine.handle_events()
         
 
         def updateBuffer(self, seconds):

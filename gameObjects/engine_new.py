@@ -124,7 +124,7 @@ Engine Class
 """
 class MajestusEngine(ABC):
     """An Abstract engine that controls the game's objects"""
-    def __init__(self, size = RESOLUTION, enemies = [], max_enemies = 0, bgm = "01", room_dir = "",
+    def __init__(self, size = RESOLUTION, enemies = [], max_enemies = 0, npcs = [], bgm = "01", room_dir = "",
                  roomId = -1, has_ground = False):
 
         #   == Metadata ==    #
@@ -178,7 +178,7 @@ class MajestusEngine(ABC):
 
         #   == Object Lists == #
         ##  Interactable Entities   ##
-        self.npcs = []
+        self.npcs = npcs
         
         ##  Enemies to Load ##
         self.enemies = enemies
@@ -256,6 +256,7 @@ class MajestusEngine(ABC):
         self.speaking = False
         self.text = ""
         self.icon = None
+        self.player.keyUnlock()
         
     def reset(self):
         """Reset the room"""
@@ -657,10 +658,24 @@ class MajestusEngine(ABC):
 
 
     def handle_events(self) -> None:
+        #   Interact with Npcs  #
         for n in self.npcs:
             if self.player.interactable(n):
-                self.player.handle_event(n, self)
+                n.set_interactable()
+                if EventManager.getInstance().performAction("interact"):
+                    n.interact()
+                    text = n.get_text()
+                    icon = n.get_icon()
+                    self.display_text(text, icon, 2)
+                    return
+                                
+                self.player.handle_events(n, self)
+                self.handle_weapons()
+                self.handle_collision()
                 return
+            
+            elif n.interactable:
+                n.interactable = False
                     
         self.player.handle_events()
         self.handle_weapons()
@@ -732,7 +747,7 @@ class MajestusEngine(ABC):
 
         #   Drops / Pickups #
         for d in self.drops:
-            if not d.ignoreCollision:
+            if not d.ignore_collision:
                 if self.player.doesCollide(d):
                     self.remove(d)
                     self.drop_count -= 1

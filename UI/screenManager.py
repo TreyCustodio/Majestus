@@ -196,7 +196,7 @@ class ScreenManager(object):
                     self.game.promptResult = self.textEngine.promptResult
                 
                 ##  Reset gameEngine's text states  ##
-                self.game.textBox = False
+                self.game.speaking = False
                 self.game.text = ""
                 self.game.icon = None
                 self.state = "game"
@@ -254,7 +254,7 @@ class ScreenManager(object):
             self.drawGame(drawSurf)
 
             #   Perform the TextEngine's draw routine   #
-            TextEngine.draw(self.game.boxPos, drawSurf)
+            TextEngine.draw(self.game.box_pos, drawSurf)
 
     
     def drawGame(self, drawSurf, drawBox = False):
@@ -298,7 +298,7 @@ class ScreenManager(object):
             self.game.draw(drawSurf)
 
             #   Initiate the TextEngine when prompted   #
-            if self.game.textBox:
+            if self.game.speaking:
                 self.state = "textBox"
                 if "Y/N" in self.game.text:
                     TextEngine.set_text(self.game.text, self.game.icon, prompt = True)

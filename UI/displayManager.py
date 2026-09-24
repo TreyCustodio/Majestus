@@ -419,37 +419,23 @@ class DisplayManager(object):
             return pygame.quit()
         
     
-    def handleEvent(self):
+    def handle_events(self):
         """
         Decide whether to have the
         other engines handle events or not.
         """
         if self.state == "game":
+            if EventManager.getInstance().performAction("pause"):
+                self.state = "paused"
+                self.paused_events()
+                return
+            
             self.game.handle_events()
 
         elif self.state == "paused":
             if self.returningToMain:
                 return
-            if EventManager.getInstance().performAction("map"):
-                pygame.display.toggle_fullscreen()
-
-            elif not self.pauseEngine.closing and EventManager.getInstance().performAction("pause"):
-                self.pauseEngine.paused = False
-                self.pauseEngine.closing = True
-                SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
-                self.pauseEngine.mapOpen = False
-
-            else:
-                self.pauseEngine.handleEvent()
-                ##  Paused -> TextBox
-                if self.pauseEngine.text != "":
-                    self.state = "textBox"
-                    #self.state.speakP()
-                    if "Y/N" in self.pauseEngine.text:
-                        self.textEngine.set_text(self.pauseEngine.text, prompt = True)
-                    else:
-                        self.textEngine.set_text(self.pauseEngine.text)
-                
+            self.paused_events()
                 
         elif self.state == "mainMenu":
             if self.mainMenu.readyToDisplay:
@@ -462,12 +448,32 @@ class DisplayManager(object):
         elif self.state == "textBox":
             TextEngine.handleEvent()
 
-
         elif self.state == "mobster":
             self.mobsterEngine.handleEvent()
 
 
-    def handleCollision(self):
+    def paused_events(self):
+        if EventManager.getInstance().performAction("map"):
+            pygame.display.toggle_fullscreen()
+
+        elif not self.pauseEngine.closing and EventManager.getInstance().performAction("pause"):
+            self.pauseEngine.paused = False
+            self.pauseEngine.closing = True
+            SoundManager.getInstance().playSFX("OOT_PauseMenu_Close.wav")
+            self.pauseEngine.mapOpen = False
+
+        else:
+            self.pauseEngine.handleEvent()
+            ##  Paused -> TextBox
+            if self.pauseEngine.text != "":
+                self.state = "textBox"
+                #self.state.speakP()
+                if "Y/N" in self.pauseEngine.text:
+                    self.textEngine.set_text(self.pauseEngine.text, prompt = True)
+                else:
+                    self.textEngine.set_text(self.pauseEngine.text)
+
+    def handle_collision(self):
         """
         Decide whether to have the
         game engine handle collision or not.
@@ -575,8 +581,8 @@ class DisplayManager(object):
         #   (4.) Update the pause screen
         elif self.state == "paused":
             self.pauseEngine.update(seconds)
-            if self.game.getHealthBarDrawing():
-                self.game.updateHealthBar(seconds)
+            # if self.game.getHealthBarDrawing():
+                # self.game.updateHealthBar(seconds)
             
             if self.returningToMain:
                 if self.wipe.increasing == False:

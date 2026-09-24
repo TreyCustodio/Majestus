@@ -28,18 +28,38 @@ class Template(MajestusEngine):
         return
 
 
+
+
+
+
+
+
+
     
 class Wavering_1(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
         super().__init__(enemies = [
-                                    Flapper(vec(16*8, 16*3)),
-                                    Fire_Flapper(vec(16*10, 16*3)),
+                                        Fire_BetaFlapper(vec(16*10, 16*4)),
+                                Ice_Flapper(vec(16*8, 16*2)),
+                                        BetaFlapper(vec(16*9, 16*3)),
+                                Gale_Flapper(vec(16*8, 16*4)),
+                                        Thunder_Flapper(vec(16*10, 16*2)),
 
-                                    # Ice_Boner(vec(16*8, 16*4)),
-                                    # Boner(vec(16*9, 16*4)),
-                                    # Ice_Boner(vec(16*10, 16*4))
+
+                                    Ice_Boner(vec(16*14, 16*4)),
+                                    Boner(vec(16*13, 16*5)),
+                                    Ice_Boner(vec(16*12, 16*4)),
+                                    Fire_Boner(vec(16*14, 16*6)),
+                                    Boner(vec(16*9, 16*5)),
+                                    Fire_Boner(vec(16*12, 16*6)),
+
+                                    Stinger(vec(16*3, 16*6)),
                                     ],
+                         npcs = [
+                             Geemer(vec(16*3, 16*3))
+                         ],
+
                          bgm="03",
                          room_dir="tut_1",
                          roomId=4
@@ -61,6 +81,12 @@ class Wavering_1(MajestusEngine):
     
     def load_doors(self):
         self.set_doors("square")
+
+
+
+
+
+
 
 
 
@@ -103,7 +129,7 @@ class Wavering_2(MajestusEngine):
         elif trigger_id == 2:
             self.transport(Wavering_3, vec(16*9, 16*18), keepBGM=True)
         elif trigger_id == 3:
-            self.transport(Wavering_Shop, position_int=0, keepBGM=True)
+            self.transport(Wavering_Shop, vec(16*9, 300), keepBGM=True)
         elif trigger_id == 4:
             self.transport(Wavering_Farm, position_int=3, keepBGM=True)
 
@@ -112,6 +138,17 @@ class Wavering_2(MajestusEngine):
     
     def load_doors(self):
         self.set_doors("square", 2)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -149,11 +186,24 @@ class Wavering_Farm(MajestusEngine):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Wavering_Shop(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
         super().__init__(
-                        # size = vec(304, 320),
+                        size = vec(304, 320),
                          enemies = [Boner(vec(16*8, 16*2)),
                                     Boner(vec(16*9, 16*2)),
                                     Boner(vec(16*10, 16*2))
@@ -169,7 +219,7 @@ class Wavering_Shop(MajestusEngine):
 
     def load_blocks(self):
         self.blocks = self.triggers + self.blocks
-        self.createSquare()
+        self.createVertical()
         for i in range(3,10):
             self.blocks.append(IBlock(vec(16*i, 16*4)))
             self.blocks.append(IBlock(vec(16*i + (16*7), 16*4)))
@@ -183,6 +233,14 @@ class Wavering_Shop(MajestusEngine):
     
     def load_doors(self):
         self.set_doors("square")
+
+
+
+
+
+
+
+
 
 
 
@@ -230,6 +288,16 @@ class Wavering_3(MajestusEngine):
 
 
 
+
+
+
+
+
+
+
+
+
+
 class Wavering_4(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
@@ -259,6 +327,17 @@ class Wavering_4(MajestusEngine):
     
     def load_doors(self):
         self.set_doors("square")
+
+
+
+
+
+
+
+
+
+
+
 
 
 

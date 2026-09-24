@@ -105,7 +105,7 @@ def main():
         
 
         #   Handle Events   #
-        event_manager.handleEvents(display_manager)
+        event_manager.handle_events(display_manager)
 
         #   Update  #
         gameClock = pygame.time.Clock()

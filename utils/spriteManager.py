@@ -55,8 +55,10 @@ class SpriteManager(object):
                        "knight.png":(32,32), "bullshot.png":(32,32),
                        "shiver.png":(20,26), "shortcut.png":(32,32),
                        "gremlin.png":(18,36),"boulder.png":(32,32),
+                       
 
                        "alphaflapper.png":(32,32), "alphaflapper_ice.png":(32,32),
+                       "betaflapper.png":(16,16),
 
                        "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
                        "stinger.png":(100,49), "ice_boner.png":(18,28), "hud_arrows.png":(16,16),
@@ -81,7 +83,10 @@ class SpriteManager(object):
                        "fireball.png", "bigcursor.png", "promptcursor.png",
                        "bullshot.png", "light.png", "shiver.png", "Pause.png", "shortcut.png", "stinger.png", "ice_boner.png",
                        "hud_arrows.png",
-                       "title_screen_m.png"
+                       "title_screen_m.png",
+
+
+                       "fire_boner.png", "betaflapper.png"
                        
                        #   Text Images #
                      #   "cube.png"

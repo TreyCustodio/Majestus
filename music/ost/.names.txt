@@ -1,6 +1,8 @@
+------------------------------
 ==============================
 Tangible Light OST Track Names
 ==============================
+------------------------------
 
 01 - Title Theme
 
@@ -10,12 +12,48 @@ Tangible Light OST Track Names
 
 04 - Chapel Crawl (Chapel Hall Main Theme)
 
-05 - 
+05 - Stardust Quarry Theme
 
-06 - Boss Theme 1
+06 - Scorching Fields Theme 1
 
-07 - 
+07 - Scorching Fields Theme 2
 
-08 -
+08 - Frozen Core (Frigid Isles Main Theme)
 
-09 - 
+09 - Frigid Isles Theme 2
+
+10 - Gale Grove 1
+
+11 - Gale Grove 2
+
+12 - Thunder Tower 1
+
+13 - Thunder Tower 2
+
+14 - Raphael's Tomb
+
+
+----------------------------------------------------------------
+
+
+15 - Moonlit Dreams (Firi's Theme ? | Stardust Quarry Theme ?)
+
+16 - Human Extinction
+
+17 - Boss Theme 2
+
+18 - Firi vs Myer boss theme (Cry for me)
+
+19 - Final boss theme
+
+20 - Credits Theme
+
+21 - 
+
+22 - 
+
+
+
+
+
+

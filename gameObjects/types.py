@@ -184,7 +184,7 @@ class Non:
     WEAK_FACTOR = 2
 
 class Skeletal:
-    """Skeletal Enemies"""
+    """Skeletal Enemies resist everything but are weak to non-elemental attacks"""
     NAME = "Skel"
 
     RESISTANCE = ["Fire", "Ice", "Thunder", "Wind", "Light", "Dark"]

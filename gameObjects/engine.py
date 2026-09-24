@@ -2,7 +2,7 @@ import pygame
 from math import ceil
 from UI import EventManager, ACTIONS
 from utils import SpriteManager
-from . import (Drawable, HudManager, HudButtons, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, Equipped, Fade, Drop, Heart, Player, Enemy, NonPlayer, Sign, Chest, Key, Geemer, Switch, 
+from . import (Drawable, HudManager, HudButtons, Slash, Blizzard, HealthBar, ElementIcon, EnergyBar, Blessing, Torch, Equipped, Fade, Drop, Heart, Player, Enemy, Sign, Chest, Key, Geemer, Switch, 
                WeightedSwitch, DamageIndicator, LightSwitch, TimedSwitch, LockedSwitch, Block, IBlock, Trigger,
                PushableBlock, LockBlock, Bullet, Sword, Clap, Slash, Flapper, Number,
                Tile, Portal, Buck, Boulder, Map, BossHealth,
@@ -122,7 +122,7 @@ class AE(object):
         self.speaking = False
         self.text = ""
         self.icon = None
-        self.boxPos = vec(30,64)
+        self.box_pos = vec(30,64)
         self.promptResult = False
         self.selectedItem = ""
         
@@ -205,7 +205,7 @@ class AE(object):
         #   (3.) Text
         self.text = ""
         self.icon = None
-        self.boxPos = vec(32,64)
+        self.box_pos = vec(32,64)
         self.boxType = 0
         self.textInt = 0
         self.timer = 0.0
@@ -301,7 +301,7 @@ class AE(object):
         self.projectiles = []
         self.textInt = 0
         self.fightingBoss = False
-        self.boxPos = vec(30,64)
+        self.box_pos = vec(30,64)
         self.drawBossHealth = False
         self.transLock = True
         self.promptResult = False
@@ -881,28 +881,28 @@ class AE(object):
             self.player.stop()
         if icon != None:
             self.icon = icon
-            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-            if self.boxPos[0] < 16:
-                self.boxPos[0] = 16
-            elif self.boxPos[0]+244 > self.size[0]-16:
-                self.boxPos[0] = (self.size[0] - 16) - 244
+            self.box_pos = vec(self.player.position[0]-122, self.player.position[1]-32)
+            if self.box_pos[0] < 16:
+                self.box_pos[0] = 16
+            elif self.box_pos[0]+244 > self.size[0]-16:
+                self.box_pos[0] = (self.size[0] - 16) - 244
 
-            if self.boxPos[1] < 32:
-                self.boxPos[1] = 32
-            elif self.boxPos[1]+64 > self.size[1]-16:
-                self.boxPos[1] = (self.size[1] - 16)-64
+            if self.box_pos[1] < 32:
+                self.box_pos[1] = 32
+            elif self.box_pos[1]+64 > self.size[1]-16:
+                self.box_pos[1] = (self.size[1] - 16)-64
 
         else:
-            self.boxPos = vec(self.player.position[0]-122, self.player.position[1]-32)
-            if self.boxPos[0] < 16:
-                self.boxPos[0] = 16
-            elif self.boxPos[0]+244 > self.size[0]-16:
-                self.boxPos[0] = (self.size[0] - 16) - 244
+            self.box_pos = vec(self.player.position[0]-122, self.player.position[1]-32)
+            if self.box_pos[0] < 16:
+                self.box_pos[0] = 16
+            elif self.box_pos[0]+244 > self.size[0]-16:
+                self.box_pos[0] = (self.size[0] - 16) - 244
 
-            if self.boxPos[1] < 16:
-                self.boxPos[1] = 16
-            elif self.boxPos[1]+64 > self.size[1]-16:
-                self.boxPos[1] = (self.size[1] - 16)-64
+            if self.box_pos[1] < 16:
+                self.box_pos[1] = 16
+            elif self.box_pos[1]+64 > self.size[1]-16:
+                self.box_pos[1] = (self.size[1] - 16)-64
 
         self.speaking = True
         self.text = text
@@ -1451,7 +1451,7 @@ class AE(object):
         if self.player.dying:
             self.player.update(seconds)
             if self.player.headingOut:
-                self.boxPos = vec(32,RESOLUTION[1]-74)
+                self.box_pos = vec(32,RESOLUTION[1]-74)
                 self.displayText("Aight, Imma head out.&&")
                 self.player.headingOut = False
                 self.player.walking = True

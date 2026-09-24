@@ -7,6 +7,8 @@ from utils import SoundManager, SpriteManager, SCALE, RESOLUTION, vec
 from random import randint
 import pygame
 
+from math import ceil
+import os
 from abc import abstractmethod
 
 """
@@ -132,14 +134,16 @@ class Enemy(Drawable):
                  frame=0, row=0, nFrames=1, fps=16,
                  max_hp = 5, hp=5, speed=50,
                  name = "", id = [], type=0,
-                 top = False, i_frames = 20):
+                 top = False, i_frames = 20,
+                 set_pallet = True, use_pallet = False):
         
         #   Enemy Identification    #
         self.id = id
         self.name = name
+        self.use_pallet = use_pallet
 
         #   Animation Data  #
-        self.fileName = fileName
+        self.file_name = fileName
         self.animation_timer = 0.0
         self.nFrames = nFrames
         self.fps = fps
@@ -150,9 +154,13 @@ class Enemy(Drawable):
 
         #   Color Pallet Dictionary #
         ##  Each color is mapped to a damage color  ##
-        self.pallet = {
+        self.pallet = {}
+        self.damage_pallet = {}
+        self.heal_pallet = {}
+        if set_pallet:
+            self.set_damage_pallet()
+            self.set_heal_pallet()
 
-        }
 
         #   Draw Instructions   #
         self.drawn = False # The enemy has been drawn
@@ -184,12 +192,51 @@ class Enemy(Drawable):
         self.i_frames = i_frames
         self.i_frame_counter = 0
         self.damaged = False # True if I-frames are active
+        self.healed = False
         self.ignore_pallet = False # True if 0 damage dealt but still want I-frames
 
-    #   ----- Getters and Setters ----- #
+    #   ----- Auxiliary Functions ----- #
+    def print_pallet(self) -> None:
+        for c in self.damage_pallet.keys():
+            print("Color:", c, "\nDamage:", self.damage_pallet[c])
+
+    def get_pallet(self) -> dict:
+        """Returns the enemy's color pallet"""
+        image = pygame.image.load(os.path.join("images", "enemies", self.file_name)).convert_alpha()
+
+        colors = set()
+
+        for y in range(image.get_height()):
+            for x in range(image.get_width()):
+                color = image.get_at((x, y))
+                colors.add((color.r, color.g, color.b))
+
+        return colors
+
+    def set_damage_pallet(self) -> None:
+        """Default function to set the enmey's I-frame pallet"""
+        colors = self.get_pallet()
+        for i in colors:
+            red = (i[0] + i[1] + i[2]) // 3
+            red = min(255, red+125)
+            color = (red, 0, 0)
+            self.damage_pallet[i] = color
+
+    def set_heal_pallet(self) -> None:
+            """Default function to set the enmey's healing pallet"""
+            colors = self.get_pallet()
+            for i in colors:
+                green = (i[0] + i[1] + i[2]) // 3
+                green = min(255, green+70)
+                color = (0, green, 0)
+                self.heal_pallet[i] = color
+
+        
+
+
     def set_image(self) -> None:
         """Set the enemy's image before drawing"""
-        self.image = SpriteManager.getInstance().getEnemy(self.fileName, (self.row, self.frame))
+        self.image = SpriteManager.getInstance().getEnemy(self.file_name, (self.row, self.frame))
 
     def set_state(self, state: str = "") -> None:
         """Set the enemy's state and animation data"""
@@ -277,6 +324,8 @@ class Enemy(Drawable):
 
     def collides_with_projectile(self, proj) -> bool:
         """Determine whether or not to handle projectile collision."""
+        if proj.pierce:
+            return not self.damaged and self.get_hit_box().colliderect(proj.getCollisionRect())
         return not proj.hit and self.get_hit_box().colliderect(proj.getCollisionRect())
 
     def handle_player_collision(self, player) -> bool:
@@ -288,6 +337,8 @@ class Enemy(Drawable):
         #   I-Frame Checker #
         if self.damaged:
             self.play_hurt_sound(0)
+            return
+        elif self.healed:
             return
         
         #   Calculate Damage based on Types  #
@@ -311,7 +362,6 @@ class Enemy(Drawable):
         elif other_type in self.type.ABSORPTION:
             damage *= -1
 
-        print(damage)
         #   Deal the damage / effect    #
         self.hurt(damage)
         
@@ -331,7 +381,10 @@ class Enemy(Drawable):
             self.play_hurt_sound(damage)
 
         #   Start I-Frames  #
-        self.damaged = True
+        if damage <= -1:
+            self.healed = True
+        else:
+            self.damaged = True
         if damage == 0:
             self.ignore_pallet = True
 
@@ -340,27 +393,48 @@ class Enemy(Drawable):
         return
     
     #   ----- Drawing ----- #
-    def draw(self, drawSurface, drawHitbox=True, use_camera=True) -> None:
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True) -> None:
         #   Draw I-Frames   #
-        if self.damaged and not self.ignore_pallet:
-            temp_image = self.image.copy()
+        if not self.ignore_pallet:
+            if self.damaged:
+                self.draw_pallet(drawSurface, "damage")
+                return
+            elif self.healed:
+                self.draw_pallet(drawSurface, "heal")
+                return
 
-            temp_image.lock()
-            for x in range(temp_image.get_width()):
-                for y in range(temp_image.get_height()):
-                    #   Set the color accroding to the enemy's pallet   #
-                    color = temp_image.get_at((x, y))
-
-                    for c in self.pallet:
-                        if color == c:
-                            temp_image.set_at((x, y), self.pallet[c])
-
-            temp_image.unlock()
-            drawSurface.blit(temp_image, self.position - Drawable.CAMERA_OFFSET)
+        if self.use_pallet:
+            self.draw_pallet(drawSurface, "default")
         else:
             super().draw(drawSurface, drawHitbox, use_camera)
         # self.drawn = True
     
+
+    def draw_pallet(self, drawSurface, pallet = "default"):
+        temp_image = self.image.copy()
+        temp_image.lock()
+        for x in range(temp_image.get_width()):
+            for y in range(temp_image.get_height()):
+                #   Set the color according to the enemy's pallet   #
+                color = temp_image.get_at((x, y))
+                if pallet == "damage":
+                    for c in self.damage_pallet:
+                        if color == c:
+                            temp_image.set_at((x, y), self.damage_pallet[c])
+                
+                elif pallet == "heal":
+                    for c in self.heal_pallet:
+                        if color == c:
+                            temp_image.set_at((x, y), self.heal_pallet[c])
+
+                elif pallet == "default":
+                    for c in self.pallet:
+                        if color == c:
+                            temp_image.set_at((x, y), self.pallet[c])
+
+        temp_image.unlock()
+        drawSurface.blit(temp_image, self.position - Drawable.CAMERA_OFFSET)
+
 
     #   ----- Updating -----    #
     def update_movement(self, seconds, player) -> None:
@@ -381,11 +455,12 @@ class Enemy(Drawable):
         self.drawn = False
 
         #   Update I-Frames #
-        if self.damaged:
+        if self.damaged or self.healed:
             self.i_frame_counter += 1
             if self.i_frame_counter == self.i_frames:
                 self.i_frame_counter = 0
                 self.damaged = False
+                self.healed = False
                 self.ignore_pallet = False
 
         #   Update Position #
@@ -402,7 +477,7 @@ class Test_Boner(Enemy):
                          max_hp = 2_000, hp = 2_000,
                          type=Skeletal)
 
-        self.pallet = {
+        self.damage_pallet = {
              (240, 240, 217, 255) : (255, 0, 0, 255),
              (210, 75, 70, 255) : (116, 9, 5, 255)
         }
@@ -417,20 +492,22 @@ class Test_Boner(Enemy):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
     
 
-#   -----   Regular Enemies   -----   #
+#   ====   Skeletal Enemies   ====   #
 class Boner(Enemy):
     """A walking skeleton that throws bones at you.
     Always drops heart unless you're at full health."""
-    def __init__(self, position=vec(0, 0)):
-        super().__init__(position, "boner.png",
-                         nFrames=6, fps=8,
-                         max_hp = 20, hp = 20,
-                         type=Skeletal)
-
-        self.pallet = {
-             (240, 240, 217, 255) : (255, 0, 0, 255),
-             (210, 75, 70, 255) : (116, 9, 5, 255)
-        }
+    def __init__(self, position=vec(0, 0), file_name = "boner.png",
+                 type = Skeletal, hp = 20, speed = 20,
+                 fps = 8):
+        super().__init__(position, file_name,
+                         nFrames=6, fps=fps,
+                         max_hp = hp, hp = hp,
+                         type=type)
+        self.set_damage_pallet()
+        # self.damage_pallet = {
+        #      (240, 240, 217, 255) : (255, 0, 0, 255),
+        #      (210, 75, 70, 255) : (116, 9, 5, 255)
+        # }
 
     def get_hit_box(self):
         return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
@@ -441,74 +518,176 @@ class Boner(Enemy):
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
 
+class Ice_Boner(Boner):
+    """A Boner wielding Ice powers"""
+    def __init__(self, position=vec(0,0)):
+        super().__init__(position, file_name="ice_boner.png",
+                         hp=40, type=Skeletal_Ice)
 
+class Fire_Boner(Boner):
+    """A Boner wielding Fire powers"""
+    def __init__(self, position=vec(0,0)):
+        super().__init__(position, file_name="fire_boner.png",
+                         hp=40, fps=16, type=Skeletal_Fire)
+
+
+
+#   ====   Avian Enemies   ====   #
 class Flapper(Enemy):
     """Small flying enemies"""
-    def __init__(self, position=vec(0, 0)):
+    def __init__(self, position=vec(0, 0), row = 0, type = Avian):
         super().__init__(position, "flapper.png",
-                         nFrames=6, fps=8,
+                         nFrames=6, fps=12,
                          max_hp = 5, hp = 5,
-                         type=Avian)
+                         type=type)
+        self.row = row
 
-        self.pallet = {
+        self.damage_pallet = {
         }
 
+        self.set_damage_pallet()
+
     def get_hit_box(self):
-        return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
+        return pygame.Rect(self.position[0] + 2, self.position[1] + 4, 12, 8)
     
     def get_drop(self):
-        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
     
     def get_money(self):
-        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
 
-class Fire_Flapper(Enemy):
+class Fire_Flapper(Flapper):
     """Small flying enemies"""
     def __init__(self, position=vec(0, 0)):
-        super().__init__(position, "flapper.png",
-                         nFrames=6, fps=8,
-                         max_hp = 5, hp = 5,
-                         type=Avian_Fire)
+        super().__init__(position, row=1, type=Avian_Fire)
 
-        self.row = 1
+class Ice_Flapper(Flapper):
+    """Small flying enemies"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, row=2, type=Avian_Ice)
+
+class Thunder_Flapper(Flapper):
+    """Small flying enemies"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, row=3, type=Avian_Thunder)
+
+class Gale_Flapper(Flapper):
+    """Small flying enemies"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, row=4, type=Avian_Wind)
+
+
+class BetaFlapper(Enemy):
+    """Faster, more durable flappers that dodge attacks and dash at you"""
+    def __init__(self, position=vec(0, 0), type = Avian):
+        super().__init__(position, "betaflapper.png",
+                         nFrames=6, fps=16,
+                         max_hp = 15, hp = 15,
+                         type=type, use_pallet = True)
+
+        #   Easy Pallet Swap for elemental flappers
         self.pallet = {
+            #   Eye Color
+            (248, 0, 0) : (248, 0, 0),
+
+            #   Body Color
+            (148, 67, 0) : (148, 67, 0),
+            (110, 49, 0) : (110, 49, 0),
+            (61, 28, 0) : (61, 28, 0)
         }
 
     def get_hit_box(self):
-        return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
+        return pygame.Rect(self.position[0] + 2, self.position[1] + 4, 12, 8)
     
     def get_drop(self):
-        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+        n = randint(0, 2)
+        if n == 0:
+            return BigHeart(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
+        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
     
     def get_money(self):
-        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+        n = randint(0, 3)
+        if n == 3:
+            return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
+        return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
+        
+    
 
+
+class Fire_BetaFlapper(BetaFlapper):
+    """Faster, more durable flappers that dodge attacks and dash at you"""
+    def __init__(self, position=vec(0, 0)):
+        super().__init__(position, type=Avian_Fire)
+
+        #   Easy Pallet Swap for elemental flappers
+        self.pallet = {
+            #   Eye Color
+            (248, 0, 0) : (248, 183, 0),
+
+            #   Body Color
+            (148, 67, 0) : (238, 67, 0),
+            (110, 49, 0) : (176, 49, 0),
+            (61, 28, 0) : (99, 27, 0)
+        }
 
     
-class Ice_Boner(Enemy):
-    """A Boner wielding Ice psowers"""
+#   ====   Reptillian Enemies   ====   #
+class Stinger(Enemy):
+    """
+    Has a hitbox and a sting box.
+    Stings the player if it enters the sting box
+    """
+    
     def __init__(self, position=vec(0,0)):
-        super().__init__(position, "ice_boner.png",
-                         nFrames=6, fps=8,
-                         max_hp=40, hp=40,
-                         type=Skeletal_Ice)
+        super().__init__(position, "stinger.png",
+                         nFrames=11, fps=8,
+                         max_hp=30, hp=30,
+                         type=Reptillian)
 
-        self.pallet = {
-             (198, 240, 217, 255) : (255, 0, 0, 255),
-             (70, 210, 201, 255) : (116, 9, 5, 255),
-             (48, 152, 145, 255) : (116, 9, 5, 255)
-        }
+        # self.damage_pallet = {
+        #      (153, 229, 80, 255) : (255, 0, 0, 255),
+        #      (106, 190, 48, 255) : (116, 9, 5, 255),
+        #      (55, 148, 110, 255) : (100, 30, 30, 255),
+        #      (251, 224, 115, 255) : (250, 30, 30, 255),
+        #      (75, 105, 47, 255) : (142, 11, 11, 255)
+        # }
+
+        self.add_state("sting", 0, 1, 3, 8)
+
     
     def get_hit_box(self):
-        return pygame.Rect(self.position[0] + 2, self.position[1] + 1, 14, 26)
+        return pygame.Rect(self.position[0] + 33, self.position[1] + 17, 7,17)
+    
+    def get_sting_box(self):
+        return pygame.Rect(self.position[0] + 42, self.position[1] + 6, 37, 43)
     
     def get_drop(self):
         return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
     
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+    
+    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
+        #   Draw sting box for testing
+        # pygame.draw.rect(drawSurface, (255,0,0), self.get_sting_box())
+        
+        return super().draw(drawSurface, drawHitbox, use_camera)
+
+    def update(self, seconds, player=None):
+        super().update(seconds, player)
+
+        #   Check if the player is inside the sting rect    #
+        if self.current_state == "idle":
+            if self.get_sting_box().colliderect(player.getCollisionRect()):
+                self.set_state("sting")
+        
+        elif self.current_state == "sting":
+            if not self.get_sting_box().colliderect(player.getCollisionRect()):
+                self.set_state("idle")
 
 
+
+#   ====   Non-elemental Enemies   ====   #
 class Slimer(Enemy):
     """A sentient mass of slime. Gross.
     These guys always drop 1 Buck. When at full health, they drop more."""
@@ -524,7 +703,7 @@ class Slimer(Enemy):
         self.motion_tick = 1.0
         self.moving = False
 
-        self.pallet = {
+        self.damage_pallet = {
             (71,148,0) : (201, 0, 0),
             (49, 102, 0) : (139, 0, 0),
             (25, 58, 0) : (58, 0, 0),
@@ -532,6 +711,7 @@ class Slimer(Enemy):
         }
 
         self.set_image()
+        self.set_damage_pallet()
 
     def get_hit_box(self):
         newRect = pygame.Rect(0,0,12,34)
@@ -576,66 +756,16 @@ class Slimer(Enemy):
                 self.vel = vec(0,0)
 
 
-class Stinger(Enemy):
-    """
-    Has a hitbox and a sting box.
-    Stings the player if it enters the sting box
-    """
-    
-    def __init__(self, position=vec(0,0)):
-        super().__init__(position, "stinger.png",
-                         nFrames=11, fps=8,
-                         max_hp=30, hp=30,
-                         type=Reptillian)
-
-        self.pallet = {
-             (153, 229, 80, 255) : (255, 0, 0, 255),
-             (106, 190, 48, 255) : (116, 9, 5, 255),
-             (55, 148, 110, 255) : (100, 30, 30, 255),
-             (251, 224, 115, 255) : (250, 30, 30, 255),
-             (75, 105, 47, 255) : (142, 11, 11, 255)
-        }
-
-        self.add_state("sting", 0, 1, 3, 8)
-
-    
-    def get_hit_box(self):
-        return pygame.Rect(self.position[0] + 33, self.position[1] + 17, 7,17)
-    
-    def get_sting_box(self):
-        return pygame.Rect(self.position[0] + 42, self.position[1] + 6, 37, 43)
-    
-    def get_drop(self):
-        return Heart(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
-    
-    def get_money(self):
-        return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
-    
-    def draw(self, drawSurface, drawHitbox=False, use_camera=True):
-        #   Draw sting box for testing
-        # pygame.draw.rect(drawSurface, (255,0,0), self.get_sting_box())
-        
-        return super().draw(drawSurface, drawHitbox, use_camera)
-
-    def update(self, seconds, player=None):
-        super().update(seconds, player)
-
-        #   Check if the player is inside the sting rect    #
-        if self.current_state == "idle":
-            if self.get_sting_box().colliderect(player.getCollisionRect()):
-                self.set_state("sting")
-        
-        elif self.current_state == "sting":
-            if not self.get_sting_box().colliderect(player.getCollisionRect()):
-                self.set_state("idle")
 
 
-#   -----   Bosses   -----   #
+
+#   ====   Bosses   ====   #
 class AlphaFlapper(Enemy):
-    def __init__(self, position = vec(0,0), file_name = "alphaflapper.png", type=Avian):
+    def __init__(self, position = vec(0,0), file_name = "alphaflapper.png",
+                 type=Avian, hp=50):
         super().__init__(position, file_name,
                          nFrames = 6, fps=16,
-                         max_hp=50, hp=50,
+                         max_hp=hp, hp=hp,
                          speed = 50,
                          type=type)
 
@@ -649,7 +779,11 @@ class AlphaFlapper(Enemy):
 
 class IceAlphaFlapper(AlphaFlapper):
     def __init__(self, position = vec(0,0)):
-        super().__init__(position, "alphaflapper_ice.png", Avian_Ice)
+        super().__init__(position, "alphaflapper_ice.png",
+                         Avian_Ice, hp=50)
+
+
+
 
 class LavaKnight(Enemy):
     def __init__(self, position=vec(0,0), fall = False, boss = True):

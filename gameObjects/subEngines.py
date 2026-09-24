@@ -1,6 +1,6 @@
 import pygame
 
-from . import Drawable,  Animated, Text, Highlight, Map, Number, Equipped
+from . import Drawable, HudManager, Animated, Text, Highlight, Map, Number, Equipped
 
 from utils import vec, RESOLUTION, SpriteManager, SoundManager, INV, INFO, COORD, EQUIPPED, SHORTCUTS, ACTIVE_SHORTCUT
 
@@ -8,9 +8,9 @@ from UI import ACTIONS, EventManager
 
 from pygame.locals import *
 
+
 class PauseEngine(object):
-
-
+    
     def __init__(self):
         """
         Initialize item icons.
@@ -32,6 +32,8 @@ class PauseEngine(object):
             i.draw
         
         """
+        self.hud = HudManager.getInstance()
+
         self.inPosition = False
         self.closed = False
         self.closing = False
@@ -97,37 +99,37 @@ class PauseEngine(object):
             number = str(number)
             for char in number:
                 num = Number(currentPos, int(char), row)
-                num.position[0] -= num.getSize()[0] // 2
-                num.draw(drawSurface, use_camera=False)
+                # num.position[0] -= num.get_size()[0] // 2
+                num.draw(drawSurface)
                 currentPos[0] += 6
         else:
             num = Number(position, number, row)
-            num.position[0] -= num.getSize()[0] // 2
-            num.draw(drawSurface, use_camera=False)
+            # num.position[0] -= num.get_size()[0] // 2
+            num.draw(drawSurface)
 
     def drawEquipped(self, drawSurf):
         if self.inShortcuts:
-            image = AmmoBar.getInstance().getShortcut_image(0)
+            image = self.hud.equipped.getShortcut_image(0)
             if image != None:
                 drawSurf.blit(image, COORD[13][5])
             
-            image = AmmoBar.getInstance().getShortcut_image(1)
+            image = self.hud.equipped.getShortcut_image(1)
             if image != None:
                 drawSurf.blit(image, COORD[16][5])
             
-            image = AmmoBar.getInstance().getShortcut_image(2)
+            image = self.hud.equipped.getShortcut_image(2)
             if image != None:
                 drawSurf.blit(image, COORD[13][7])
             
-            image = AmmoBar.getInstance().getShortcut_image(3)
+            image = self.hud.equipped.getShortcut_image(3)
             if image != None:
                 drawSurf.blit(image, COORD[16][7])
             
-            image = AmmoBar.getInstance().getShortcut_image(4)
+            image = self.hud.equipped.getShortcut_image(4)
             if image != None:
                 drawSurf.blit(image, COORD[13][9])
             
-            image = AmmoBar.getInstance().getShortcut_image(5)
+            image = self.hud.equipped.getShortcut_image(5)
             if image != None:
                 drawSurf.blit(image, COORD[16][9])
 
@@ -162,11 +164,10 @@ class PauseEngine(object):
 
     
     def drawMap(self, drawSurf):
-
         Map.getInstance().draw(drawSurf)
 
     def draw(self, drawSurf):
-        AmmoBar.getInstance().shortCutBackground.set_alpha(255)
+        self.hud.equipped.shortCutBackground.set_alpha(255)
         if not self.paused:
             self.paused = True
 
@@ -191,8 +192,7 @@ class PauseEngine(object):
             if INV["plant"] >= 1:
                 image = SpriteManager.getInstance().getSprite("item.png", (0,0))
                 drawSurf.blit(image, (COORD[3][4]))
-                drawSurf.blit(Number.getImage(INV["plant"], 4), COORD[3][4])
-                #Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
+                Number(COORD[3][4], INV["plant"], row = 4).draw(drawSurf)
             
             if INV["chanceEmblem"]:
                 image = SpriteManager.getInstance().getSprite("item.png", (4,0))
@@ -209,30 +209,29 @@ class PauseEngine(object):
         if INV["potion"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (2,0))
             drawSurf.blit(image, (COORD[4][7]))
-            drawSurf.blit(Number.getImage(INV["potion"], 4), COORD[4][7])
+            Number(COORD[4][7], INV["potion"], row = 4).draw(drawSurf)
         
         if INV["smoothie"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (9,0))
             drawSurf.blit(image, (COORD[5][7]))
-            drawSurf.blit(Number.getImage(INV["smoothie"], 4), COORD[5][7])
+            Number(COORD[5][7], INV["smoothie"], row = 4).draw(drawSurf)
 
         if INV["beer"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (6,0))
             drawSurf.blit(image, (COORD[6][7]))
-            drawSurf.blit(Number.getImage(INV["beer"], 4), COORD[6][7])
-        
+            Number(COORD[6][7], INV["beer"], row = 4).draw(drawSurf)
+
         if INV["joint"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (7,0))
             drawSurf.blit(image, (COORD[7][7]))
-            #Text((16*4+12, 16*7+4), str(INV["beer"]), small = True).draw(drawSurf)
-            drawSurf.blit(Number.getImage(INV["joint"], 4), COORD[7][7])
+            Number(COORD[7][7], INV["joint"], row = 4).draw(drawSurf)
         
         if INV["speed"] >= 1:
             image = SpriteManager.getInstance().getSprite("item.png", (8,0))
             drawSurf.blit(image, (COORD[8][7]))
-            #Text((16*4+12, 16*7+4), str(INV["beer"]), small = True).draw(drawSurf)
-            drawSurf.blit(Number.getImage(INV["speed"], 4), COORD[8][7])
+            Number(COORD[8][7], INV["speed"], row = 4).draw(drawSurf)
 
+        #   === Non-elemental Attacks ===  #
         if INV["shoot"]:
             image = SpriteManager.getInstance().getSprite("item.png", (0,3))
             drawSurf.blit(image, (COORD[3][5]))
@@ -241,6 +240,7 @@ class PauseEngine(object):
             image = SpriteManager.getInstance().getSprite("item.png", (1,3))
             drawSurf.blit(image, (COORD[4][5]))
 
+        #   === Elemental Attacks   #
         if INV["fire"]:
             image = SpriteManager.getInstance().getSprite("item.png", (0,2))
             drawSurf.blit(image, (COORD[3][6]))
@@ -332,7 +332,7 @@ class PauseEngine(object):
             ##Ol' Reliable
             if self.highlight.position[0] == 16*3:
                 SoundManager.getInstance().playSFX("text_open1.wav")
-                AmmoBar.getInstance().setShortcutImage("ammo.png",(0,1))
+                self.hud.equipped.setShortcutImage("ammo.png",(0,1))
                 EventManager.getInstance().setSpecial("shoot")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 0
@@ -340,7 +340,7 @@ class PauseEngine(object):
             ##Bombofaun
             if self.highlight.position[0] == 16*4:
                 SoundManager.getInstance().playSFX("text_open1.wav")
-                AmmoBar.getInstance().setShortcutImage("ammo.png",(0,2), True)
+                self.hud.equipped.setShortcutImage("ammo.png",(0,2), True)
                 EventManager.getInstance().setSpecial("shoot")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "shoot"
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 1
@@ -349,7 +349,7 @@ class PauseEngine(object):
         elif self.highlight.position[1] == 16*6:
             if self.highlight.position[0] == 16*3:
                 SoundManager.getInstance().playSFX("text_open1.wav")
-                AmmoBar.getInstance().setShortcutImage("element.png",(1,0))
+                self.hud.equipped.setShortcutImage("element.png",(1,0))
                 EventManager.getInstance().setSpecial("element")
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][0] = "element"
                 SHORTCUTS[ACTIVE_SHORTCUT[0]][1] = 0
@@ -467,28 +467,28 @@ class PauseEngine(object):
         if self.highlighted[0] == 0:
             if self.highlighted[1] == 0:
                 SHORTCUTS[0] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 0)
+                self.hud.equipped.setShortcutImage(self.item, 0)
 
             elif self.highlighted[1] == 1:
                 SHORTCUTS[2] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 2)
+                self.hud.equipped.setShortcutImage(self.item, 2)
 
             elif self.highlighted[1] == 2:
                 SHORTCUTS[4] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 4)
+                self.hud.equipped.setShortcutImage(self.item, 4)
             
         elif self.highlighted[0] == 1:
             if self.highlighted[1] == 0:
                 SHORTCUTS[1] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 1)
+                self.hud.equipped.setShortcutImage(self.item, 1)
 
             elif self.highlighted[1] == 1:
                 SHORTCUTS[3] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 3)
+                self.hud.equipped.setShortcutImage(self.item, 3)
 
             elif self.highlighted[1] == 2:
                 SHORTCUTS[5] = self.item
-                AmmoBar.getInstance().setShortcutImage(self.item, 5)
+                self.hud.equipped.setShortcutImage(self.item, 5)
 
     def handleEvent(self):
         """

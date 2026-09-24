@@ -1054,7 +1054,8 @@ class HudManager(object):
 
             ### Bombofaun   ###
             if EQUIPPED["Arrow"] == 1:
-                self.draw_number(vec(32, self.bomboImage.position[1]), INV["bombo"], surf)
+                Number((32 + Drawable.CAMERA_OFFSET[0], self.arrows.position[1] + Drawable.CAMERA_OFFSET[1]), number=1, row = 1).draw(surf)
+                # self.draw_number(vec(32, self.bomboImage.position[1]), INV["bombo"], surf)
 
 
             #   Health  #

@@ -125,6 +125,7 @@ class Box:
         SpriteManager.getInstance().remove(self.file_name, (0,0))
 
     def draw(self, surf):
+        self.image.set_alpha(230)
         surf.blit(self.image, self.position)
 
     def get_size(self):
@@ -300,7 +301,16 @@ class Char(object):
         else:
             image = Text.FONT.render(char, False, TextEngine.DEFAULT_COLOR)
 
-        return image
+        #   Add a one-pixel black outline without changing the glyph size
+        outline = Text.FONT.render(char, False, (0, 0, 0))
+        outlined_image = pygame.Surface(image.get_size(), pygame.SRCALPHA)
+        for offset_x in (-1, 0, 1):
+            for offset_y in (-1, 0, 1):
+                if offset_x != 0 or offset_y != 0:
+                    outlined_image.blit(outline, (offset_x, offset_y))
+        outlined_image.blit(image, (0, 0))
+
+        return outlined_image
     
         #  Numeric chars   #
         if char.isnumeric():
@@ -717,7 +727,7 @@ class TextEngine(object):
             cube.set_state(cube_state)
 
             TextEngine.OBJECTS = [cube]
-            TextEngine.DEFAULT_COLOR = (50,0,0)
+            TextEngine.DEFAULT_COLOR = (220,220,200)
             TextEngine.TYPE = 2
 
         ##  Signposts    ##

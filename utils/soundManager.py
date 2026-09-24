@@ -38,6 +38,9 @@ class SoundManager(object):
             #   Channels    #
             pygame.mixer.set_reserved(5)
             self.bgm_channel = pygame.mixer.Channel(5)
+            pygame.mixer.set_reserved(4)
+            self.sfx_channel = pygame.mixer.Channel(4)
+            self.sfx_channel.set_volume(1.0)
 
             #   Booleans    #
             self.currently_playing = False # True if currently playing a track
@@ -53,7 +56,6 @@ class SoundManager(object):
             if has_intro:
                 self.playing_intro = True
                 self.currently_playing = name
-                
                 return self.bgm_channel.play(self.ost[name][0], 0, fade_ms=fade_in)
             else:
                 self.currently_playing = name
@@ -80,7 +82,7 @@ class SoundManager(object):
         def playSFX(self, name, loops=0):
             if name not in self.dict:
                 self._loadSFX(name)
-            return self.dict[name].play(loops)
+            return self.sfx_channel.play(self.dict[name], loops)
         
         
         def playVoice(self, name, loops=0):

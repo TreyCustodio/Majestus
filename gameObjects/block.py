@@ -39,7 +39,7 @@ class IBlock(Block):
         return pygame.Rect(self.position, (self.width, self.height))
     
     def draw(self, drawSurface, drawBox = False):
-        super().draw(drawSurface, True)
+        super().draw(drawSurface, drawBox)
     
 
 class Terrain(IBlock):

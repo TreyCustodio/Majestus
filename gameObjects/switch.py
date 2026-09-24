@@ -1,4 +1,4 @@
-from . import NonPlayer
+from . import Interactable
 from utils import vec, SpriteManager, SoundManager
 import pygame
 
@@ -6,7 +6,7 @@ import pygame
 The default type of switch.
 Once pressed, it stays pressed.
 """
-class Switch(NonPlayer):
+class Switch(Interactable):
     def __init__(self, position = vec(0,0), pressed = False):
         super().__init__(position, "Objects.png")
         self.pressed = pressed

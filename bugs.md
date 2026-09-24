@@ -1,6 +1,13 @@
 #   List of Bugs to Fix and Tasks to Complete
 
 
+##  Text Display
+### Box 2
+- closing routine not working
+- characters look a bit funny
+
+
+
 ##  Player Movement
 - Regular run ability
     - just doubles your velocity
@@ -10,11 +17,12 @@
     - freezes enemies on contact and **knocks you back**
     - cannot change directions while running
 
-##  Interacting with Npcs
-- shouldn't be able to speak while holding interact
-- once you enter the interaction zone, the engine should check for the next time you press down the interact button before displaying text
 
-
+##  Pausing
+- press start to pause
+- open up the menu
+- equip your attacks
+- add a fade out into the pause screen
 
 ## Shop Scripting
 *Can only hold 9 of any item*
@@ -33,26 +41,6 @@
 
 
 
-
-
-
-
-
-##  Enemies
-- Keep arrows attached to enemy's body
-### Flapper
-- movement more akin to a LTTP bat
-
-### Alpha Flapper
-- movement
-
-
-
-
-
-
-
-
 ##  Drops
 - animate the drop above the player's head
 - probably need to create a new object in HudManager class
@@ -66,4 +54,18 @@
     - nFrames,
     - row,
     - fps,
+
+
+
+
+
+
+##  Enemies
+- Keep arrows attached to enemy's body
+### Flapper
+- movement more akin to a LTTP bat
+
+### Alpha Flapper
+- movement
+
 

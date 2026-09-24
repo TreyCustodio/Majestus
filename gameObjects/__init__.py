@@ -4,7 +4,9 @@ from .animated import *
 from .icons import *
 from .hudManager import *
 from .effects import *
-from .nonPlayer import *
+# from .nonPlayer import *
+from .drop import*
+from .interactable import *
 from .switch import *
 from .specialSwitch import *
 from .block import *

@@ -12,11 +12,13 @@ in the Player Class and stored in the engine's self.projectiles list.
 class AbstractWeapon(Animated):
     def __init__(self, position = vec(0,0), fileName = "",
                  column = 0, direction = 0, setid = True,
+                 pierce = False,
                  type = Non):
         
         super().__init__(position, fileName, (column, direction))
         self.type = type
         self.hit = False
+        self.pierce = pierce
         self.direction = direction
         self.vel = vec(0,0)
         self.damage = 0
@@ -300,8 +302,9 @@ class Slash(AbstractWeapon):
     Only check collision for enemies. If it goes out of bounds, pop it
     """
     def __init__(self, position = vec(0,0), direction = 0, chargeMultiplier = 0,
-                 type=Wind):
-        super().__init__(position, "slash.png", 0, 0)
+                 pierce = True):
+        super().__init__(position, "slash.png", 0, 0,
+                         pierce=True, type=Wind)
         self.id = "slash"
         if chargeMultiplier == 1:
             self.damage = 10
@@ -320,7 +323,7 @@ class Slash(AbstractWeapon):
         
 
     def handleCollision(self, engine):
-        pass
+        return
 
     def getCollisionRect(self):
         return pygame.Rect((self.position), (32,32))
