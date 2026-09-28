@@ -139,7 +139,7 @@ class Heart(Drop):
 
 class BigHeart(Drop):
     def __init__(self, position = vec(0,0)):
-        super().__init__(position, 4, lifeTime=8)
+        super().__init__(position, 4, life_time=8)
         self.id = "bigHeart"
     
     def getCollisionRect(self):
@@ -208,7 +208,7 @@ class Buck_B(Drop):
             
 class FireShard(Drop):
     def __init__(self, position = vec(0,0)):
-        super().__init__(position, 2, lifeTime=20)
+        super().__init__(position, 2, life_time=20)
 
     def interact(self, player):
         if not self.interacted:

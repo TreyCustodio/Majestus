@@ -780,6 +780,7 @@ class Player(Animated):
                     object.push()
                 else:
                     self.preventCollision(object, side)
+
         elif issubclass(type(object), Enemy) and object.id != "shot":
             if self.charging:
                 self.shootSlash()
@@ -797,8 +798,6 @@ class Player(Animated):
             self.preventCollision(object, side)
 
     def enemyCollision(self, enemy, side):
-        
-        
         if enemy.frozen:
             if not enemy.id == "noStop":
                 if self.running:
@@ -810,7 +809,9 @@ class Player(Animated):
             if not enemy.id == "noStop":
                 if self.running:
                     self.stop_run(enemy)
-            self.knockback(side)
+
+            if enemy.push_player:
+                self.knockback(side)
             
     def preventCollision(self, object, side = None):
        

@@ -257,8 +257,8 @@ class Geemer(Interactable):
         self.dialogueCounter = 0 #Helpful for displaying multiple different conversations
 
     def get_text(self):
-        return "Glitched up the ass\n"
-
+        return self.text
+    
     def get_icon(self):
         return self.icon
     

@@ -1,5 +1,9 @@
 #   List of Bugs to Fix and Tasks to Complete
 
+##  Level Design
+- start with an image file
+- map each 16x16 grid element to an I-block of the same size
+
 
 ##  Text Display
 ### Box 2
@@ -8,14 +12,10 @@
 
 
 
-##  Player Movement
-- Regular run ability
-    - just doubles your velocity
-    - lets you change directions
-- Ice skates
-    - triples your velocity
-    - freezes enemies on contact and **knocks you back**
-    - cannot change directions while running
+## Maps
+### Wavering Grotto -> Brown or Blue
+### Chapel Hall -> Red
+### Scorching Fields -> Orange
 
 
 ##  Pausing
@@ -40,6 +40,14 @@
 4. Wallet $99
 
 
+##  Player Movement
+- Regular run ability
+    - just doubles your velocity
+    - lets you change directions
+- Ice skates
+    - triples your velocity
+    - freezes enemies on contact and **knocks you back**
+    - cannot change directions while running
 
 ##  Drops
 - animate the drop above the player's head

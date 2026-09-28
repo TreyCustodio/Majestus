@@ -16,6 +16,10 @@ Scorching Fields first version. Lava Knight Boss.
 - Learn the basic movement and enemy types
 - Buy the Chance emblem and Wallet Expansion
 - Fight Alpha Flapper
+- Eastern area is one giant puzzle where you rearrange rooms, embracing the *wavering* namesake
+  1. Basic "build-your-own room" puzzle
+  2. Defeat enemies in a certain order to get a different room
+  3. 
 
 ### Chapel Hall
 - Solve a puzzle to a hot beat

@@ -298,7 +298,9 @@ class MajestusEngine(ABC):
         position -> 0-3 representing cardinal direction, or a specific coordinate
         keepBgm -> keeps the bgm
         """
+        print(self.transporting)
         if not self.transporting and not self.lock_transition:
+            
             self.fade()
 
             self.transporting = True
@@ -742,6 +744,9 @@ class MajestusEngine(ABC):
             for w in self.weapons:
                 if e.collides_with_projectile(w):
                     self.weapon_collision(w, e)
+
+            ##  Blocks on Enemies
+            
                     
 
 

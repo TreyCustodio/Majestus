@@ -560,6 +560,12 @@ roomName_class#
 """
 
 SPEECH = {
+"wavering_geemer1":
+"\n\'Sup dude?$$\n\
+I'm a Geemer.&&\n\
+Lovely to meet you, my guy.&&\n\
+Here's to a wealth of joy!\n",
+
 "alpha_flapper1":
 "Skreeeeeeeeee!!&&\n\
 Outsider!&&Begone!\n",

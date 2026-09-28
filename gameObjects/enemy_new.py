@@ -16,11 +16,6 @@ All yur favorite delinquits are scripted here!
 """
 
 #   -----   Engine  -----   #
-#   Each frame, the Engine performs (3) Tasks.
-#   (1) Draw
-#   (2) Handle Events and Collision
-#   (3) Upate the world
-#
 #   *engine.npcs* stores currently loaded enemies
 #   *engine.enemies* stores the enemies to-be-loaded
 #   *engine.enemy_counter* keeps track of the number of defeated enemies
@@ -33,12 +28,25 @@ All yur favorite delinquits are scripted here!
 #       - calls enemy.handleCollision()
 #
 #   *update_enemy()* updates the enemy after handling events
-
-
-
-
-
-#   -----   Enemies -----   #
+#
+#
+#
+#
+#   ----    Pre-loading Sprites ----    #
+#   Enemies with more complex pallet data,
+#   including those that peform pallet swaps,
+#   should load each of the images that they will use
+#   so as to avoid pallet swapping every single frame
+#   during draw().
+#
+#   These usually include enemies that come in different flavors:
+#   
+#   Stingers
+#   Flappers
+#   Slimers
+# 
+# 
+#   -----   Enemy Types -----   #
 #   Each enemy has a type (or types) and specific behavior.
 #
 #   --- Ids --- #
@@ -124,6 +132,15 @@ All yur favorite delinquits are scripted here!
 #       and tosses endless bones at you. Can be fought multiple times, but
 #       gets stronger each time. Each fight is unlocked after certain
 #       story requirements are met.
+#
+#
+#   [To-Implement]
+#   Baller
+#   Gamer
+#   Viber
+#   Faller
+#   Rocker
+
 
     
 #   -----   Abstract Enemy Class   -----   #
@@ -131,11 +148,12 @@ class Enemy(Drawable):
     """Abstract Enemy Class"""
 
     def __init__(self, position=vec(0,0), fileName="",
-                 frame=0, row=0, nFrames=1, fps=16,
+                 frame=0, row=0, nFrames=1, nRows = 1, fps=16,
                  max_hp = 5, hp=5, speed=50,
                  name = "", id = [], type=0,
                  top = False, i_frames = 20,
-                 set_pallet = True, use_pallet = False):
+                 set_pallet = True, use_pallet = False,
+                 push_player = True, pre_loaded = False):
         
         #   Enemy Identification    #
         self.id = id
@@ -149,17 +167,10 @@ class Enemy(Drawable):
         self.fps = fps
         self.frame = frame
         self.row = row
+        self.nRows = nRows
         self.image = None
-        self.set_image()
 
-        #   Color Pallet Dictionary #
-        ##  Each color is mapped to a damage color  ##
-        self.pallet = {}
-        self.damage_pallet = {}
-        self.heal_pallet = {}
-        if set_pallet:
-            self.set_damage_pallet()
-            self.set_heal_pallet()
+        
 
 
         #   Draw Instructions   #
@@ -169,11 +180,36 @@ class Enemy(Drawable):
         #   State Data  #
         self.current_state = "idle"
 
+        #   Color Pallet Dictionary #
+        ##  Each color is mapped to a damage color  ##
+        self.pallet = {}
+        self.damage_pallet = {}
+        self.heal_pallet = {}
+
         ##  Set animation data per state in the following format:
         ##  [start_frame, row, nFrames, fps]
         self.states = {
             "idle":[self.frame, self.row, self.nFrames, self.fps]
         }
+
+        #   Pre-loading
+        self.pre_loaded = pre_loaded
+        if pre_loaded:
+            #   State -> contains rows -> contains images
+            self.images = {
+                "idle": []
+            }
+            self.damage_images = {
+                "idle":[]
+            }
+
+            # self.load_images()
+
+
+        #   Pallet loading
+        if set_pallet and not self.pre_loaded:
+            self.set_damage_pallet()
+            self.set_heal_pallet()
 
         #   Enemy Attributes    #
         self.position = position
@@ -185,6 +221,7 @@ class Enemy(Drawable):
         self.speed = speed
         self.type = type
         self.ignore_collision = False
+        self.push_player = push_player
         self.hit = False
         self.dead = False
         self.dying = False
@@ -194,6 +231,9 @@ class Enemy(Drawable):
         self.damaged = False # True if I-frames are active
         self.healed = False
         self.ignore_pallet = False # True if 0 damage dealt but still want I-frames
+
+        if not self.pre_loaded:
+            self.set_image()
 
     #   ----- Auxiliary Functions ----- #
     def print_pallet(self) -> None:
@@ -222,21 +262,65 @@ class Enemy(Drawable):
             color = (red, 0, 0)
             self.damage_pallet[i] = color
 
+        if self.pre_loaded:
+            for state in self.images:
+                for row in range(len(self.images[state])):
+                    damage_row = []
+                    for frame in range(len(self.images[state][row])):
+                        temp_image = self.images[state][row][frame].copy()
+                        temp_image.lock()
+                        for x in range(temp_image.get_width()):
+                            for y in range(temp_image.get_height()):
+                                #   Set the color according to the enemy's pallet   #
+                                color = temp_image.get_at((x, y))
+                                for c in self.damage_pallet:
+                                    if color == c:
+                                        temp_image.set_at((x, y), self.damage_pallet[c])
+                        temp_image.unlock()
+                        damage_row.append(temp_image)
+                    self.damage_images[state].append(damage_row)
+                    damage_row = []
+                        
+                        
+                
+
     def set_heal_pallet(self) -> None:
-            """Default function to set the enmey's healing pallet"""
-            colors = self.get_pallet()
-            for i in colors:
-                green = (i[0] + i[1] + i[2]) // 3
-                green = min(255, green+70)
-                color = (0, green, 0)
-                self.heal_pallet[i] = color
+        """Default function to set the enmey's healing pallet"""
+        colors = self.get_pallet()
+        for i in colors:
+            green = (i[0] + i[1] + i[2]) // 3
+            green = min(255, green+70)
+            color = (0, green, 0)
+            self.heal_pallet[i] = color
 
         
 
 
     def set_image(self) -> None:
         """Set the enemy's image before drawing"""
-        self.image = SpriteManager.getInstance().getEnemy(self.file_name, (self.row, self.frame))
+        # 0 -> frame, 1 -> row, 2 -> nFrames, 3 -> fps
+        if self.pre_loaded:
+            self.image = self.images[self.current_state][0][self.frame]
+        else:
+            self.image = SpriteManager.getInstance().getEnemy(self.file_name, (self.row, self.frame))
+
+    def load_images(self) -> None:
+        """Pre-load all of the enemy's sprites
+        **NOTE** Should exclude rows from this algorithm.
+        Just add a list of sprites for each state.
+        Each state is its own row;
+        its not like each state will have multiple rows..."""
+        for state in self.states:
+            rowId = self.states[state][1]
+            nFrames = self.states[state][2]
+            row = []
+            for frame in range(nFrames):
+                image = SpriteManager.getInstance().getEnemy(self.file_name, (rowId, frame))
+                row.append(image)
+            self.images[state].append(row)
+
+    def set_alpha(self, alpha : int = 255) -> None:
+        self.image.set_alpha(alpha)
 
     def set_state(self, state: str = "") -> None:
         """Set the enemy's state and animation data"""
@@ -254,6 +338,9 @@ class Enemy(Drawable):
     def add_state(self, state: str = "", starting_frame: int = 0, row: int = 0, nFrames: int = 0, fps: int = 0) -> None:
         """Add a state to the state dictionary"""
         self.states[state] = [starting_frame, row, nFrames, fps]
+        if self.pre_loaded:
+            self.images[state] = []
+            self.damage_images[state] = []
 
     def getCollisionRect(self):
         return self.get_hit_box()
@@ -280,11 +367,11 @@ class Enemy(Drawable):
     
     @abstractmethod
     def get_drop(self):
-        return Heart(vec(self.position[0] + self.image.get_size[0] // 2, self.position[1] + self.image.get_size[1] // 2))
+        return Heart(vec(self.position[0] + self.image.get_size()[0] // 2, self.position[1] + self.image.get_size()[1] // 2))
     
     @abstractmethod
     def get_money(self):
-        return Buck(vec(self.position[0] + self.image.get_size[0] // 2, self.position[1] + self.image.get_size[1] // 2))
+        return Buck(vec(self.position[0] + self.image.get_size()[0] // 2, self.position[1] + self.image.get_size()[1] // 2))
     
     def play_no_damage(self):
         """PLay the enemy's no damage sound"""
@@ -411,6 +498,14 @@ class Enemy(Drawable):
     
 
     def draw_pallet(self, drawSurface, pallet = "default"):
+        #   Draw based on pre-loaded pallet
+        if self.pre_loaded:
+            if pallet == "damage":
+                rowId = self.states[self.current_state][1]
+                img = self.damage_images[self.current_state][0][self.frame]
+                drawSurface.blit(img, self.position - Drawable.CAMERA_OFFSET)
+                return
+        
         temp_image = self.image.copy()
         temp_image.lock()
         for x in range(temp_image.get_width()):
@@ -498,11 +593,21 @@ class Boner(Enemy):
     Always drops heart unless you're at full health."""
     def __init__(self, position=vec(0, 0), file_name = "boner.png",
                  type = Skeletal, hp = 20, speed = 20,
-                 fps = 8):
+                 fps = 8, direction = 0):
         super().__init__(position, file_name,
-                         nFrames=6, fps=fps,
+                         nFrames=6, nRows = 4, fps=fps,
                          max_hp = hp, hp = hp,
-                         type=type)
+                         type=type, speed=speed,
+                         )
+
+        #   Movement data   #
+        self.center_position = self.position.copy()
+        self.delta = 16
+        self.direction = direction
+
+        #   States  #
+        self.walking = False
+
         self.set_damage_pallet()
         # self.damage_pallet = {
         #      (240, 240, 217, 255) : (255, 0, 0, 255),
@@ -518,6 +623,64 @@ class Boner(Enemy):
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
 
+
+    def stop(self):
+        self.vel = vec(0,0)
+        self.walking = False
+
+    def update_movement(self, seconds, player):
+        """
+        Boners start in the centle of their "movement area", which is x*2 pixels in any direction
+        (1) Move x pixels in any direction
+        (2) Cannot move , for a maximum of x * 2 pixels in any direction
+        """
+        delta = 64
+        
+        if self.walking:
+            if self.direction == 0:
+                if int(self.position[1]) >= int(self.center_position[1] + self.delta):
+                    self.position[1] = int(self.center_position[1] + self.delta)
+                    self.stop()
+            elif self.direction == 1:
+                if int(self.position[0]) >= int(self.center_position[0] + self.delta):
+                    self.position[0] = int(self.center_position[0] + self.delta)
+                    self.stop()
+            elif self.direction == 2:
+                if int(self.position[1]) <= int(self.center_position[1] - self.delta):
+                    self.position[1] = int(self.center_position[1] - self.delta)
+                    self.stop()
+            elif self.direction == 3:
+                if int(self.position[0]) <= int(self.center_position[0] - self.delta):
+                    self.position[0] = int(self.center_position[0] - self.delta)
+                    self.stop()
+        
+        else:
+            num = randint(0,3)
+            #   Move down
+            if num == 0:
+                self.vel = vec(0, self.speed)
+                self.direction = 0
+                self.row = 0
+            #   Move right
+            elif num == 1:
+                self.vel = vec(self.speed, 0)
+                self.direction = 1
+                self.row = 1
+            #   Move up
+            elif num == 2:
+                self.vel = vec(0, -self.speed)
+                self.direction = 2
+                self.row = 2
+            #   Move left
+            elif num == 3:
+                self.vel = vec(-self.speed, 0)
+                self.direction = 3
+                self.row = 3
+
+            self.walking = True
+
+
+    
 class Ice_Boner(Boner):
     """A Boner wielding Ice powers"""
     def __init__(self, position=vec(0,0)):
@@ -539,12 +702,14 @@ class Flapper(Enemy):
         super().__init__(position, "flapper.png",
                          nFrames=6, fps=12,
                          max_hp = 5, hp = 5,
-                         type=type)
+                         type=type, push_player=False)
         self.row = row
 
         self.damage_pallet = {
         }
 
+        self.movement_frames = 8
+        self.frame_counter = 0
         self.set_damage_pallet()
 
     def get_hit_box(self):
@@ -555,6 +720,62 @@ class Flapper(Enemy):
     
     def get_money(self):
         return Buck(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
+
+    def update_movement(self, seconds, player):
+        """
+        Each frame or every x frames:
+        (1) -> 20% chance: Move in any direction
+        (2) -> 40% Stop
+        (3) -> 40% Keep moving same direction
+        """
+        if self.frame_counter == self.movement_frames:
+            self.frame_counter = 0
+            num1 = randint(1,5)
+
+            #   Change directions (40%)
+            if num1 == 1 or num1 == 2:
+                num = randint(0,7)
+                #   Move down
+                if num == 0:
+                    self.vel = vec(0, self.speed)
+                    self.direction = 0
+                #   Move right
+                elif num == 1:
+                    self.vel = vec(self.speed, 0)
+                    self.direction = 1
+                #   Move up
+                elif num == 2:
+                    self.vel = vec(0, -self.speed)
+                    self.direction = 2
+                #   Move left
+                elif num == 3:
+                    self.vel = vec(-self.speed, 0)
+                    self.direction = 3
+
+                #   Move top-left
+                elif num == 4:
+                    self.vel = vec(-self.speed // 2, -self.speed // 2)
+                #   Move top-right
+                elif num == 5:
+                    self.vel = vec(self.speed // 2, -self.speed // 2)
+                #   Move bottom-left
+                elif num == 6:
+                    self.vel = vec(self.speed // 2, -self.speed // 2)
+                #   Move bottom-right
+                elif num == 7:
+                    self.vel = vec(self.speed // 2, self.speed // 2)
+
+            #   Keep same direction (60%)
+            elif num1 == 3 or num1 == 4:
+                pass
+                
+            #   Stop (20%)
+            elif num1 == 5:
+                self.vel = vec(0,0)
+            
+        else:
+            self.frame_counter += 1
+
 
 class Fire_Flapper(Flapper):
     """Small flying enemies"""
@@ -583,7 +804,8 @@ class BetaFlapper(Enemy):
         super().__init__(position, "betaflapper.png",
                          nFrames=6, fps=16,
                          max_hp = 15, hp = 15,
-                         type=type, use_pallet = True)
+                         type=type, use_pallet = True,
+                         push_player=False)
 
         #   Easy Pallet Swap for elemental flappers
         self.pallet = {
@@ -595,6 +817,9 @@ class BetaFlapper(Enemy):
             (110, 49, 0) : (110, 49, 0),
             (61, 28, 0) : (61, 28, 0)
         }
+
+        self.frame_counter = 0
+        self.movement_frames = 8
 
     def get_hit_box(self):
         return pygame.Rect(self.position[0] + 2, self.position[1] + 4, 12, 8)
@@ -610,8 +835,9 @@ class BetaFlapper(Enemy):
         if n == 3:
             return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
         return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1]))
-        
-    
+
+    def update_movement(self, seconds, player=None):
+        Flapper.update_movement(self, seconds, player)
 
 
 class Fire_BetaFlapper(BetaFlapper):
@@ -641,7 +867,9 @@ class Stinger(Enemy):
     def __init__(self, position=vec(0,0)):
         super().__init__(position, "stinger.png",
                          nFrames=11, fps=8,
+                         nRows = 2,
                          max_hp=30, hp=30,
+                         pre_loaded=True,
                          type=Reptillian)
 
         # self.damage_pallet = {
@@ -651,8 +879,13 @@ class Stinger(Enemy):
         #      (251, 224, 115, 255) : (250, 30, 30, 255),
         #      (75, 105, 47, 255) : (142, 11, 11, 255)
         # }
-
         self.add_state("sting", 0, 1, 3, 8)
+        self.load_images()
+        self.set_damage_pallet()
+        self.set_heal_pallet()
+        self.set_image()
+
+
 
     
     def get_hit_box(self):
@@ -675,7 +908,6 @@ class Stinger(Enemy):
 
     def update(self, seconds, player=None):
         super().update(seconds, player)
-
         #   Check if the player is inside the sting rect    #
         if self.current_state == "idle":
             if self.get_sting_box().colliderect(player.getCollisionRect()):
@@ -691,10 +923,13 @@ class Stinger(Enemy):
 class Slimer(Enemy):
     """A sentient mass of slime. Gross.
     These guys always drop 1 Buck. When at full health, they drop more."""
-    def __init__(self, position=vec(0,0), direction = 1):
+    def __init__(self, position=vec(0,0), direction = 1, speed = 50, hp = 10,
+                 fps = 8, use_pallet = False):
         super().__init__(position, "gremlin.png",
-                         nFrames=6, fps=8,
-                         max_hp = 15, hp = 15,
+                         nFrames=6, fps=fps,
+                         max_hp = hp, hp = hp,
+                         use_pallet=use_pallet,
+                         speed = speed,
                          type=Non)
         self.direction = direction
         self.row = self.direction
@@ -703,12 +938,7 @@ class Slimer(Enemy):
         self.motion_tick = 1.0
         self.moving = False
 
-        self.damage_pallet = {
-            (71,148,0) : (201, 0, 0),
-            (49, 102, 0) : (139, 0, 0),
-            (25, 58, 0) : (58, 0, 0),
-            (28, 58, 0) : (58, 0, 0),
-        }
+        
 
         self.set_image()
         self.set_damage_pallet()
@@ -755,7 +985,208 @@ class Slimer(Enemy):
                 self.set_image()
                 self.vel = vec(0,0)
 
+class Slimer_Blue(Slimer):
+    def __init__(self, position=vec(0, 0), direction=1):
+        super().__init__(position, direction,
+                         hp=15, use_pallet=True)
+        self.pallet = {
+            #   Main Body
+            (28,58,0): (28, 1, 58),
+            (49, 102, 0): (49, 1, 101),
+            (71, 148, 0): (71, 7, 145),
 
+            #   Eyes
+            # (255, 41, 41): None,
+            # (148, 0, 0): None,
+
+            #   Mouth / Teeth
+            # (58, 0, 0): None,
+            # (247, 218, 218): None,
+        }
+
+    def get_drop(self):
+        num = randint(1,3)
+        #   33% chance to drop $10
+        if num == 1:
+            return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+        #   66% chance to drop $5
+        return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+            
+    def get_money(self):
+        num = randint(1,3)
+        #   66% chance to drop $10
+        if num == 1 or num == 2:
+            return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+        #   33% chance to drop $5
+        return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+
+class Slimer_Poison(Slimer):
+    """Slimers that inflict poison damage on you"""
+    def __init__(self, position=vec(0, 0), direction=1):
+        super().__init__(position, direction,
+                         hp=15, use_pallet=True, speed = 30)
+        self.pallet = {
+            #   Main Body
+            (28,58,0): (48, 1, 58),
+            (49, 102, 0): (97, 1, 101),
+            (71, 148, 0): (145, 7, 133),
+
+            #   Eyes
+            (255, 41, 41): (148, 145, 0),
+            (148, 0, 0): (246, 255, 41),
+
+            #   Mouth / Teeth
+            (58, 0, 0): (63, 61, 61),
+            (247, 218, 218): (255, 122, 122),
+        }
+
+    def get_drop(self):
+        num = randint(1,3)
+        #   33% chance to drop $5
+        if num == 1:
+            return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+        #   66% chance to drop $10
+        return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+                
+    def get_money(self):
+        #   Always drop $10
+        return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+class Slimer_Fast(Slimer):
+    """Slimers that move quick"""
+    def __init__(self, position=vec(0, 0), direction=1):
+        super().__init__(position, direction,
+                         fps=16,
+                         hp=20, use_pallet=True, speed = 90)
+        self.pallet = {
+            #   Main Body
+            (28,58,0): (58, 53, 1),
+            (49, 102, 0): (130, 127, 0),
+            (71, 148, 0): (188, 184, 4),
+        }
+
+    def get_drop(self):
+        num = randint(1,3)
+        #   33% chance to drop $5
+        if num == 1:
+            return Buck_B(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+
+        #   66% chance to drop $10
+        return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+                    
+    def get_money(self):
+        #   Always drop $10
+        return Buck_R(vec(self.position[0] + self.image.get_width()//2, self.position[1] + self.image.get_height()//2))
+    
+
+
+
+class Blamer(Enemy):
+    def __init__(self, position=vec(0, 0), file_name = "blamer.png",
+                    type = Phantom, hp = 5, speed = 20,
+                    fps = 8, direction = 0):
+        super().__init__(position, file_name,
+                            nFrames=3, fps=fps,
+                            max_hp = hp, hp = hp,
+                            type=type, speed=speed,
+                            push_player=False)
+
+        #   Movement data   #
+        self.center_position = self.position.copy()
+        self.delta = 16
+        self.direction = direction
+        self.motion_tick = 0
+        self.motion_delta = 8
+        self.visible_frames = 120
+        self.invisible_frames = 200
+        self.frame_counter = 0
+        self.alpha = 0
+        self.set_alpha(0)
+
+        #   States  #
+        self.visible = False
+        self.transitioning = False
+
+        self.set_damage_pallet()
+        # self.damage_pallet = {
+        #      (240, 240, 217, 255) : (255, 0, 0, 255),
+        #      (210, 75, 70, 255) : (116, 9, 5, 255)
+        # }
+
+    def handle_player_collision(self, other):
+        return self.visible and (not self.transitioning)
+
+    def collides_with_projectile(self, proj):
+        if (not self.visible) or self.transitioning:
+            return False
+
+        if proj.type == Non:
+            return False
+        return super().collides_with_projectile(proj)
+
+    def set_next_pos(self, player):
+        """Appear on top of the player and attack them"""
+        pos = player.position.copy()
+        self.position = vec(pos[0] - 16, pos[1] - 6)
+
+    def update_movement(self, seconds, player):
+        """Randomly render the ghost just barely visible when he is invisible"""
+        #   Move and disappear
+        if self.visible:
+            if self.transitioning:
+                self.alpha -= 5
+                if self.alpha <= 0:
+                    self.set_alpha(0)
+                    self.alpha = 0
+                    self.visible = False
+                    self.transitioning = False
+                else:
+                    self.set_alpha(self.alpha)
+            else:
+                if self.direction == 0:
+                    if self.motion_tick == self.motion_delta:
+                        self.direction = 2
+                        self.motion_tick = 0
+                    else:
+                        self.position[1] += 1
+
+                elif self.direction == 2:
+                    if self.motion_tick == self.motion_delta:
+                        self.direction = 0
+                        self.motion_tick = 0
+                    else:
+                        self.position[1] -= 1
+
+                self.motion_tick += 1
+            self.frame_counter += 1
+            if self.frame_counter == self.visible_frames:
+                self.transitioning = True
+                self.frame_counter = 0
+
+        #   Appear
+        else:
+            if self.transitioning:
+                self.alpha += 12
+                if self.alpha >= 230:
+                    self.alpha = 230
+                    self.set_alpha(230)
+                    self.transitioning = False
+                    self.visible = True
+                else:
+                    self.set_alpha(self.alpha)
+            else:
+                self.frame_counter += 1
+                if self.frame_counter == self.invisible_frames:
+                    self.transitioning = True
+                    self.frame_counter = 0
+                    self.set_next_pos(player)
+
+
+        
 
 
 
@@ -1140,11 +1571,12 @@ class LavaKnight(Enemy):
 
     def update(self, seconds, player = None):
         if player:
-            position = player.position
+            position = player.position.copy()
 
 
         if self.cold:
             self.cold_timer += seconds
+
         ##Death Animation
         if self.dying:
             if self.startup_timer >= 1.0:

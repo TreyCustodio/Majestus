@@ -53,7 +53,6 @@ class Cube(object):
             "wait": State(starting_frame=0, row=1, nFrames=6, fps=16),
             "done": State(starting_frame=0, row=2, nFrames=6, fps=16),
             "mad": State(starting_frame=0, row=3, nFrames=4, fps=16),
-
         }
 
 
@@ -173,7 +172,7 @@ class TextBox(Box):
         elif self.closing:
             self.frame += 1
             if self.frame == 4:
-                self.starting = False
+                self.closing = False
             self.set_image()
             pass
         return
@@ -723,7 +722,7 @@ class TextEngine(object):
             # SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
 
             TextEngine.BOX = pygame.Surface(TextEngine.BACKGROUND.get_size(), SRCALPHA)
-            cube = Cube(vec(116, 52))
+            cube = Cube(vec(116, 60))
             cube.set_state(cube_state)
 
             TextEngine.OBJECTS = [cube]
@@ -871,16 +870,16 @@ class TextEngine(object):
         TextEngine.BACKGROUND.draw(screen)
         screen.blit(TextEngine.BOX, vec(0,0))
 
-        ##  Draw any additional surfaces    #
-        for s in TextEngine.OBJECTS:
-            s.draw(screen)
-
-
+        
 
         #   (Case 1) We're closing, so we do nothing else
         if TextEngine.closing():
             return
         
+        ##  Draw any additional surfaces    #
+        for s in TextEngine.OBJECTS:
+            s.draw(screen)
+
         #   (Case 2) We're at the end of the dialogue or awaiting input
         if TextEngine.atEnd() or TextEngine.waiting():
             #   Display the input icon  #
@@ -1218,18 +1217,46 @@ class TextEngine(object):
                     
             
             elif TextEngine.TYPE == 2:
+                #   Update the Cube #
                 TextEngine.OBJECTS[0].update(seconds)
-                
-                #   Make the box increasingly more transparent  #
-                TextEngine.BOX.set_alpha(TextEngine.A)
-                TextEngine.A -= 10
+
+                if TextEngine.clearing():
+                    if TextEngine.A <= 0:
+                        TextEngine.A = 255
+                        TextEngine.STATES["$$"] = False
+                        TextEngine.STATES["closing"] = False
+                        TextEngine.OBJECTS[0].set_state("chat")
+
+                        #   Set a new background for the chars  #
+                        # TextEngine.BACKGROUND.clean()
+
+                        TextEngine.BOX = pygame.Surface(TextEngine.BACKGROUND.get_size(), SRCALPHA)
+                        # TextEngine.BOX = SpriteManager.getInstance().getSprite("TextBox2.png", (0,0))
+                    else:
+                        TextEngine.BOX.set_alpha(TextEngine.A)
+                        TextEngine.A -= 10
+
+                elif TextEngine.atEnd():
+                    if TextEngine.A <= 0:
+                        background = TextEngine.BACKGROUND
+                        background.update(seconds)
+                        if background.closing == False:
+                            TextEngine.A = 255
+                            TextEngine.STATES["closing"] = False
+                            TextEngine.STATES["done"] = True
+                    else:
+                        TextEngine.BOX.set_alpha(TextEngine.A)
+                        TextEngine.A -= 20
 
 
-                #   Once completely transparent #
+
+
+
+                """#   Once completely transparent #
                 if TextEngine.A <= 0:
                     ##  Reset clearing state    ##
-                    TextEngine.A = 255
                     if TextEngine.clearing():
+                        TextEngine.A = 255
                         TextEngine.STATES["$$"] = False
                         TextEngine.STATES["closing"] = False
                         TextEngine.OBJECTS[0].set_state("chat")
@@ -1247,8 +1274,15 @@ class TextEngine(object):
                         background = TextEngine.BACKGROUND
                         background.update(seconds)
                         if background.closing == False:
+                            TextEngine.A = 255
                             TextEngine.STATES["closing"] = False
                             TextEngine.STATES["done"] = True
+
+
+                else:
+                    #   Make the box increasingly more transparent  #
+                    TextEngine.BOX.set_alpha(TextEngine.A)
+                    TextEngine.A -= 10"""
 
         #   (Case 3) Waiting for input  #
         elif TextEngine.waiting():

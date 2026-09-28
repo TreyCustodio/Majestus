@@ -306,6 +306,7 @@ class Slash(AbstractWeapon):
         super().__init__(position, "slash.png", 0, 0,
                          pierce=True, type=Wind)
         self.id = "slash"
+        
         if chargeMultiplier == 1:
             self.damage = 10
         elif chargeMultiplier == 2:

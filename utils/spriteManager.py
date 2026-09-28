@@ -40,8 +40,12 @@ class SpriteManager(object):
       
 
       # Static information about the sprite sizes of particular image sheets.
-      _SPRITE_SIZES = {"text_components.png":(16,16),"buttons.png":(20,16),"chars.png":(20,20), "rocker.png":(16,16),"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),"boner.png":(18,28),"npc_boner.png":(18,28),"laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
-                       "TextBox2.png": (244,64), "indicator.png":(58,32),
+      _SPRITE_SIZES = {"text_components.png":(16,16),"buttons.png":(20,16),"chars.png":(20,20), "rocker.png":(16,16),"shop_display.png":(176,64),"shop_items.png":(16,16),"lock.png":(48,48),"TextBox3.png":(244,68),"bone.png":(10,16),
+                       "laser.png":(14,14), "gleemer.png":(18,32),"keys.png":(20,16),"gremlin_blue.png":(18,36),"freeze.png":(16,16),"target.png":(18,18),"firi.png":(18,30), "heart.png":(16,16),"npcBopper.png": (16,16), "Objects.png":(16,16), "element.png":(16,16), "Bullet.png":(16,16), "blizz.png":(32,32), "slash.png": (32,32),"TextBox.png": (244,32), "geemer.png": (22,18),
+                       
+                       "TextBox2.png": (244,72),
+
+                       "indicator.png":(58,32),
                        "icon.png": (32,32), "blockP.png":(16,16), "fire.png":(18,18), "black.png": (304, 208), 
                        "bar.png":(16,16), "ammo.png": (16,16), "torch.png": (16,16), 
                        "blessing.png":(16,16), "thunder.png":(64,64), "gale.png": (18,18),
@@ -61,7 +65,12 @@ class SpriteManager(object):
                        "betaflapper.png":(16,16),
 
                        "fireball.png":(16,16), "bigcursor.png":(16*8, 32), "promptcursor.png":(36,32),
-                       "stinger.png":(100,49), "ice_boner.png":(18,28), "hud_arrows.png":(16,16),
+                       "stinger.png":(100,49),
+                       "hud_arrows.png":(16,16),
+                       "boner.png":(18,28),"npc_boner.png":(18,28),
+                       "ice_boner.png":(18,28), "fire_boner.png":(18,28),
+                       "blamer.png": (32,32),
+
 
                        #   Text Images #
                        "cube.png":(12,12)
@@ -86,7 +95,8 @@ class SpriteManager(object):
                        "title_screen_m.png",
 
 
-                       "fire_boner.png", "betaflapper.png"
+                       "fire_boner.png", "betaflapper.png",
+                       "blamer.png"
                        
                        #   Text Images #
                      #   "cube.png"

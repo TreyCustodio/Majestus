@@ -40,24 +40,24 @@ class Wavering_1(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
         super().__init__(enemies = [
-                                        Fire_BetaFlapper(vec(16*10, 16*4)),
-                                Ice_Flapper(vec(16*8, 16*2)),
-                                        BetaFlapper(vec(16*9, 16*3)),
-                                Gale_Flapper(vec(16*8, 16*4)),
-                                        Thunder_Flapper(vec(16*10, 16*2)),
+                                    Blamer(vec(16*10, 16*4)),
+                                    Ice_Flapper(vec(16*8, 16*2)),
+                                    BetaFlapper(vec(16*9, 16*3)),
+                                    Gale_Flapper(vec(16*8, 16*4)),
+                                    Thunder_Flapper(vec(16*10, 16*2)),
 
 
-                                    Ice_Boner(vec(16*14, 16*4)),
-                                    Boner(vec(16*13, 16*5)),
-                                    Ice_Boner(vec(16*12, 16*4)),
-                                    Fire_Boner(vec(16*14, 16*6)),
-                                    Boner(vec(16*9, 16*5)),
-                                    Fire_Boner(vec(16*12, 16*6)),
+                                    # Ice_Boner(vec(16*14, 16*4)),
+                                    # Boner(vec(16*13, 16*5)),
+                                    # Ice_Boner(vec(16*12, 16*4)),
+                                    # Fire_Boner(vec(16*14, 16*6)),
+                                    # Boner(vec(16*9, 16*5)),
+                                    # Fire_Boner(vec(16*12, 16*6)),
 
                                     Stinger(vec(16*3, 16*6)),
                                     ],
                          npcs = [
-                             Geemer(vec(16*3, 16*3))
+                             Geemer(vec(16*3, 16*3), text = SPEECH["wavering_geemer1"])
                          ],
 
                          bgm="03",
@@ -95,9 +95,9 @@ class Wavering_2(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
         super().__init__(size = vec(608, 208),
-                         enemies = [Slimer(vec(16*7, 16*5 + 8)),
-                                    Slimer(vec(16*21, 16*5 + 8)),
-                                    Slimer(vec(16*14, 16*5 + 8)),
+                         enemies = [Slimer_Poison(vec(16*7, 16*5 + 8)),
+                                    Slimer_Poison(vec(16*21, 16*5 + 8)),
+                                    Slimer_Fast(vec(16*14, 16*5 + 8)),
 
                                     Boner(vec(16*8, 16*2)),
                                     Boner(vec(16*9, 16*2)),
@@ -301,9 +301,13 @@ class Wavering_3(MajestusEngine):
 class Wavering_4(MajestusEngine):
     """New version of the first room"""
     def __init__(self):
-        super().__init__(enemies = [Boner(vec(16*8, 16*2)),
-                                    Boner(vec(16*9, 16*2)),
-                                    Boner(vec(16*10, 16*2))
+        super().__init__(enemies = [Flapper(vec(16*8, 16*5)),
+                                    Flapper(vec(16*8, 16*7)),
+
+                                    Flapper(vec(16*9, 16*6)),
+
+                                    Flapper(vec(16*10, 16*5)),
+                                    Flapper(vec(16*10, 16*7))
                                     ],
                          bgm="03", room_dir="tut_4",
                          roomId=8
